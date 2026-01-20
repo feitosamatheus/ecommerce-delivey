@@ -95,5 +95,6 @@ C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\obj\Debug\net10.0\ref
 C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\obj\Debug\net10.0\Ecommerce.MVC.pdb
 C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\obj\Debug\net10.0\Ecommerce.MVC.genruntimeconfig.cache
 C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\obj\Debug\net10.0\ref\Ecommerce.MVC.dll
-C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\obj\Debug\net10.0\compressed\1bo29dui66-{0}-1iohvzphaw-1iohvzphaw.gz
-C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\obj\Debug\net10.0\compressed\ckabb49u4u-{0}-noq7ay5lo9-noq7ay5lo9.gz
+C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\obj\Debug\net10.0\Ecommerce.MVC.sourcelink.json
+C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\obj\Debug\net10.0\compressed\1bo29dui66-{0}-lfvz8xvgn7-lfvz8xvgn7.gz
+C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\obj\Debug\net10.0\compressed\ckabb49u4u-{0}-mo6dmae1tb-mo6dmae1tb.gz

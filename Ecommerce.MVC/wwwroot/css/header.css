@@ -35,7 +35,7 @@
     color: #fff !important;
     text-decoration: none;
     transition: transform 0.2s ease, opacity 0.2s ease;
-    background: #696969 !important;
+    /* background: #696969 !important; */
 }
 
 .social-btn:hover {
