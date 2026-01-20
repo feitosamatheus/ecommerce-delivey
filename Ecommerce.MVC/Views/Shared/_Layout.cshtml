@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Ecommerce.MVC</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/header.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Ecommerce.MVC.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+</head>
+<body class="container-fluid container-lg background-principal px-0">
+    <header class="background-secundario p-3 mx-2 mx-md-3 mt-4 rounded-2 box-shadown-custom mb-2">
+        <div class="row">
+            <div class="col-12 col-md-10 d-flex flex-column flex-md-row align-items-center gap-0 gap-md-3">
+                <div class="w-100 d-flex justify-content-end position-absolute" style="top:35px; margin-right: 60px;">
+                    <a href="/login" class="btn btn-login-icon d-flex d-md-none gap-2 text-dark">
+                        <i class="fa-solid fa-bars"></i>
+                    </a>
+                </div>
+                <div class="text-center text-md-start">
+                    <img class="logo-img mb-2 mb-md-0" src="~/img/logo.jpg" alt="Logo Barriga Cheia" />
+                </div>
+                <div class="text-center text-md-start">
+                    <h1 class="titulo-principal mb-1">Barriga Cheia</h1>
+                    <p class="titulo-secundario mb-0">Sopas & Caldos · Lanchonete</p>
+                    <small class="titulo-localizacao">
+                        Olinda-PE · Rua Nilson Sabino Pinho, 222
+                    </small>
+                    <div class="d-flex gap-3 mt-2 justify-content-center justify-content-md-start d-none d-md-flex">
+                        <a href="tel:+5511999999999" class="social-btn phone">
+                            <i class="fa-solid fa-phone"></i>
+                        </a>
+                        <a href="#" class="social-btn instagram">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-btn facebook">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-btn whatsapp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-2 d-flex flex-column gap-2 align-items-center align-items-md-end justify-content-between mt-3 mt-md-0">
+                <a href="/login" class="btn btn-entrar d-none d-md-flex">
+                    <i class="fa-solid fa-bars"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+    <div class="mx-2 mx-md-3">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

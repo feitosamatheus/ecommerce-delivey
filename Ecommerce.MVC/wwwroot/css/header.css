@@ -1,0 +1,116 @@
+
+.titulo-principal {
+    font-size: clamp(1.5rem, 3vw, 2.0rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.titulo-secundario {
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    font-weight: 500;
+    color: #f5e6d3;
+}
+
+.titulo-localizacao {
+    font-size: 0.9rem;
+    color: #e0c9a6;
+}
+
+.logo-img {
+    max-height: clamp(90px, 10vw, 200px);
+    /* max-height: clamp(90px, 10vw, 200px); */
+    width: auto;
+    border-radius: 7px;
+}
+
+
+.social-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff !important;
+    text-decoration: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    background: #696969 !important;
+}
+
+.social-btn:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+}
+
+.phone {
+    background: #0d6efd;
+}
+
+.instagram {
+    background: linear-gradient(45deg,
+        #f58529,
+        #dd2a7b,
+        #8134af,
+        #515bd4);
+}
+
+.facebook {
+    background: #1877f2;
+}
+
+.whatsapp {
+    background: #25d366;
+}
+
+
+.btn-entrar {
+    background: #ffffffad;
+    color: #3b2f2f !important;
+    font-weight: 600;
+    font-size: clamp(0.5rem, 3vw, 0.9rem);
+    padding: 10px 14px;
+    border: none;
+    border-radius: 50%;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    box-shadow: 0 6px 16px rgba(59, 47, 47, 0.25);
+    transition: all 0.25s ease;
+}
+
+.btn-entrar i {
+    font-size: 0.95rem;
+}
+
+.btn-entrar:hover {
+    box-shadow: 0 10px 24px rgba(59, 47, 47, 0.35);
+    background: linear-gradient(135deg, #e0cbb8af, #cdb49fb2);
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}
+
+.btn-entrar:active {
+    box-shadow: 0 4px 10px rgba(59, 47, 47, 0.2);
+}
+
+.btn-login-icon {
+    background: #ffffffad;
+    color: #3b2f2f;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    border-radius: 50%;
+}
+
+.btn-login-icon:hover {
+    background: #f3f3f3;
+    color: #3b2f2f;
+    transform: translateY(-1px);
+}

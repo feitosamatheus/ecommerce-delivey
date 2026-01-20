@@ -1,0 +1,18 @@
+body{
+    max-width: 1520px !important;
+}
+
+.background-principal{
+    /* background-color: #663E1A; */
+    /* background-color: #6D3603; */
+    background-color: #f3f6f9; 
+}
+
+.background-secundario{
+    background-color: #663E1A;
+}
+
+.box-shadown-custom{
+    /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05); */
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
