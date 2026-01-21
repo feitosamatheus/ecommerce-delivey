@@ -61,7 +61,7 @@
         <span></span>
         <span></span>
     </div>
-    <header class="background-secundario p-3 mx-2 mx-md-3 mt-4 rounded-2 box-shadown-custom mb-2">
+    @* <header class="background-secundario p-3 mx-2 mx-md-3 mt-4 rounded-2 box-shadown-custom mb-2">
         <div class="row">
             <div class="col-12 col-md-10 d-flex flex-column flex-md-row align-items-center gap-0 gap-md-3">
                 <div class="w-100 d-flex justify-content-end position-absolute" style="top:35px; margin-right: 60px;">
@@ -100,12 +100,179 @@
                 </a>
             </div>
         </div>
-    </header>
+    </header> *@
+    <section class="hero-wrapper">
+        <!-- Banner -->
+        <div class="hero-banner"></div>
+
+        <!-- Header flutuante -->
+        <header class="background-secundario p-3 mx-2 mx-md-3 rounded-2 box-shadown-custom hero-header">
+            <div class="row">
+                <div class="col-12 col-md-10 d-flex flex-column flex-md-row align-items-center gap-0 gap-md-3">
+                    <div class="w-100 d-flex justify-content-end position-absolute" style="top:35px; margin-right: 60px;">
+                        <a href="/login" class="btn btn-login-icon d-flex d-md-none gap-2 text-dark">
+                            <i class="fa-solid fa-bars"></i>
+                        </a>
+                    </div>
+
+                    <div class="text-center text-md-start">
+                        <img class="logo-img mb-2 mb-md-0" src="~/img/logo.jpg" alt="Logo Barriga Cheia" />
+                    </div>
+
+                    <div class="text-center text-md-start">
+                        <h1 class="titulo-principal mb-1">Barriga Cheia</h1>
+                        <p class="titulo-secundario mb-0">Sopas & Caldos · Lanchonete</p>
+                        <small class="titulo-localizacao">
+                            Olinda-PE · Rua Nilson Sabino Pinho, 222
+                        </small>
+
+                        <div class="d-flex gap-3 mt-2 justify-content-center justify-content-md-start d-none d-md-flex">
+                            <a href="#" class="social-btn phone"><i class="fa-solid fa-phone"></i></a>
+                            <a href="#" class="social-btn instagram"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="#" class="social-btn facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                            <a href="#" class="social-btn whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                @* <div class="col-12 col-md-2 d-flex justify-content-end mt-3 mt-md-0">
+                    <a href="/login" class="btn btn-entrar d-none d-md-flex">
+                        <i class="fa-solid fa-bars"></i>
+                    </a>
+                </div> *@
+                <div class="col-12 col-md-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
+                    <button type="button"
+                            class="btn btn-entrar d-none d-md-flex"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalInfoLoja"
+                            aria-controls="sidebarMenu"
+                            title="Acompanhar pedido"
+                            aria-label="Abrir menu">
+                        <i class="fa-solid fa-location-dot"></i> Acompanhar pedido
+                    </button>
+                    <button type="button"
+                            class="btn btn-entrar d-none d-md-flex"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalInfoLoja"
+                            aria-controls="sidebarMenu"
+                            title="Minha conta"
+                            aria-label="Abrir menu">
+                        <i class="fa-solid fa-user"></i> Minha conta
+                    </button>
+                    <button type="button"
+                            class="btn btn-entrar ver-mais d-none d-md-flex"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalInfoLoja"
+                            aria-controls="sidebarMenu"
+                            title="Informações"
+                            aria-label="Abrir menu">
+                        @* <i class="fa-solid fa-bars"></i>  *@
+                        Ver mais
+                    </button>
+                </div>
+            </div>
+        </header>
+    </section>
+
     <div class="mx-2 mx-md-3">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+
+    <div class="modal fade" id="modalInfoLoja" tabindex="-1" aria-labelledby="modalInfoLojaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-bc" style="border-radius: 5px;">
+
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold" id="modalInfoLojaLabel">Barriga Cheia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <div class="modal-body pt-2">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs bc-tabs" id="bcTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-sobre"
+                            data-bs-toggle="tab" data-bs-target="#pane-sobre"
+                            type="button" role="tab" aria-controls="pane-sobre" aria-selected="true">
+                    Sobre
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-horario"
+                            data-bs-toggle="tab" data-bs-target="#pane-horario"
+                            type="button" role="tab" aria-controls="pane-horario" aria-selected="false">
+                    Horário
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-pagamento"
+                            data-bs-toggle="tab" data-bs-target="#pane-pagamento"
+                            type="button" role="tab" aria-controls="pane-pagamento" aria-selected="false">
+                    Pagamento
+                    </button>
+                </li>
+                </ul>
+
+                <div class="tab-content pt-3" id="bcTabsContent">
+                <!-- SOBRE -->
+                <div class="tab-pane fade show active py-2 px-3" id="pane-sobre" role="tabpanel" aria-labelledby="tab-sobre" tabindex="0">
+                    <div class="bc-section">
+                    <div class="bc-section-title">Sobre</div>
+                    <p class="text-muted mb-2">
+                        Sopas e caldos artesanais, salgados e bolos. Feito pelo chef. Aceitamos encomendas.
+                    </p>
+                    <a href="#" class="bc-link">Ver mais</a>
+                    </div>
+
+                    <div class="bc-section mt-3">
+                    <div class="bc-section-title">Endereço</div>
+                    <div class="text-muted">
+                        Rua Nilson Sabino Pinho, 222<br />
+                        Olinda - PE
+                    </div>
+                    </div>
+
+                    <div class="bc-section mt-3">
+                    <div class="bc-section-title">Outras informações</div>
+                    <div class="text-muted">CNPJ: 00.000.000/0001-00</div>
+                    </div>
+                </div>
+
+                <!-- HORÁRIO -->
+                <div class="tab-pane fade py-2 px-3" id="pane-horario" role="tabpanel" aria-labelledby="tab-horario" tabindex="0">
+                    <div class="bc-section">
+                    <div class="bc-section-title">Horário de funcionamento</div>
+                    <div class="text-muted">
+                        Segunda a Sexta: 11:00 às 22:00<br />
+                        Sábado: 11:00 às 23:00<br />
+                        Domingo: 16:00 às 22:00
+                    </div>
+                    </div>
+                </div>
+
+                <!-- PAGAMENTO -->
+                <div class="tab-pane fade py-2 px-3" id="pane-pagamento" role="tabpanel" aria-labelledby="tab-pagamento" tabindex="0">
+                    <div class="bc-section">
+                    <div class="bc-section-title">Formas de pagamento</div>
+                    <ul class="text-muted mb-0">
+                        <li>Pix</li>
+                        <li>Cartão de crédito</li>
+                        <li>Cartão de débito</li>
+                        <li>Dinheiro</li>
+                    </ul>
+                    </div>
+                </div>
+                </div>
+            </div>
+            <div class="bc-footnote text-center mt-4 mb-4">
+                Os preços apresentados no cardápio são definidos pela própria loja.
+            </div>
+            </div>
+        </div>
+        </div>
+
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

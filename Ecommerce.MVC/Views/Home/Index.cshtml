@@ -5,15 +5,24 @@
 <style>
 
     .container-filtro {
-        background-color: #F5EBDD;
+        @* background-color: #F5EBDD; *@
+        background-color: #fff;
         border-radius: 5px;
+        transition: background-color .25s ease, box-shadow .25s ease;
+    }
+
+    .container-filtro.is-sticky {
+        background-color: #6B3E1E; /* marrom da marca */
+        box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .btn-filtro {
         width: clamp(28px, 6vw, 36px);
         height: clamp(28px, 6vw, 36px);
         border-radius: 50%;
-        background-color: #663E1A;
+        background-color: #E6A23C;
         border: none;
         display: flex;
         align-items: center;
@@ -27,7 +36,7 @@
     }
 
     .btn-filtro:hover {
-        background-color: #663d1ad5;
+        background-color: #663E1A;
         box-shadow: 0 4px 10px rgba(46, 16, 2, 0.35);
         transform: translateY(-1px);
     }
@@ -177,9 +186,11 @@
         border-radius: 5px;
         @* box-shadow: 0 6px 18px rgba(0,0,0,.08); *@
         border: 1px solid rgba(0,0,0,.05);
-        box-shadow:
+        @* box-shadow:
         0 2px 6px rgba(0,0,0,.06),
-        0 10px 24px rgba(0,0,0,.06);
+        0 10px 24px rgba(0,0,0,.06); *@
+
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     .product-card {
@@ -247,7 +258,8 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: #663E1A;
+        @* background: #E6A23C; *@
+        background-color: rgba(0, 0, 0, .4);
         border: 1px solid rgba(0,0,0,.12);
         box-shadow: 0 4px 12px rgba(0,0,0,.18);
         display: flex;
@@ -255,6 +267,7 @@
         justify-content: center;
         top: 50%;
         transform: translateY(-50%);
+        transition: background-color .2s ease, box-shadow .2s ease, transform .1s ease;
     }
 
     /* Ícone */
@@ -586,7 +599,7 @@
         <div class="col-12 col-lg-3">
             <div class="box panel p-3 cart-sticky">
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h5 class="mb-0 fw-bold">Carrinho</h5>
+                    <h5 class="mb-0 fw-bold" style="color:#4A2A15;">Carrinho</h5>
                 </div>
                 <hr />
                 <div class="cart-empty py-4 text-center">
@@ -603,7 +616,7 @@
                     <div class="d-flex justify-content-between text-muted">
                         <span>Entrega</span><span>R$ 0,00</span>
                     </div>
-                    <div class="d-flex justify-content-between fw-bold" style="color:#6a3fd2;">
+                    <div class="d-flex justify-content-between fw-bold" style="color:rgb(255, 207, 105);">
                         <span>Total</span><span>R$ 0,00</span>
                     </div>
                 </div>
@@ -617,6 +630,18 @@
 </div>
 
 <script>
+    const filtro = document.querySelector('.container-filtro');
+    const offsetTop = filtro.offsetTop;
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > offsetTop - 15) {
+            filtro.classList.add('is-sticky');
+        } else {
+            filtro.classList.remove('is-sticky');
+        }
+    });
+
+
     const btnPesquisar = document.getElementById('btnPesquisar');
     const btnFecharBusca = document.getElementById('btnFecharBusca');
     const filtroCategoria = document.getElementById('filtroCategoria');
