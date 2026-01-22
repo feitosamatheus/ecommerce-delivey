@@ -142,7 +142,7 @@
                 </div> *@
                 <div class="col-12 col-md-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
                     <button type="button"
-                            class="btn btn-entrar d-none d-md-flex"
+                            class="btn btn-entrar d-none d-md-flex ver-mais""
                             data-bs-toggle="modal"
                             data-bs-target="#modalInfoLoja"
                             aria-controls="sidebarMenu"
@@ -151,16 +151,16 @@
                         <i class="fa-solid fa-location-dot"></i> Acompanhar pedido
                     </button>
                     <button type="button"
-                            class="btn btn-entrar d-none d-md-flex"
+                            class="btn btn-entrar d-none d-md-flex ver-mais"
                             data-bs-toggle="modal"
-                            data-bs-target="#modalInfoLoja"
+                            data-bs-target="#modalContaCliente"
                             aria-controls="sidebarMenu"
                             title="Minha conta"
                             aria-label="Abrir menu">
                         <i class="fa-solid fa-user"></i> Minha conta
                     </button>
                     <button type="button"
-                            class="btn btn-entrar ver-mais d-none d-md-flex"
+                            class="btn btn-entrar ver-mais d-none d-md-flex ver-mais""
                             data-bs-toggle="modal"
                             data-bs-target="#modalInfoLoja"
                             aria-controls="sidebarMenu"
@@ -273,6 +273,40 @@
         </div>
         </div>
 
+        <div class="modal fade" id="modalContaCliente" tabindex="-1" aria-labelledby="modalContaClienteLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-bc" style="border-radius: 8px;">
+
+      <div class="modal-header border-0">
+        <h6 class="modal-title fw-bold" id="modalContaClienteLabel">
+          Bem-vindo(a)!
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <p class="mb-2">
+          Olá, <strong>João</strong> 👋
+        </p>
+        <p class="text-muted mb-3">
+          Você entrou com sucesso na sua conta.
+        </p>
+
+        <div class="d-grid gap-2">
+          <a href="/meus-pedidos" class="btn btn-primary">
+            Ver meus pedidos
+          </a>
+          <a href="/perfil" class="btn btn-outline-secondary">
+            Meu perfil
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+        
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

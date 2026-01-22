@@ -1,0 +1,17 @@
+
+.btn-login-icon {
+    background: #ffffffad;
+    color: #3b2f2f;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    border-radius: 50%;
+}
+
+.btn-login-icon:hover {
+    background: #f3f3f3;
+    color: #3b2f2f;
+    transform: translateY(-1px);
+}
