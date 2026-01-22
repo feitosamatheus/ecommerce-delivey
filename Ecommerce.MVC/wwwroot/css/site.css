@@ -1,6 +1,22 @@
 html {
+  position: relative;
+  min-height: 100%;
   font-size: 14px;
 }
+
+
+body {
+  margin-bottom: 60px;
+  background: linear-gradient(
+    180deg,
+    #f7efe4 0%,
+    #f5f6f8 1200px,
+    #f1f3f6 100%
+  );
+}
+
+@import url("./animacao/animacao.css");
+@import url("./header/headerMobile.css");
 
 @media (min-width: 768px) {
   html {
@@ -8,24 +24,8 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
+@media (min-width: 1220px) {
+  @import url("./header/headerDesktop.css");
+  @import url("./comun/comunDesktop.css");
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
 }

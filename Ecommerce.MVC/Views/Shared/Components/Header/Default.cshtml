@@ -1,0 +1,94 @@
+<section class="bc-hero">
+    <div class="bc-hero__banner"></div>
+
+    <header class="p-3 mx-2 mx-md-3 rounded-2 box-shadown-custom bc-hero__header">
+        <div class="row">
+            <div class="col-12 col-md-10 d-flex flex-column flex-md-row align-items-center gap-0 gap-md-3">
+                <div class="w-100 d-flex justify-content-end position-absolute" style="top:35px; margin-right: 60px;">
+                    <a href="/login" class="btn btn-login-icon d-flex d-md-none gap-2 text-dark">
+                        <i class="fa-solid fa-bars"></i>
+                    </a>
+                </div>
+
+                <div class="text-center text-md-start">
+                    <img class="bc-hero__logo mb-2 mb-md-0" src="~/img/logo.jpg" alt="Logo Barriga Cheia" />
+                </div>
+
+                <div class="text-center text-md-start">
+                    <h1 class="bc-hero__title mb-1">Barriga Cheia</h1>
+                    <p class="bc-hero__subtitle mb-0">Sopas & Caldos · Lanchonete</p>
+                    <small class="bc-hero__meta">
+                        Olinda-PE · Rua Nilson Sabino Pinho, 222
+                    </small>
+
+                    <div class="d-flex gap-3 mt-2 justify-content-center justify-content-md-start d-none d-md-flex">
+                        <a href="#" class="bc-social__btn is-phone"><i class="fa-solid fa-phone"></i></a>
+                        <a href="#" class="bc-social__btn is-instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="bc-social__btn is-facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="bc-social__btn is-whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
+                <button type="button"
+                        class="btn bc-btn bc-btn--ghost d-none d-md-flex"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalVerMais"
+                        aria-controls="sidebarMenu"
+                        title="Acompanhar pedido"
+                        aria-label="Abrir menu">
+                    <i class="fa-solid fa-location-dot"></i> Acompanhar pedido
+                </button>
+
+                <button type="button"
+                        class="btn bc-btn bc-btn--ghost d-none d-md-flex"
+                        id="btn-buscar-modal-cliente"
+                        title="Minha conta"
+                        aria-label="Abrir menu">
+                    <i class="fa-solid fa-user"></i> Minha conta
+                </button>
+
+                <button type="button"
+                        class="btn bc-btn bc-btn--ghost d-none d-md-flex"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalVerMais"
+                        aria-controls="sidebarMenu"
+                        title="Informações"
+                        aria-label="Abrir menu">
+                    Ver mais
+                </button>
+            </div>
+        </div>
+    </header>
+</section>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function () {
+    const $btn = $('#btn-buscar-modal-cliente');
+
+    let carregado = false;
+
+    $btn.on('click', function () {
+        const $body = $('#modalContaClienteBody');
+        const modalEl = document.getElementById('modalContaCliente');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+        $body.html('<div class="text-muted">Carregando...</div>');
+
+        $.get('/Cliente/ContaModal')
+            .done(function (html) {
+            $body.html(html);
+            carregado = true;
+            modal.show();
+            })
+            .fail(function () {
+            $body.html('<div class="text-danger">Não foi possível carregar seus dados agora.</div>');
+            modal.show();
+            });
+    });
+
+  })();
+</script>

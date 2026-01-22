@@ -2,621 +2,272 @@
     ViewData["Title"] = "Home Page";
 }
 
-<style>
-
-    .container-filtro {
-        @* background-color: #F5EBDD; *@
-        background-color: #fff;
-        border-radius: 5px;
-        transition: background-color .25s ease, box-shadow .25s ease;
-    }
-
-    .container-filtro.is-sticky {
-        background-color: #6B3E1E; /* marrom da marca */
-        box-shadow:
-            0 8px 20px rgba(0, 0, 0, 0.25),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    }
-
-    .btn-filtro {
-        width: clamp(28px, 6vw, 36px);
-        height: clamp(28px, 6vw, 36px);
-        border-radius: 50%;
-        background-color: #E6A23C;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color .2s ease, box-shadow .2s ease, transform .1s ease;
-    }
-
-    .btn-filtro i {
-        font-size: clamp(0.7rem, 1.8vw, 0.9rem);
-        color: #ffffff;
-    }
-
-    .btn-filtro:hover {
-        background-color: #663E1A;
-        box-shadow: 0 4px 10px rgba(46, 16, 2, 0.35);
-        transform: translateY(-1px);
-    }
-
-    .btn-filtro:focus,
-    .btn-filtro:active {
-        background-color: #663d1ad5;
-        box-shadow: 0 0 0 3px rgba(102, 62, 26, 0.35);
-        outline: none;
-    }
-
-    .custom-select {
-        position: relative;
-        width: 100%;
-        font-size: 14px;
-    }
-
-    .custom-select-trigger {
-        width: 100%;
-        height: 44px;
-        padding: 0 16px 0 14px;
-        background: #ffffff;
-        border: 2px solid rgb(207, 207, 207);
-        border-radius: 5px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
-        transition: border-color .2s ease, box-shadow .2s ease;
-    }
-
-    .custom-select-trigger:hover,
-    .custom-select.open .custom-select-trigger {
-        border-color: #663E1A;
-    }
-
-    .custom-select-value {
-        color: #1f1f1f;
-    }
-
-    .custom-select-arrow {
-        width: 7px;
-        height: 7px;
-        border-right: 2px solid #663E1A;
-        border-bottom: 2px solid #663E1A;
-        transform: rotate(45deg);
-        transition: transform .2s ease;
-        flex: 0 0 auto;
-        margin-left: 10px;
-    }
-
-    .custom-select.open .custom-select-arrow {
-        transform: rotate(-135deg);
-    }
-
-    .custom-select-options {
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        width: 100%;
-        background: #ffffff;
-        border-radius: 6px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-        list-style: none;
-        padding: 6px 0;
-        margin: 0;
-        display: none;
-        z-index: 10;
-    }
-
-    .custom-select.open .custom-select-options {
-        display: block;
-    }
-
-    .custom-select-options li {
-        padding: 10px 14px;
-        cursor: pointer;
-        transition: background-color .15s ease;
-    }
-
-    .custom-select-options li:hover {
-        background-color: #F5EBDD;
-    }
-
-    .custom-select-options li.selected {
-        background-color: #663E1A;
-        color: #ffffff;
-    }
-
-    #filtroTexto {
-        width: 100%;
-        color: #1f1f1f !important;
-
-    }
-
-    #filtroTexto input {
-        height: 44px;
-        border: 2px solid rgb(207, 207, 207);
-        padding: 0 16px 0 14px;
-        border-radius: 5px;
-        font-weight: 500;
-        color: #1f1f1f !important;
-        font-size: 14px;
-    }
-
-    /* Botão X dentro do input */
-    .btn-fechar-input {
-        position: absolute;
-        top: 50%;
-        right: 10px;
-        transform: translateY(-50%);
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: none;
-        background: transparent;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #663E1A;
-        cursor: pointer;
-        transition: background-color .15s ease;
-    }
-
-    .btn-fechar-input:hover {
-        background-color: rgba(102, 62, 26, 0.10);
-    }
-
-    #filtroNome:focus,
-    #filtroNome:active {
-        box-shadow: 0 0 0 2px #663E1A !important;
-        outline: none  !important;
-    }
-
-    .icone-filtro {
-        position: absolute;
-        top: 50%;
-        left: 12px;
-        transform: translateY(-50%);
-        color: #663E1A;
-        pointer-events: none;
-    }
-
-    .box.panel{
-        background: #fff;
-        border-radius: 5px;
-        @* box-shadow: 0 6px 18px rgba(0,0,0,.08); *@
-        border: 1px solid rgba(0,0,0,.05);
-        @* box-shadow:
-        0 2px 6px rgba(0,0,0,.06),
-        0 10px 24px rgba(0,0,0,.06); *@
-
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    }
-
-    .product-card {
-        background: #fff;
-        border-radius: 10px;
-        border: 1px solid rgba(0,0,0,.04);
-
-        box-shadow:
-            0 2px 6px rgba(0,0,0,.06),
-            0 8px 20px rgba(0,0,0,.04);
-
-        transition: transform .15s ease, box-shadow .15s ease;
-    }
-
-    .product-card:hover {
-        transform: translateY(-2px);
-        box-shadow:
-            0 6px 14px rgba(0,0,0,.12),
-            0 12px 28px rgba(0,0,0,.08);
-    }
-
-    .thumb{
-        width: 86px;
-        height: 64px;
-        border-radius: 10px;
-        background: #f0f0f0;
-        flex: 0 0 auto;
-    }
-
-    /* Carrinho fixo ao rolar */
-    .cart-sticky{
-        position: sticky;
-        top: 16px; /* distância do topo ao rolar */
-    }
-
-    .cart-illustration{
-        height: 150px;
-        border-radius: 12px;
-        background: #f3f0ff; /* placeholder da ilustração */
-    }
-
-    .filtro-sticky {
-        position: sticky;
-        top: 15px;           
-        z-index: 20;       
-        box-shadow: 
-        0 8px 20px rgba(0, 0, 0, 0.12),
-        0 1px 0 rgba(0, 0, 0, 0.04);
-
-        transition:
-        box-shadow .25s ease,
-        transform .25s ease,
-        background-color .25s ease;
-    }
-
-    /* Remove estilo padrão do Bootstrap */
-    .carousel-control-prev,
-    .carousel-control-next {
-        width: auto;
-        opacity: 1;
-    }
-
-    /* Botões customizados */
-    .custom-carousel-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        @* background: #E6A23C; *@
-        background-color: rgba(0, 0, 0, .4);
-        border: 1px solid rgba(0,0,0,.12);
-        box-shadow: 0 4px 12px rgba(0,0,0,.18);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        top: 50%;
-        transform: translateY(-50%);
-        transition: background-color .2s ease, box-shadow .2s ease, transform .1s ease;
-    }
-
-    /* Ícone */
-    .custom-carousel-btn i {
-        font-size: 14px;
-    }
-
-    /* Posições */
-    .carousel-control-prev.custom-carousel-btn {
-        left: -28px;
-    }
-
-    .carousel-control-next.custom-carousel-btn {
-        right: -28px;
-    }
-
-    /* Hover */
-    .custom-carousel-btn:hover {
-        background: #663E1A;
-    }
-</style>
-
 <div class="my-3">
     <div class="row g-3">
         <div class="col-12 col-lg-9">
-            <div class="container-filtro p-3 box-shadown-custom mb-3 filtro-sticky">
+
+            <!-- FILTRO -->
+            <div class="bc-filter bc-filter--sticky p-3 box-shadown-custom mb-3">
                 <div class="row g-3 align-items-center">
                     <div class="col-12 col-md px-1">
                         <div class="d-flex gap-3 align-items-center">
-                            <div class="custom-select" data-name="filtroTipo" id="filtroCategoria">
-                                <button type="button" class="custom-select-trigger">
-                                    <span class="custom-select-value">Selecionar uma categoria</span>
-                                    <span class="custom-select-arrow"></span>
+
+                            <!-- SELECT CATEGORIA -->
+                            <div class="bc-select" data-name="filtroTipo" id="filtroCategoria">
+                                <button type="button" class="bc-select__trigger">
+                                    <span class="bc-select__value">Selecionar uma categoria</span>
+                                    <span class="bc-select__arrow"></span>
                                 </button>
-                                <ul class="custom-select-options">
+
+                                <ul class="bc-select__options">
                                     <li data-value="">Selecionar uma categoria</li>
                                     <li data-value="A">Tipo A</li>
                                     <li data-value="B">Tipo B</li>
                                 </ul>
+
                                 <select name="filtroTipo" hidden>
                                     <option value="">Selecionar uma categoria</option>
                                     <option value="A">Tipo A</option>
                                     <option value="B">Tipo B</option>
                                 </select>
                             </div>
-                            <!-- INPUT DE BUSCA (inicialmente oculto) -->
-                            <div class="position-relative d-none" id="filtroTexto">
-                                <i class="bi bi-search icone-filtro"></i>
-                                <input type="text" id="filtroNome" class="form-control filtro-input" placeholder="Buscar por nome" />
-                                <button type="button" class="btn-fechar-input" id="btnFecharBusca" aria-label="Fechar busca">
+
+                            <!-- INPUT BUSCA (inicialmente oculto) -->
+                            <div class="position-relative d-none bc-filter__search" id="filtroTexto">
+                                <i class="bi bi-search bc-filter__icon"></i>
+                                <input type="text" id="filtroNome" class="form-control bc-filter__input" placeholder="Buscar por nome" />
+                                <button type="button" class="bc-filter__close" id="btnFecharBusca" aria-label="Fechar busca">
                                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                 </button>
                             </div>
-                            <button class="btn btn-filtro" type="button" id="btnPesquisar" aria-label="Buscar" title="Buscar por nome">
+
+                            <!-- BOTÃO ABRIR BUSCA -->
+                            <button class="btn bc-filter__btn" type="button" id="btnPesquisar" aria-label="Buscar" title="Buscar por nome">
                                 <i class="fa-solid fa-keyboard"></i>
                             </button>
+
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="box panel p-3 mb-3">
+            <!-- PAINEL + CARROSSEL -->
+            <div class="bc-panel p-3 mb-3">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h5 class="mb-0 fw-bold">CALDOS</h5>
-@* 
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-light" type="button" data-bs-target="#carrosselCaldos" data-bs-slide="prev">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
-                        <button class="btn btn-sm btn-light" type="button" data-bs-target="#carrosselCaldos" data-bs-slide="next">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
-                    </div> *@
                 </div>
 
-                <div id="carrosselCaldos" class="carousel slide" data-bs-ride="false">
-                <div class="carousel-inner">
+                <div id="carrosselCaldos" class="carousel slide mb-2" data-bs-ride="false">
+                     <!-- INDICADORES (pontinhos) -->
+                    <div class="carousel-indicators bc-carousel__indicators">
+                        <button type="button"
+                                data-bs-target="#carrosselCaldos"
+                                data-bs-slide-to="0"
+                                class="active"
+                                aria-current="true"
+                                aria-label="Slide 1"></button>
 
-                    <!-- Slide 1 (2 cards) -->
+                        <button type="button"
+                                data-bs-target="#carrosselCaldos"
+                                data-bs-slide-to="1"
+                                aria-label="Slide 2"></button>
+                    </div>
+                    <div class="carousel-inner">
+
                         <div class="carousel-item active">
-                            <div class="row g-3">
+                            <div class="row g-3 ">
                                 <div class="col-12 col-md-4">
-                                    <div class="product-card p-3">
+                                    <div class="bc-product p-3">
                                         <div class="d-flex gap-3">
-                                            <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                            <div class="flex-grow-1 bc-product__info">
                                                 <div class="fw-bold">CALDO DE MANDIOCA 100ML</div>
                                                 <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                                 <div class="mt-2 fw-bold">R$ 17,00</div>
                                             </div>
-                                            <div class="thumb"></div>
+                                            <div class="bc-product__thumb"></div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-md-4">
-                                    <div class="product-card p-3">
+                                    <div class="bc-product p-3">
                                         <div class="d-flex gap-3">
-                                            <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                            <div class="flex-grow-1 bc-product__info">
                                                 <div class="fw-bold">CALDO DE MANDIOCA 100ML</div>
                                                 <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                                 <div class="mt-2 fw-bold">R$ 17,00</div>
                                             </div>
-                                            <div class="thumb"></div>
+                                            <div class="bc-product__thumb"></div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-md-4">
-                                    <div class="product-card p-3">
+                                    <div class="bc-product p-3">
                                         <div class="d-flex gap-3">
-                                            <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                            <div class="flex-grow-1 bc-product__info">
                                                 <div class="fw-bold">CALDO DE MANDIOCA 250ML</div>
                                                 <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                                 <div class="mt-2 fw-bold">R$ 24,00</div>
                                             </div>
-                                            <div class="thumb"></div>
+                                            <div class="bc-product__thumb"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Slide 2 (2 cards) -->
                         <div class="carousel-item">
                             <div class="row g-3">
                                 <div class="col-12 col-md-4">
-                                    <div class="product-card p-3">
+                                    <div class="bc-product p-3">
                                         <div class="d-flex gap-3">
-                                            <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                            <div class="flex-grow-1 bc-product__info">
                                                 <div class="fw-bold">CALDO DE MANDIOCA 300ML</div>
                                                 <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                                 <div class="mt-2 fw-bold">R$ 17,00</div>
                                             </div>
-                                            <div class="thumb"></div>
+                                            <div class="bc-product__thumb"></div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-md-4">
-                                    <div class="product-card p-3">
+                                    <div class="bc-product p-3">
                                         <div class="d-flex gap-3">
-                                            <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                            <div class="flex-grow-1 bc-product__info">
                                                 <div class="fw-bold">CALDO DE MANDIOCA 450ML</div>
                                                 <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                                 <div class="mt-2 fw-bold">R$ 24,00</div>
                                             </div>
-                                            <div class="thumb"></div>
+                                            <div class="bc-product__thumb"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
+                    </div>
+
+                    <!-- CONTROLES -->
+                    <button class="carousel-control-prev bc-carousel__btn"
+                            type="button"
+                            data-bs-target="#carrosselCaldos"
+                            data-bs-slide="prev">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    <button class="carousel-control-next bc-carousel__btn"
+                            type="button"
+                            data-bs-target="#carrosselCaldos"
+                            data-bs-slide="next">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
-
-                <!-- SETA ESQUERDA -->
-                <button class="carousel-control-prev custom-carousel-btn"
-                        type="button"
-                        data-bs-target="#carrosselCaldos"
-                        data-bs-slide="prev">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-
-                <!-- SETA DIREITA -->
-                <button class="carousel-control-next custom-carousel-btn"
-                        type="button"
-                        data-bs-target="#carrosselCaldos"
-                        data-bs-slide="next">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
-            </div>
-                
             </div>
 
-
-
-            <div class="box panel p-3 mb-2">
+            <!-- LISTAS (mantive estrutura e cards, apenas classes) -->
+            <div class="bc-panel p-3 mb-2">
                 <h5 class="mb-3 fw-bold">CALDOS</h5>
 
                 <div class="row g-3">
                     <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
+                        <div class="bc-product p-3">
                             <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                <div class="flex-grow-1 bc-product__info">
                                     <div class="fw-bold">CALDO DE MANDIOCA 500ML</div>
                                     <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                     <div class="mt-2 fw-bold">R$ 17,00</div>
                                 </div>
-                                <div class="thumb"></div>
+                                <div class="bc-product__thumb"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 750ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 24,00</div>
-                                </div>
-                                <div class="thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 500ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 17,00</div>
-                                </div>
-                                <div class="thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 750ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 24,00</div>
-                                </div>
-                                <div class="thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 500ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 17,00</div>
-                                </div>
-                                <div class="thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="box panel p-3 mb-2">
-                <h5 class="mb-3 fw-bold">CALDOS</h5>
 
-                <div class="row g-3">
                     <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
+                        <div class="bc-product p-3">
                             <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 500ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 17,00</div>
-                                </div>
-                                <div class="thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                <div class="flex-grow-1 bc-product__info">
                                     <div class="fw-bold">CALDO DE MANDIOCA 750ML</div>
                                     <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                     <div class="mt-2 fw-bold">R$ 24,00</div>
                                 </div>
-                                <div class="thumb"></div>
+                                <div class="bc-product__thumb"></div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="box panel p-3 mb-2">
-                <h5 class="mb-3 fw-bold">CALDOS</h5>
 
-                <div class="row g-3">
                     <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
+                        <div class="bc-product p-3">
                             <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                <div class="flex-grow-1 bc-product__info">
                                     <div class="fw-bold">CALDO DE MANDIOCA 500ML</div>
                                     <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                     <div class="mt-2 fw-bold">R$ 17,00</div>
                                 </div>
-                                <div class="thumb"></div>
+                                <div class="bc-product__thumb"></div>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
+                        <div class="bc-product p-3">
                             <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                <div class="flex-grow-1 bc-product__info">
                                     <div class="fw-bold">CALDO DE MANDIOCA 750ML</div>
                                     <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                     <div class="mt-2 fw-bold">R$ 24,00</div>
                                 </div>
-                                <div class="thumb"></div>
+                                <div class="bc-product__thumb"></div>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
+                        <div class="bc-product p-3">
                             <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
+                                <div class="flex-grow-1 bc-product__info">
                                     <div class="fw-bold">CALDO DE MANDIOCA 500ML</div>
                                     <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
                                     <div class="mt-2 fw-bold">R$ 17,00</div>
                                 </div>
-                                <div class="thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="product-card p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1" style="color: rgb(90, 90, 90) !important;">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 750ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 24,00</div>
-                                </div>
-                                <div class="thumb"></div>
+                                <div class="bc-product__thumb"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
 
+        <!-- CARRINHO -->
         <div class="col-12 col-lg-3">
-            <div class="box panel p-3 cart-sticky">
+            <div class="bc-panel p-3 bc-cart bc-cart--sticky">
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h5 class="mb-0 fw-bold" style="color:#4A2A15;">Carrinho</h5>
+                    <h5 class="mb-0 fw-bold bc-cart__title">Carrinho</h5>
                 </div>
+
                 <hr />
-                <div class="cart-empty py-4 text-center">
-                    <div class="cart-illustration mb-3"></div>
+
+                <div class="bc-cart__empty py-4 text-center">
+                    <div class="bc-cart__illustration mb-3"></div>
                     <div class="text-muted">Seu carrinho está vazio</div>
                 </div>
+
                 <hr />
+
                 <div class="mb-3">
                     <div class="fw-bold mb-2">Totais</div>
 
                     <div class="d-flex justify-content-between text-muted">
                         <span>Subtotal</span><span>R$ 0,00</span>
                     </div>
+
                     <div class="d-flex justify-content-between text-muted">
                         <span>Entrega</span><span>R$ 0,00</span>
                     </div>
-                    <div class="d-flex justify-content-between fw-bold" style="color:rgb(255, 207, 105);">
+
+                    <div class="d-flex justify-content-between fw-bold bc-cart__total">
                         <span>Total</span><span>R$ 0,00</span>
                     </div>
                 </div>
@@ -626,94 +277,105 @@
                 </button>
             </div>
         </div>
+
     </div>
 </div>
 
 <script>
-    const filtro = document.querySelector('.container-filtro');
-    const offsetTop = filtro.offsetTop;
+(function () {
+  // Sticky do filtro
+  const filtro = document.querySelector('.bc-filter');
+  if (!filtro) return;
 
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > offsetTop - 15) {
-            filtro.classList.add('is-sticky');
-        } else {
-            filtro.classList.remove('is-sticky');
-        }
-    });
+  const offsetTop = filtro.offsetTop;
 
-
-    const btnPesquisar = document.getElementById('btnPesquisar');
-    const btnFecharBusca = document.getElementById('btnFecharBusca');
-    const filtroCategoria = document.getElementById('filtroCategoria');
-    const filtroTexto = document.getElementById('filtroTexto');
-    const inputBusca = document.getElementById('filtroNome');
-
-    let modoBuscaTexto = false;
-
-    function abrirBuscaTexto() {
-        filtroCategoria.classList.add('d-none');
-        filtroTexto.classList.remove('d-none');
-        btnPesquisar.classList.add('d-none');  
-        modoBuscaTexto = true;
-        inputBusca.focus();
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > offsetTop - 15) {
+      filtro.classList.add('is-sticky');
+    } else {
+      filtro.classList.remove('is-sticky');
     }
+  });
 
-    function fecharBuscaTexto() {
-        filtroTexto.classList.add('d-none');
-        filtroCategoria.classList.remove('d-none');
-        btnPesquisar.classList.remove('d-none'); 
-        modoBuscaTexto = false;
-        inputBusca.value = '';
+  // Busca por texto (toggle)
+  const btnPesquisar = document.getElementById('btnPesquisar');
+  const btnFecharBusca = document.getElementById('btnFecharBusca');
+  const filtroCategoria = document.getElementById('filtroCategoria');
+  const filtroTexto = document.getElementById('filtroTexto');
+  const inputBusca = document.getElementById('filtroNome');
+
+  let modoBuscaTexto = false;
+
+  function abrirBuscaTexto() {
+    filtroCategoria.classList.add('d-none');
+    filtroTexto.classList.remove('d-none');
+    btnPesquisar.classList.add('d-none');
+    modoBuscaTexto = true;
+    inputBusca.focus();
+  }
+
+  function fecharBuscaTexto() {
+    filtroTexto.classList.add('d-none');
+    filtroCategoria.classList.remove('d-none');
+    btnPesquisar.classList.remove('d-none');
+    modoBuscaTexto = false;
+    inputBusca.value = '';
+  }
+
+  btnPesquisar?.addEventListener('click', () => {
+    if (!modoBuscaTexto) {
+      abrirBuscaTexto();
+      return;
     }
+    console.log('Buscar por:', inputBusca.value);
+  });
 
-    btnPesquisar.addEventListener('click', () => {
-        if (!modoBuscaTexto) {
-            abrirBuscaTexto();
-            return;
-        }
+  btnFecharBusca?.addEventListener('click', fecharBuscaTexto);
 
-        console.log('Buscar por:', inputBusca.value);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modoBuscaTexto) {
+      fecharBuscaTexto();
+    }
+  });
+
+  // Select custom (delegação + 1 click global)
+  const selects = Array.from(document.querySelectorAll('.bc-select'));
+
+  function closeAllSelects(except = null) {
+    selects.forEach(s => {
+      if (s !== except) s.classList.remove('is-open');
+    });
+  }
+
+  selects.forEach(select => {
+    const trigger = select.querySelector('.bc-select__trigger');
+    const options = Array.from(select.querySelectorAll('.bc-select__options li'));
+    const valueSpan = select.querySelector('.bc-select__value');
+    const nativeSelect = select.querySelector('select');
+
+    trigger?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !select.classList.contains('is-open');
+      closeAllSelects(select);
+      select.classList.toggle('is-open', willOpen);
     });
 
-    btnFecharBusca.addEventListener('click', () => {
-        fecharBuscaTexto();
+    options.forEach(option => {
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+
+        options.forEach(o => o.classList.remove('is-selected'));
+        option.classList.add('is-selected');
+
+        valueSpan.textContent = option.textContent;
+
+        if (nativeSelect) nativeSelect.value = option.dataset.value || '';
+
+        select.classList.remove('is-open');
+      });
     });
+  });
 
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modoBuscaTexto) {
-            fecharBuscaTexto();
-        }
-    });
-
-    document.querySelectorAll('.custom-select').forEach(select => {
-        const trigger = select.querySelector('.custom-select-trigger');
-        const options = select.querySelectorAll('.custom-select-options li');
-        const valueSpan = select.querySelector('.custom-select-value');
-        const nativeSelect = select.querySelector('select');
-
-        trigger.addEventListener('click', () => {
-            select.classList.toggle('open');
-        });
-
-        options.forEach(option => {
-            option.addEventListener('click', () => {
-                options.forEach(o => o.classList.remove('selected'));
-                option.classList.add('selected');
-
-                valueSpan.textContent = option.textContent;
-
-                if (nativeSelect) {
-                    nativeSelect.value = option.dataset.value;
-                }
-
-                select.classList.remove('open');
-            });
-        });
-
-        document.addEventListener('click', e => {
-            if (!select.contains(e.target)) {
-                select.classList.remove('open');
-            }
-        });
-    });
+  document.addEventListener('click', () => closeAllSelects());
+})();
 </script>

@@ -1,0 +1,337 @@
+/* =========================================================
+   FILTRO (sticky + estado)
+   ========================================================= */
+
+.bc-filter {
+  background-color: #fff;
+  border-radius: 5px;
+  transition: background-color .25s ease, box-shadow .25s ease;
+}
+
+/* container sticky (fixo por CSS) */
+.bc-filter--sticky {
+  position: sticky;
+  top: 15px;
+  z-index: 20;
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.12),
+    0 1px 0 rgba(0, 0, 0, 0.04);
+
+  transition:
+    box-shadow .25s ease,
+    transform .25s ease,
+    background-color .25s ease;
+}
+
+/* estado acionado por JS */
+.bc-filter.is-sticky {
+  background-color: #6B3E1E;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Botão de abrir busca */
+.bc-filter__btn {
+  width: clamp(28px, 6vw, 36px);
+  height: clamp(28px, 6vw, 36px);
+  border-radius: 50%;
+
+  background-color: #E6A23C;
+  border: none;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: background-color .2s ease, box-shadow .2s ease, transform .1s ease;
+}
+
+.bc-filter__btn i {
+  font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+  color: #ffffff;
+}
+
+.bc-filter__btn:hover {
+  background-color: #663E1A;
+  box-shadow: 0 4px 10px rgba(46, 16, 2, 0.35);
+  transform: translateY(-1px);
+}
+
+.bc-filter__btn:focus,
+.bc-filter__btn:active {
+  background-color: #663d1ad5;
+  box-shadow: 0 0 0 3px rgba(102, 62, 26, 0.35);
+  outline: none;
+}
+
+/* Busca */
+.bc-filter__search {
+  width: 100%;
+  color: #1f1f1f !important;
+}
+
+.bc-filter__input {
+  height: 44px;
+  border: 2px solid rgb(207, 207, 207);
+  padding: 0 40px 0 34px; /* espaço para ícone + botão X */
+  border-radius: 5px;
+  font-weight: 500;
+  color: #1f1f1f !important;
+  font-size: 14px;
+}
+
+#filtroNome:focus,
+#filtroNome:active {
+  box-shadow: 0 0 0 2px #663E1A !important;
+  outline: none !important;
+}
+
+.bc-filter__icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #663E1A;
+  pointer-events: none;
+}
+
+.bc-filter__close {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #663E1A;
+  cursor: pointer;
+  transition: background-color .15s ease;
+}
+
+.bc-filter__close:hover {
+  background-color: rgba(102, 62, 26, 0.10);
+}
+
+/* =========================================================
+   SELECT CUSTOM
+   ========================================================= */
+
+.bc-select {
+  position: relative;
+  width: 100%;
+  font-size: 14px;
+}
+
+.bc-select__trigger {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px 0 14px;
+
+  background: #ffffff;
+  border: 2px solid rgb(207, 207, 207);
+  border-radius: 5px;
+
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  cursor: pointer;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.bc-select:hover .bc-select__trigger,
+.bc-select.is-open .bc-select__trigger {
+  border-color: #663E1A;
+}
+
+.bc-select__value {
+  color: #1f1f1f;
+}
+
+.bc-select__arrow {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #663E1A;
+  border-bottom: 2px solid #663E1A;
+  transform: rotate(45deg);
+  transition: transform .2s ease;
+  flex: 0 0 auto;
+  margin-left: 10px;
+}
+
+.bc-select.is-open .bc-select__arrow {
+  transform: rotate(-135deg);
+}
+
+.bc-select__options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+
+  background: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+
+  list-style: none;
+  padding: 6px 0;
+  margin: 0;
+
+  display: none;
+  z-index: 10;
+}
+
+.bc-select.is-open .bc-select__options {
+  display: block;
+}
+
+.bc-select__options li {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background-color .15s ease;
+}
+
+.bc-select__options li:hover {
+  background-color: #F5EBDD;
+}
+
+.bc-select__options li.is-selected {
+  background-color: #663E1A;
+  color: #ffffff;
+}
+
+/* =========================================================
+   PAINEL / CARD PRODUTO
+   ========================================================= */
+
+.bc-panel {
+  background: #fff;
+  border-radius: 5px;
+  border: 1px solid rgba(0,0,0,.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.bc-product {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.04);
+
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.06),
+    0 8px 20px rgba(0,0,0,.04);
+
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.bc-product:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.12),
+    0 12px 28px rgba(0,0,0,.08);
+}
+
+.bc-product__info {
+  color: rgb(90, 90, 90) !important;
+}
+
+.bc-product__thumb {
+  width: 86px;
+  height: 64px;
+  border-radius: 10px;
+  background: #f0f0f0;
+  flex: 0 0 auto;
+}
+
+/* =========================================================
+   CARROSSEL (setas)
+   ========================================================= */
+
+/* remove padrão do Bootstrap */
+.carousel-control-prev,
+.carousel-control-next {
+  width: auto;
+  opacity: 1;
+}
+
+.bc-carousel__btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+
+  background-color: rgba(0, 0, 0, .4);
+  border: 1px solid rgba(0,0,0,.12);
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background-color .2s ease, box-shadow .2s ease, transform .1s ease;
+}
+
+.bc-carousel__btn i {
+  font-size: 14px;
+}
+
+.carousel-control-prev.bc-carousel__btn { left: -28px; }
+.carousel-control-next.bc-carousel__btn { right: -28px; }
+
+.bc-carousel__btn:hover {
+  background: #663E1A;
+}
+
+.bc-carousel__indicators {
+  margin-bottom: -17px; 
+}
+
+.bc-carousel__indicators [data-bs-target] {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+
+  background-color: #000; 
+  opacity: 0.35;
+
+  border: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.bc-carousel__indicators .active {
+  opacity: 1;
+}
+
+/* =========================================================
+   CARRINHO (sticky)
+   ========================================================= */
+
+.bc-cart--sticky {
+  position: sticky;
+  top: 16px;
+}
+
+.bc-cart__illustration {
+  height: 150px;
+  border-radius: 12px;
+  background: #f3f0ff;
+}
+
+.bc-cart__title {
+  color: #4A2A15;
+}
+
+.bc-cart__total {
+  color: rgb(255, 207, 105);
+}
