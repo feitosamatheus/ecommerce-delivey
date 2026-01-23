@@ -31,31 +31,79 @@
             </div>
 
             <div class="col-12 col-md-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
-                <button type="button"
-                        class="btn bc-btn bc-btn--ghost d-none d-md-flex"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalVerMais"
-                        aria-controls="sidebarMenu"
-                        title="Acompanhar pedido"
-                        aria-label="Abrir menu">
-                    <i class="fa-solid fa-location-dot"></i> Acompanhar pedido
+                <button type="button" class="btn bc-nav-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerMais">
+                    <i class="fa-solid fa-location-dot me-2"></i>
+                    Acompanhar pedido
                 </button>
+               
+                @if (ViewBag.Autenticado)
+                {
+                    <div class="dropdown d-none d-md-inline-block">
+                        <button type="button"
+                                class="btn btn-light d-flex align-items-center fw-bold shadow-sm btn-lift"
+                                id="btn-conta-dropdown"
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false"
+                                title="Minha conta"
+                                style="color: #4b2c20; border-radius: 50px; padding: 6px 18px; border: 1px solid #eee;">
 
-                <button type="button"
-                        class="btn bc-btn bc-btn--ghost d-none d-md-flex"
-                        id="btn-buscar-modal-cliente"
-                        title="Minha conta"
-                        aria-label="Abrir menu">
-                    <i class="fa-solid fa-user"></i> Minha conta
-                </button>
+                            <i class="fa-solid fa-circle-user fs-5 me-2" style="color: #f39c12;"></i>
+                            
+                            <span class="text-truncate" style="max-width: 110px; font-size: 0.9rem;">
+                                @ViewBag.NomeCliente.Split(' ')[0]
+                            </span>
 
-                <button type="button"
-                        class="btn bc-btn bc-btn--ghost d-none d-md-flex"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalVerMais"
-                        aria-controls="sidebarMenu"
-                        title="Informações"
-                        aria-label="Abrir menu">
+                            <i class="fa-solid fa-chevron-down ms-2 seta-menu" style="font-size: 0.7rem; opacity: 0.6;"></i> 
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" 
+                            style="border-radius: 15px; min-width: 220px; background-color: #ffffff; bottom: 115% !important; top: auto !important; margin:9px 0px 0px 0px !important;">
+                            
+                            <li class="px-3 py-3">
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold" style="font-size: 0.95rem; color: #4b2c20;">Olá, @ViewBag.NomeCliente.Split(' ')[0]!</span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">O que deseja fazer agora?</small>
+                                </div>
+                            </li>
+
+                            <li><hr class="dropdown-divider my-2 opacity-50"></li>
+
+                            <li>
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-abrir-minha-conta">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-user-gear text-primary" style="font-size: 0.85rem;"></i>
+                                    </div>
+                                    <span class="fw-semibold">Gerenciar conta</span>
+                                </button>
+                            </li>
+
+                            <li>
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3 text-danger" type="button" id="btn-sair">
+                                    <div class="bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-right-from-bracket" style="font-size: 0.85rem;"></i>
+                                    </div>
+                                    <span class="fw-semibold">Sair da conta</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <button type="button"
+                            class="btn btn-light d-none d-md-flex align-items-center fw-bold shadow-sm btn-lift"
+                            id="btn-abrir-login"
+                            style="color: #4b2c20; border-radius: 50px; padding: 6px 18px; white-space: nowrap; font-size: 0.9rem;"
+                            title="Entrar">
+
+                        <i class="fa-solid fa-circle-user fs-5 me-2 text-warning"></i>
+                        <span class="text-truncate" style="max-width: 100px;">Entrar</span>
+                        <i class="fa-solid fa-chevron-down ms-2 small opacity-50 seta-menu"></i>
+                    </button>
+                }
+
+
+                <button type="button" class="btn bc-nav-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerMais">
                     Ver mais
                 </button>
             </div>
@@ -67,28 +115,81 @@
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   (function () {
-    const $btn = $('#btn-buscar-modal-cliente');
+     function abrirModalConta() {
+    const $body = $('#modalContaClienteBody');
+    const modalEl = document.getElementById('modalContaCliente');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
-    let carregado = false;
+    $body.html('<div class="text-muted p-3">Carregando...</div>');
 
-    $btn.on('click', function () {
-        const $body = $('#modalContaClienteBody');
-        const modalEl = document.getElementById('modalContaCliente');
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    $.get('/Cliente/ContaClienteModal')
+      .done(function (html) {
+        $body.html(html);
+        modal.show();
+      })
+      .fail(function () {
+        $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+        modal.show();
+      });
+  }
 
-        $body.html('<div class="text-muted">Carregando...</div>');
+  // deslogado
+  $(document).on('click', '#btn-abrir-login', abrirModalConta);
 
-        $.get('/Cliente/ContaModal')
-            .done(function (html) {
-            $body.html(html);
-            carregado = true;
-            modal.show();
-            })
-            .fail(function () {
-            $body.html('<div class="text-danger">Não foi possível carregar seus dados agora.</div>');
-            modal.show();
-            });
+  // logado: item do dropdown
+  $(document).on('click', '#btn-abrir-minha-conta', abrirModalConta);
+
+  // sair
+  document.addEventListener('click', async function (e) {
+    if (!e.target.closest('#btn-sair')) return;
+
+    const response = await fetch('/Cliente/Logout', {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
     });
+
+    if (response.ok) window.location.reload();
+    else alert('Não foi possível sair. Tente novamente.');
+  });
+
+    const btn = document.getElementById('btn-conta-dropdown');
+    if (!btn) return;
+
+    const dropdown = bootstrap.Dropdown.getOrCreateInstance(btn);
+    let aberto = false;
+
+    // Toggle no clique do botão
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+
+        if (aberto) {
+            dropdown.hide();
+        } else {
+            dropdown.show();
+        }
+
+        aberto = !aberto;
+        btn.setAttribute('aria-expanded', aberto);
+    });
+
+    // Fechar ao clicar fora
+    document.addEventListener('click', function (e) {
+        if (!btn.closest('.dropdown')?.contains(e.target)) {
+            dropdown.hide();
+            aberto = false;
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    // Fechar com ESC
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            dropdown.hide();
+            aberto = false;
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+
 
   })();
 </script>

@@ -98,6 +98,7 @@
   white-space: nowrap;
   flex-wrap: nowrap;
   min-width: max-content;
+  border-radius: 20px;
 
   display: inline-flex;
   align-items: center;
@@ -116,6 +117,25 @@
   box-shadow: 0 6px 16px rgba(59, 47, 47, 0.25);
   transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease;
 }
+
+.bc-btn-Ver{
+  font-weight: 500;
+}
+
+.bc-btn-Ver:hover{
+  opacity: 0.8;
+}
+
+.bc-btn-conta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(59, 47, 47, 0.35);
+
+  background: linear-gradient(135deg, #e0cbb8af, #cdb49fb2);
+  color: #ffffff !important;
+}
+
+
+
 
 .bc-btn i {
   font-size: 0.95rem;
@@ -142,4 +162,98 @@
 .bc-btn.bc-btn--ghost:hover {
   background: rgba(230, 162, 60, 0.18);
   color: #ffffff !important;
+}
+
+
+
+/* Remove a seta padrão do Bootstrap dropdown para usarmos o nosso ícone fa-chevron */
+.custom-nav-btn::after {
+    display: none !important;
+}
+
+.custom-nav-btn:hover {
+    background-color: #ffffff !important;
+    /* border-color: #6e6961 !important;  */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-1px);
+}
+
+.custom-nav-btn:active {
+    transform: translateY(0);
+}
+
+/* Estilização suave dos itens do menu */
+.dropdown-item {
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #fff9f0; /* Um creme bem clarinho */
+    color: #4b2c20;
+}
+
+
+/* Classe para o efeito de subir */
+.btn-lift {
+    transition: all 0.2s ease-in-out !important;
+}
+
+.btn-lift:hover {
+    transform: translateY(-3px) !important; /* Sobe 3 pixels */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important; /* Sombra fica mais forte ao subir */
+}
+
+.btn-lift:active {
+    transform: translateY(-1px) !important; /* Abaixa levemente ao clicar */
+}
+
+/* Estilo da Seta */
+.seta-menu {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Quando o dropdown estiver ativo, a seta gira */
+/* O Bootstrap aplica 'show' no botão ou no menu via JS */
+.btn-light[aria-expanded="true"] .seta-menu {
+    transform: rotate(180deg);
+}
+
+/* Forçar o menu a aparecer acima sem a classe dropup */
+.dropdown-menu-custom {
+    bottom: 120% !important; /* Joga para cima do botão */
+    top: auto !important;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+
+/* Estilo unificado para os botões do Navbar */
+.bc-nav-btn {
+    border-radius: 50px !important; /* Estilo pílula igual ao dropdown */
+    padding: 8px 20px !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.15); /* Branco semitransparente sobre o marrom */
+    color: white;
+    white-space: nowrap;
+}
+
+/* Efeito Hover: Ficar igual ao botão 'teste' da imagem */
+.bc-nav-btn:hover {
+    background-color: #ffffff !important;
+    color: #4b2c20 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Seta do Dropdown: Rotação suave */
+.btn-check:checked + .bc-nav-btn i.fa-chevron-down,
+.show > .bc-nav-btn i.fa-chevron-down {
+    transform: rotate(180deg);
 }
