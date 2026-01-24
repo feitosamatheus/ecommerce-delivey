@@ -1,1 +1,141 @@
-<h1>aqui vai ter informações da conta</h1>
+<style>
+    .nav-pills .nav-link {
+        color: #3c1e0a;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: #3c1e0a !important;
+        color: #fff !important;
+    }
+
+    .nav-pills .nav-link:hover:not(.active) {
+        background-color: #f8f1eb;
+        color: #d4a017;
+    }
+
+    .badge.bg-success {
+        background-color: #28a745 !important;
+    }
+</style>
+<div class="row g-0">
+    <div class="col-md-3 border-end bg-light">
+        <div class="p-4">
+            <h5 class="fw-bold mb-4" style="color: #3c1e0a;">Minha Conta</h5>
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active text-start mb-2 py-3 d-flex align-items-center" id="v-pills-pedidos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-pedidos" type="button" role="tab">
+                    <i class="fa fa-shopping-bag me-2"></i> Meus Pedidos
+                </button>
+                <button class="nav-link text-start mb-2 py-3 d-flex align-items-center" id="v-pills-rastreio-tab" data-bs-toggle="pill" data-bs-target="#v-pills-rastreio" type="button" role="tab">
+                    <i class="fa fa-truck me-2"></i> Acompanhar Pedido
+                </button>
+                <button class="nav-link text-start mb-2 py-3 d-flex align-items-center" id="v-pills-senha-tab" data-bs-toggle="pill" data-bs-target="#v-pills-senha" type="button" role="tab">
+                    <i class="fa fa-lock me-2"></i> Alterar Senha
+                </button>
+                <hr>
+                <button class="nav-link text-danger text-start py-3" onclick="logout()">
+                    <i class="fa fa-sign-out-alt me-2"></i> Sair
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-9">
+        <div class="tab-content p-4" id="v-pills-tabContent">
+            
+            <div class="tab-pane fade show active" id="v-pills-pedidos" role="tabpanel">
+                <h5 class="fw-bold mb-3">Histórico de Pedidos</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Pedido</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-pedidos">
+                            <tr>
+                                <td>#1234</td>
+                                <td>12/10/2025</td>
+                                <td><span class="badge bg-success">Concluído</span></td>
+                                <td>R$ 150,00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-rastreio" role="tabpanel">
+                <h5 class="fw-bold mb-3">Rastrear Entrega</h5>
+                <div class="input-group mb-4">
+                    <input type="text" class="form-control" placeholder="Digite o número do pedido">
+                    <button class="btn text-white" style="background-color: #3c1e0a;">Buscar</button>
+                </div>
+                <div class="tracking-list py-3">
+                    <div class="d-flex mb-3">
+                        <div class="text-center me-3">
+                            <i class="fa fa-check-circle text-success"></i>
+                        </div>
+                        <div>
+                            <p class="mb-0 fw-bold">Pedido Confirmado</p>
+                            <small class="text-muted">12/10/2025 - 10:30</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-senha" role="tabpanel">
+                <h5 class="fw-bold mb-3">Segurança da Conta</h5>
+                <form id="formAlterarSenha">
+                    <div class="mb-3">
+                        <label class="form-label">Senha Atual</label>
+                        <input type="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nova Senha</label>
+                        <input type="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Confirmar Nova Senha</label>
+                        <input type="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn text-white w-100" style="background-color: #3c1e0a;">Atualizar Senha</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    const modalDialog = document.querySelector('#modalContaCliente .modal-dialog');
+    if (modalDialog) {
+        modalDialog.classList.remove('modal-lg');
+        modalDialog.classList.add('modal-xl');
+    }
+
+    // Ao abrir o modal, carregar pedidos do cliente
+    document.getElementById('modalContaCliente').addEventListener('shown.bs.modal', function () {
+        carregarPedidos();
+    });
+
+    async function carregarPedidos() {
+        try {
+            const response = await fetch('/Cliente/ObterPedidos');
+            const pedidos = await response.json();
+            
+            // Aqui você faria o loop para popular a tabela #lista-pedidos
+        } catch (error) {
+            console.error("Erro ao carregar pedidos:", error);
+        }
+    }
+
+    function logout() {
+        if(confirm("Deseja realmente sair?")) {
+            window.location.href = '/Cliente/Logout';
+        }
+    }
+</script>

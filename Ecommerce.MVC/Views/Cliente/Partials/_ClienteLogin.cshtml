@@ -4,13 +4,25 @@
     }
 </style>
 <div class="row g-0" id="auth-container">
-    <div class="d-flex justify-content-end">
-        <button type="button" 
-                onclick="fecharModal()" 
-                class="btn-close-custom" 
-                aria-label="Close">&times;</button>
+    <div class="d-flex align-items-center  mb-2">
+        <button type="button"
+                id="btnVoltar"
+                onclick="voltarModal()"
+                class="btn-close-custom"
+                aria-label="Voltar"
+                style="display: none;">
+            <i class="fa fa-arrow-left" style="font-size: 1.2rem;"></i>
+        </button>
+
+        <button type="button"
+                onclick="fecharModal()"
+                class="btn-close-custom ms-auto"
+                aria-label="Close">
+            &times;
+        </button>
     </div>
-    <div class="col-md-5 d-none d-md-block" id="img-banner" style="background: url('../../img/banner_lorem_login.png') center/cover; min-height: 480px;">
+
+    <div class="col-md-5 d-none d-md-block mb-4" id="img-banner" style="background: url('../../img/banner_lorem_login.png') center/cover; min-height: 480px;">
         <div class="h-100 w-100" style="background: rgba(60, 30, 10, 0.4);"></div>
     </div>
     <div class="col-md-7 px-2 px-md-5 py-3" id="login-form">
@@ -57,7 +69,7 @@
             </form>
         </div>
     </div>
-    <div class="col-12 px-2 px-md-5 py-3" id="register-form" style="display: none;">
+    <div class="col-12 px-2 px-md-5 py-3 pt-0" id="register-form" style="display: none;">
         <div class="text-center mb-2" >
             <img src="~/img/logo4.png" alt="Logo" style="width: 80px;">
         </div>
@@ -171,6 +183,8 @@
             forgotForm.style.display = 'none';
             registerForm.style.display = 'block';
             imgBanner.classList.replace('d-md-block', 'd-md-none');
+
+            document.getElementById('btnVoltar').style.display = 'inline-flex';
         }
     }
 
@@ -178,17 +192,22 @@
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('register-form').style.display = 'none';
         document.getElementById('forgot-password-form').style.display = 'block';
+
+        document.getElementById('btnVoltar').style.display = 'inline-flex';
     }
 
     function showLogin() {
         document.getElementById('login-form').style.display = 'block';
         document.getElementById('register-form').style.display = 'none';
         document.getElementById('forgot-password-form').style.display = 'none';
-        
+
+        document.getElementById('btnVoltar').style.display = 'none';
+
         const imgBanner = document.getElementById('img-banner');
         imgBanner.classList.remove('d-md-none');
         imgBanner.classList.add('d-md-block');
     }
+
 
     function fecharModal() {
         const modalElement = document.getElementById('modalContaCliente');
@@ -198,6 +217,10 @@
         }
 
         setTimeout(showLogin, 500);
+    }
+
+    function voltarModal() {
+        showLogin();
     }
 
     document.querySelector('#register-form form').addEventListener('submit', async function (e) {

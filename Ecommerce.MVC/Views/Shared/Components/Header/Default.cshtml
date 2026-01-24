@@ -31,7 +31,7 @@
             </div>
 
             <div class="col-12 col-md-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
-                <button type="button" class="btn bc-nav-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerMais">
+                <button type="button" id="btn-acompanhar-pedido" class="btn bc-nav-btn shadow-sm">
                     <i class="fa-solid fa-location-dot me-2"></i>
                     Acompanhar pedido
                 </button>
@@ -56,8 +56,8 @@
                             <i class="fa-solid fa-chevron-down ms-2 seta-menu" style="font-size: 0.7rem; opacity: 0.6;"></i> 
                         </button>
 
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" 
-                            style="border-radius: 15px; min-width: 220px; background-color: #ffffff; bottom: 115% !important; top: auto !important; margin:9px 0px 0px 0px !important;">
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" 
+                            style="border-radius: 15px; min-width: 220px; background-color: #ffffff; bottom: 115% !important; top: auto !important; margin-top: 8px;">
                             
                             <li class="px-3 py-3">
                                 <div class="d-flex flex-column">
@@ -116,28 +116,75 @@
 <script>
   (function () {
      function abrirModalConta() {
-    const $body = $('#modalContaClienteBody');
-    const modalEl = document.getElementById('modalContaCliente');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        const $body = $('#modalContaClienteBody');
+        const modalEl = document.getElementById('modalContaCliente');
 
-    $body.html('<div class="text-muted p-3">Carregando...</div>');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
-    $.get('/Cliente/ContaClienteModal')
-      .done(function (html) {
-        $body.html(html);
-        modal.show();
-      })
-      .fail(function () {
-        $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
-        modal.show();
-      });
-  }
+        $body.html('<div class="text-muted p-3">Carregando...</div>');
 
+        $.get('/Cliente/ContaClienteModal')
+        .done(function (html) {
+            $body.html(html);
+            modal.show();
+        })
+        .fail(function () {
+            $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+            modal.show();
+        });
+    }
+
+    function abrirModalAcompanhamento() {
+        const $bodyAcompanhamento = $('#modalAcompanhamentoClienteBody')
+        const modalElAcompanhamento = document.getElementById('modalAcompanhamentoCliente');
+
+        const modalAcompanhamento = bootstrap.Modal.getOrCreateInstance(modalElAcompanhamento);
+
+        $bodyAcompanhamento.html('<div class="text-muted p-3">Carregando...</div>');
+
+        $.get('/Cliente/AcompanhamentoClienteModal')
+        .done(function (html) {
+            $bodyAcompanhamento.html(html);
+            modalAcompanhamento.show();
+        })
+        .fail(function () {
+            $bodyAcompanhamento.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+            modalAcompanhamento.show();
+        });
+    }
+
+/**
+     * NOVA LÓGICA: Transição entre Acompanhamento e Login
+     * Esta função será chamada pelo botão "Fazer Login agora" no estado deslogado do rastreio
+     */
+    window.irParaLogin = function() {
+        const modalAcompanhamentoEl = document.getElementById('modalAcompanhamentoCliente');
+        const instanciaAcompanhamento = bootstrap.Modal.getInstance(modalAcompanhamentoEl);
+
+        if (instanciaAcompanhamento) {
+            // 1. Fecha o modal de acompanhamento
+            instanciaAcompanhamento.hide();
+
+            // 2. Aguarda o evento de "hidden" (escondido) para abrir o próximo
+            // Isso evita conflitos de animação e backdrop no Bootstrap
+            modalAcompanhamentoEl.addEventListener('hidden.bs.modal', function handler() {
+                abrirModalConta(); // Abre o modal de Login
+                modalAcompanhamentoEl.removeEventListener('hidden.bs.modal', handler);
+            }, { once: true });
+        } else {
+            abrirModalConta();
+        }
+    };
+    
   // deslogado
   $(document).on('click', '#btn-abrir-login', abrirModalConta);
 
   // logado: item do dropdown
   $(document).on('click', '#btn-abrir-minha-conta', abrirModalConta);
+
+
+  $(document).on('click', '#btn-acompanhar-pedido', abrirModalAcompanhamento);
+
 
   // sair
   document.addEventListener('click', async function (e) {

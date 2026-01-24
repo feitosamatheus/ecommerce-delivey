@@ -1,0 +1,88 @@
+<div id="rastreio-container">
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="d-flex justify-content-between align-items-center p-3 border-bottom bg-white sticky-top">
+            <h5 class="fw-bold mb-0" style="color: #3c1e0a;">Meus Rastreios</h5>
+            <button type="button" class="btn-close" onclick="fecharModal()" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-3 bg-light" style="max-height: 70vh; overflow-y: auto;">
+            
+            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-radius: 12px;">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge mb-2" style="background: rgba(60, 30, 10, 0.1); color: #3c1e0a;">Pedido #5502</span>
+                            <h6 class="fw-bold mb-0">Previsão: 25 Jan 2026</h6>
+                        </div>
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Em Trânsito</span>
+                    </div>
+                </div>
+
+                <div class="card-body bg-white pt-0">
+                    <hr class="mt-0 opacity-10">
+                    <div class="tracking-list">
+                        <div class="t-step active">
+                            <div class="t-dot"><i class="fa fa-check"></i></div>
+                            <div class="t-info">
+                                <p class="mb-0 fw-bold">Pedido Confirmado</p>
+                                <small class="text-muted">22 Jan, 10:30h</small>
+                            </div>
+                        </div>
+
+                        <div class="t-step current">
+                            <div class="t-dot"><i class="fa fa-truck"></i></div>
+                            <div class="t-info">
+                                <p class="mb-0 fw-bold text-brown">Em Rota de Entrega</p>
+                                <small class="text-muted">23 Jan, 09:15h - Objeto saiu para entrega.</small>
+                            </div>
+                        </div>
+
+                        <div class="t-step">
+                            <div class="t-dot"><i class="fa fa-home"></i></div>
+                            <div class="t-info">
+                                <p class="mb-0 text-muted">Entregue</p>
+                                <small class="text-muted small-text">Aguardando chegada ao destino.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-3 opacity-75" style="border-radius: 12px;">
+                 <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted d-block">Pedido #5480</small>
+                        <span class="fw-bold text-success">Entregue em 15/01</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill">Ver Detalhes</button>
+                 </div>
+            </div>
+
+        </div>
+
+        <div class="modal-footer bg-white border-top shadow-sm">
+            <button type="button" class="btn btn-outline-dark btn-sm px-4 rounded-pill" onclick="voltarModal()">Voltar</button>
+        </div>
+    }
+    else
+    {
+        <div class="text-center p-5">
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle" style="width: 80px; height: 80px;">
+                    <i class="fa fa-lock fa-2x" style="color: #d4a017;"></i>
+                </div>
+            </div>
+            <h4 class="fw-bold" style="color: #3c1e0a;">Acesso Restrito</h4>
+            <p class="text-muted mx-auto" style="max-width: 300px;">Logue na sua conta para acompanhar o status de todos os seus pedidos ativos.</p>
+            
+            <div class="d-grid gap-2 col-8 mx-auto mt-4">
+                <button type="button" class="btn text-white fw-bold py-2 shadow" 
+                        style="background-color: #3c1e0a; border-radius: 10px;" 
+                        onclick="irParaLogin()">
+                    Fazer Login agora
+                </button>
+            </div>
+        </div>
+    }
+</div>

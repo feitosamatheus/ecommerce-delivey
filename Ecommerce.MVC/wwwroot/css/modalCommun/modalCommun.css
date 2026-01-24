@@ -46,10 +46,9 @@
 }
 
 .btn-close-custom {
-    position: absolute;
     background: none;
     border: none;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     line-height: 1;
     color: #3c1e0a; 
     font-weight: bold;
@@ -69,10 +68,10 @@
     color: #d4a017;
 }
 
-body.modal-open {
+/* body.modal-open {
   overflow: auto !important;
   padding-right: 0 !important;
-}
+} */
 
 .modal-backdrop.show {
     opacity: 0.8; 

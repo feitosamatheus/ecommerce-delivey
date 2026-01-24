@@ -26,6 +26,12 @@ public class ClienteController : Controller
         return PartialView("Partials/_ClienteLogin");
     }
 
+    [HttpGet]
+    public IActionResult AcompanhamentoClienteModal()
+    {
+        return PartialView("Partials/_ClienteAcompanhamento");
+    }
+
     [HttpPost]
     public async Task<IActionResult> Registrar([FromBody] RegistrarClienteViewModel model)
     {
