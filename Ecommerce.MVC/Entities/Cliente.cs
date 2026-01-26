@@ -12,7 +12,7 @@ namespace Ecommerce.MVC.Entities;
 public class Cliente
 {
     [Key]
-    public int Id { get; set; }
+    public Guid Id { get; private set; } = Guid.NewGuid();
 
     [Required]
     [Column(TypeName = "varchar(150)")]
