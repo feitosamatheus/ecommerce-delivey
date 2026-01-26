@@ -220,9 +220,12 @@
   border-radius: 5px;
   border: 1px solid rgba(0,0,0,.05);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px;
 }
 
 .bc-product {
+   position: relative; /* garante o contexto do absolute do botão + */
+  overflow: hidden;   /* opcional: evita o botão escapar do card */
   background: #fff;
   border-radius: 10px;
   border: 1px solid rgba(0,0,0,.04);
@@ -243,14 +246,18 @@
 
 .bc-product__info {
   color: rgb(90, 90, 90) !important;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
 }
 
 .bc-product__thumb {
-  width: 86px;
-  height: 64px;
+  width: 150px;
+  height: 104px;
   border-radius: 10px;
-  background: #f0f0f0;
   flex: 0 0 auto;
+  background-size: cover;
+  background-position: center;
 }
 
 /* =========================================================
@@ -334,4 +341,85 @@
 
 .bc-cart__total {
   color: rgb(255, 207, 105);
+}
+
+/* =========================================================
+   CARD PRODUTO - VERTICAL (CARROSSEL)
+   ========================================================= */
+
+.bc-product--vertical {
+  /* display: flex; */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  cursor:pointer;
+}
+
+.bc-product--vertical .bc-product__thumb {
+  width: 100%;
+  height: 180px;
+  border-radius: 12px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.bc-product__title {
+  font-size: 0.95rem;
+  /* color: #3b2f2f; */
+  color: rgb(90, 90, 90) !important;
+  line-height: 1.3;
+}
+
+.bc-product__price {
+  font-size: 1rem;
+  /* color: #4a2a15;  */
+  color: #E6A23C; /* destaque para o preço */
+
+}
+
+.bc-product:hover .bc-product__price {
+  color: #D98C1A; /* dourado mais escuro */
+}
+/* =========================================================
+   BOTÃO ADICIONAR (+) – PALETA DO SITE
+   ========================================================= */
+
+.bc-product__add {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+
+  background-color: #4a2a15; /* dourado principal */
+  border: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #FFFFFF;
+  font-size: 14px;
+
+  box-shadow: 0 6px 14px rgba(74, 42, 21, 0.35);
+  cursor: pointer;
+
+  transition:
+    background-color .2s ease,
+    transform .15s ease,
+    box-shadow .2s ease;
+}
+
+.bc-product__add:hover {
+  background-color: #D98C1A; /* dourado mais escuro */
+  transform: scale(1.05);
+  box-shadow: 0 8px 18px rgba(74, 42, 21, 0.45);
+}
+
+.bc-product__add:active {
+  background-color: #663E1A; /* marrom do site */
+  transform: scale(0.95);
 }

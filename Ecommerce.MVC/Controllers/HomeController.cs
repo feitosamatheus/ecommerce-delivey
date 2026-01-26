@@ -1,24 +1,24 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Ecommerce.MVC.Models;
+using Ecommerce.MVC.Interfaces;
 
 namespace Ecommerce.MVC.Controllers;
 
 public class HomeController : Controller
 {
-    public IActionResult Index()
+    private readonly IProdutoService _produtoService;
+    private readonly ICategoriaService _categoriaService;
+
+    public HomeController(IProdutoService produtoService, ICategoriaService categoriaService)
     {
-        return View();
+        _produtoService = produtoService;
+        _categoriaService = categoriaService;
     }
 
-    public IActionResult Privacy()
+    public async Task<IActionResult> Index()
     {
-        return View();
-    }
-
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        var categorias = await _categoriaService.BuscarCategoriasAsync();
+        return View(new HomeViewModel { Categorias = categorias });
     }
 }

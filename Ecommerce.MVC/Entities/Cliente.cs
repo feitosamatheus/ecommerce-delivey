@@ -11,7 +11,6 @@ namespace Ecommerce.MVC.Entities;
 [Table("Clientes")]
 public class Cliente
 {
-    [Key]
     public Guid Id { get; private set; } = Guid.NewGuid();
 
     [Required]

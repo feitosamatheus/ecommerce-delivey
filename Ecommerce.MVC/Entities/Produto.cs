@@ -8,7 +8,6 @@ namespace Ecommerce.MVC.Entities;
 [Table("Produtos")]
 public class Produto
 {
-    [Key]
     public Guid Id { get; private set; } = Guid.NewGuid();
 
     [Required]
@@ -32,4 +31,6 @@ public class Produto
     // Navegação
     [ForeignKey("CategoriaId")]
     public Categoria Categoria { get; set; }
+
+    public ICollection<ProdutoAcompanhamentoCategoria> AcompanhamentoCategorias { get; set; } = new List<ProdutoAcompanhamentoCategoria>();
 }

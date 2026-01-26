@@ -1,0 +1,17 @@
+<style>
+    .spinner-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 2000; /* acima do layout, abaixo do modal */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<div id="modalSpinner" class="d-none">
+  <div class="spinner-overlay">
+    <div class="spinner-border text-light" role="status" aria-hidden="true"></div>
+  </div>
+</div>

@@ -1,5 +1,28 @@
-﻿@{
+﻿@model Ecommerce.MVC.Models.HomeViewModel
+@using Ecommerce.MVC.Entities
+@using Ecommerce.MVC.Enums
+@using System.Globalization
+
+@{
     ViewData["Title"] = "Home Page";
+}
+
+@functions {
+    // Se você quiser limitar quantidade por slide do carrossel (mantendo 3 cards por slide)
+    private static IEnumerable<List<T>> Chunk<T>(IEnumerable<T> source, int size)
+    {
+        var chunk = new List<T>(size);
+        foreach (var item in source)
+        {
+            chunk.Add(item);
+            if (chunk.Count == size)
+            {
+                yield return chunk;
+                chunk = new List<T>(size);
+            }
+        }
+        if (chunk.Count > 0) yield return chunk;
+    }
 }
 
 <div class="my-3">
@@ -21,14 +44,18 @@
 
                                 <ul class="bc-select__options">
                                     <li data-value="">Selecionar uma categoria</li>
-                                    <li data-value="A">Tipo A</li>
-                                    <li data-value="B">Tipo B</li>
+                                    @foreach (var c in Model.Categorias.OrderBy(c => c.Nome))
+                                    {
+                                        <li data-value="@c.Id">@c.Nome</li>
+                                    }
                                 </ul>
 
                                 <select name="filtroTipo" hidden>
                                     <option value="">Selecionar uma categoria</option>
-                                    <option value="A">Tipo A</option>
-                                    <option value="B">Tipo B</option>
+                                    @foreach (var c in Model.Categorias.OrderBy(c => c.Nome))
+                                    {
+                                        <option value="@c.Id">@c.Nome</option>
+                                    }
                                 </select>
                             </div>
 
@@ -51,196 +78,150 @@
                 </div>
             </div>
 
-            <!-- PAINEL + CARROSSEL -->
-            <div class="bc-panel p-3 mb-3">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h5 class="mb-0 fw-bold">CALDOS</h5>
-                </div>
 
-                <div id="carrosselCaldos" class="carousel slide mb-2" data-bs-ride="false">
-                     <!-- INDICADORES (pontinhos) -->
-                    <div class="carousel-indicators bc-carousel__indicators">
-                        <button type="button"
-                                data-bs-target="#carrosselCaldos"
-                                data-bs-slide-to="0"
-                                class="active"
-                                aria-current="true"
-                                aria-label="Slide 1"></button>
-
-                        <button type="button"
-                                data-bs-target="#carrosselCaldos"
-                                data-bs-slide-to="1"
-                                aria-label="Slide 2"></button>
-                    </div>
-                    <div class="carousel-inner">
-
-                        <div class="carousel-item active">
-                            <div class="row g-3 ">
-                                <div class="col-12 col-md-4">
-                                    <div class="bc-product p-3">
-                                        <div class="d-flex gap-3">
-                                            <div class="flex-grow-1 bc-product__info">
-                                                <div class="fw-bold">CALDO DE MANDIOCA 100ML</div>
-                                                <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                                <div class="mt-2 fw-bold">R$ 17,00</div>
-                                            </div>
-                                            <div class="bc-product__thumb"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-md-4">
-                                    <div class="bc-product p-3">
-                                        <div class="d-flex gap-3">
-                                            <div class="flex-grow-1 bc-product__info">
-                                                <div class="fw-bold">CALDO DE MANDIOCA 100ML</div>
-                                                <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                                <div class="mt-2 fw-bold">R$ 17,00</div>
-                                            </div>
-                                            <div class="bc-product__thumb"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-md-4">
-                                    <div class="bc-product p-3">
-                                        <div class="d-flex gap-3">
-                                            <div class="flex-grow-1 bc-product__info">
-                                                <div class="fw-bold">CALDO DE MANDIOCA 250ML</div>
-                                                <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                                <div class="mt-2 fw-bold">R$ 24,00</div>
-                                            </div>
-                                            <div class="bc-product__thumb"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="carousel-item">
-                            <div class="row g-3">
-                                <div class="col-12 col-md-4">
-                                    <div class="bc-product p-3">
-                                        <div class="d-flex gap-3">
-                                            <div class="flex-grow-1 bc-product__info">
-                                                <div class="fw-bold">CALDO DE MANDIOCA 300ML</div>
-                                                <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                                <div class="mt-2 fw-bold">R$ 17,00</div>
-                                            </div>
-                                            <div class="bc-product__thumb"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-md-4">
-                                    <div class="bc-product p-3">
-                                        <div class="d-flex gap-3">
-                                            <div class="flex-grow-1 bc-product__info">
-                                                <div class="fw-bold">CALDO DE MANDIOCA 450ML</div>
-                                                <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                                <div class="mt-2 fw-bold">R$ 24,00</div>
-                                            </div>
-                                            <div class="bc-product__thumb"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- CONTROLES -->
-                    <button class="carousel-control-prev bc-carousel__btn"
-                            type="button"
-                            data-bs-target="#carrosselCaldos"
-                            data-bs-slide="prev">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </button>
-
-                    <button class="carousel-control-next bc-carousel__btn"
-                            type="button"
-                            data-bs-target="#carrosselCaldos"
-                            data-bs-slide="next">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- LISTAS (mantive estrutura e cards, apenas classes) -->
-            <div class="bc-panel p-3 mb-2">
-                <h5 class="mb-3 fw-bold">CALDOS</h5>
-
-                <div class="row g-3">
-                    <div class="col-12 col-md-6">
-                        <div class="bc-product p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1 bc-product__info">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 500ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 17,00</div>
-                                </div>
-                                <div class="bc-product__thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <div class="bc-product p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1 bc-product__info">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 750ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 24,00</div>
-                                </div>
-                                <div class="bc-product__thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <div class="bc-product p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1 bc-product__info">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 500ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 17,00</div>
-                                </div>
-                                <div class="bc-product__thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <div class="bc-product p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1 bc-product__info">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 750ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 24,00</div>
-                                </div>
-                                <div class="bc-product__thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <div class="bc-product p-3">
-                            <div class="d-flex gap-3">
-                                <div class="flex-grow-1 bc-product__info">
-                                    <div class="fw-bold">CALDO DE MANDIOCA 500ML</div>
-                                    <div class="text-muted small">COM CARNE, BACON E CALABRESA...</div>
-                                    <div class="mt-2 fw-bold">R$ 17,00</div>
-                                </div>
-                                <div class="bc-product__thumb"></div>
-                            </div>
+            @if (Model.Categorias.Count() <= 0)
+            {
+                <div class="bc-panel p-3 mb-3 text-center">
+                    <div class="py-4 col-12">
+                        <div class="fw-bold mb-1">Nenhum item disponível no momento</div>
+                        <div class="text-muted">
+                            Ainda não temos categorias com produtos para exibir. Volte em instantes ou tente novamente mais tarde.
                         </div>
                     </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <!-- CATEGORIAS TIPO CARROSSEL -->
+                @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Carrossel))
+                {
+                    var carouselId = $"carrossel_{categoria.Id:N}";
+                    var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
+                    var slides = Chunk(produtos, 3).ToList(); // 3 itens por slide (como seu layout atual)
 
-        </div>
+                    <div class="bc-panel p-3 mb-3" data-categoria-id="@categoria.Id">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h5 class="mb-0 fw-bold">@categoria.Nome</h5>
+                        </div>
 
-        <!-- CARRINHO -->
+                        <div id="@carouselId" class="carousel slide mb-2" data-bs-ride="false">
+
+                            <!-- INDICADORES -->
+                            @if (slides.Count > 1)
+                            {
+                                <div class="carousel-indicators bc-carousel__indicators">
+                                    @for (int i = 0; i < slides.Count; i++)
+                                    {
+                                        <button type="button"
+                                                data-bs-target="#@carouselId"
+                                                data-bs-slide-to="@i"
+                                                class="@(i == 0 ? "active" : "")"
+                                                aria-current="@(i == 0 ? "true" : "false")"
+                                                aria-label="Slide @(i + 1)"></button>
+                                    }
+                                </div>
+                            }
+
+                            <div class="carousel-inner">
+                                @for (int i = 0; i < slides.Count; i++)
+                                {
+                                    var slide = slides[i];
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <div class="row g-3">
+                                            @foreach (var p in slide)
+                                            {
+                                                <div class="col-12 col-md-4 bc-carousel-col">
+                                                    <div class="bc-product bc-product--vertical bc-prod-col p-3" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                                                        <div class="bc-product__thumb"
+                                                            style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) 
+                                                                    ? "" 
+                                                                    : $"background-image:url('{p.ImagemUrl}')")">
+                                                        </div>
+
+                                                        <div class="bc-product__info mt-3 text-center">
+                                                            <div class="bc-product__title fw-bold">
+                                                                @p.Nome
+                                                            </div>
+
+                                                            <div class="bc-product__price fw-bold mt-1">
+                                                                @p.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                                            </div>
+                                                        </div>
+                                                        <!-- BOTÃO + -->
+                                                        <button type="button" class="bc-product__add" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                                            <i class="fa-solid fa-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- CONTROLES -->
+                            @if (slides.Count > 1)
+                            {
+                                <button class="carousel-control-prev bc-carousel__btn"
+                                        type="button"
+                                        data-bs-target="#@carouselId"
+                                        data-bs-slide="prev">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+
+                                <button class="carousel-control-next bc-carousel__btn"
+                                        type="button"
+                                        data-bs-target="#@carouselId"
+                                        data-bs-slide="next">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+
+            <!-- CATEGORIAS TIPO LISTA/BLOCO -->
+            @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Bloco))
+            {
+                var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
+
+                <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id">
+                    <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
+
+                    <div class="row g-3">
+                        @foreach (var p in produtos)
+                        {
+                            <div class="col-12 col-md-6 bc-prod-col">
+                                <div class="bc-product p-3 bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                                    <div class="d-flex gap-3">
+                                        <div class="flex-grow-1 bc-product__info">
+                                            <div class="fw-bold">@p.Nome</div>
+                                            @if (!string.IsNullOrWhiteSpace(p.Descricao))
+                                            {
+                                                <div class="text-muted small">
+                                                    @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
+                                                </div>
+                                            }
+                                            <div class="mt-2 fw-bold bc-product__price">@p.Preco.ToString("C", new CultureInfo("pt-BR"))</div>
+                                        </div>
+
+                                        <div class="bc-product__thumb"
+                                                style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                        </div>
+                                    </div>
+                                    <button type="button" class="bc-product__add" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                                <!-- BOTÃO + -->
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }  
+    </div>
+    <!-- CARRINHO -->
         <div class="col-12 col-lg-3">
             <div class="bc-panel p-3 bc-cart bc-cart--sticky">
                 <div class="d-flex align-items-center justify-content-between mb-2">
@@ -277,105 +258,183 @@
                 </button>
             </div>
         </div>
-
-    </div>
 </div>
-
+<div id="modalHost"></div>
 <script>
+     
 (function () {
-  // Sticky do filtro
-  const filtro = document.querySelector('.bc-filter');
-  if (!filtro) return;
+    const spinner = document.getElementById('modalSpinner');
 
-  const offsetTop = filtro.offsetTop;
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > offsetTop - 15) {
-      filtro.classList.add('is-sticky');
-    } else {
-      filtro.classList.remove('is-sticky');
+    function showSpinner() {
+    spinner?.classList.remove('d-none');
     }
-  });
 
-  // Busca por texto (toggle)
-  const btnPesquisar = document.getElementById('btnPesquisar');
-  const btnFecharBusca = document.getElementById('btnFecharBusca');
-  const filtroCategoria = document.getElementById('filtroCategoria');
-  const filtroTexto = document.getElementById('filtroTexto');
-  const inputBusca = document.getElementById('filtroNome');
-
-  let modoBuscaTexto = false;
-
-  function abrirBuscaTexto() {
-    filtroCategoria.classList.add('d-none');
-    filtroTexto.classList.remove('d-none');
-    btnPesquisar.classList.add('d-none');
-    modoBuscaTexto = true;
-    inputBusca.focus();
-  }
-
-  function fecharBuscaTexto() {
-    filtroTexto.classList.add('d-none');
-    filtroCategoria.classList.remove('d-none');
-    btnPesquisar.classList.remove('d-none');
-    modoBuscaTexto = false;
-    inputBusca.value = '';
-  }
-
-  btnPesquisar?.addEventListener('click', () => {
-    if (!modoBuscaTexto) {
-      abrirBuscaTexto();
-      return;
+    function hideSpinner() {
+    spinner?.classList.add('d-none');
     }
-    console.log('Buscar por:', inputBusca.value);
-  });
 
-  btnFecharBusca?.addEventListener('click', fecharBuscaTexto);
+    const filtro = document.querySelector('.bc-filter');
+    if (!filtro) return;
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modoBuscaTexto) {
-      fecharBuscaTexto();
-    }
-  });
+    const offsetTop = filtro.offsetTop;
 
-  // Select custom (delegação + 1 click global)
-  const selects = Array.from(document.querySelectorAll('.bc-select'));
-
-  function closeAllSelects(except = null) {
-    selects.forEach(s => {
-      if (s !== except) s.classList.remove('is-open');
-    });
-  }
-
-  selects.forEach(select => {
-    const trigger = select.querySelector('.bc-select__trigger');
-    const options = Array.from(select.querySelectorAll('.bc-select__options li'));
-    const valueSpan = select.querySelector('.bc-select__value');
-    const nativeSelect = select.querySelector('select');
-
-    trigger?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const willOpen = !select.classList.contains('is-open');
-      closeAllSelects(select);
-      select.classList.toggle('is-open', willOpen);
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > offsetTop - 15) filtro.classList.add('is-sticky');
+        else filtro.classList.remove('is-sticky');
     });
 
-    options.forEach(option => {
-      option.addEventListener('click', (e) => {
+    const btnPesquisar = document.getElementById('btnPesquisar');
+    const btnFecharBusca = document.getElementById('btnFecharBusca');
+    const filtroCategoria = document.getElementById('filtroCategoria');
+    const filtroTexto = document.getElementById('filtroTexto');
+    const inputBusca = document.getElementById('filtroNome');
+
+    let modoBuscaTexto = false;
+
+    function abrirBuscaTexto() {
+        filtroCategoria?.classList.add('d-none');
+        filtroTexto?.classList.remove('d-none');
+        btnPesquisar?.classList.add('d-none');
+        modoBuscaTexto = true;
+        inputBusca?.focus();
+    }
+
+    function fecharBuscaTexto() {
+        filtroTexto?.classList.add('d-none');
+        filtroCategoria?.classList.remove('d-none');
+        btnPesquisar?.classList.remove('d-none');
+        modoBuscaTexto = false;
+
+        if (inputBusca) {
+        inputBusca.value = '';
+        // dispara evento para quem estiver ouvindo
+        inputBusca.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
+    btnPesquisar?.addEventListener('click', () => {
+        if (!modoBuscaTexto) abrirBuscaTexto();
+        else inputBusca?.focus();
+    });
+
+    btnFecharBusca?.addEventListener('click', fecharBuscaTexto);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modoBuscaTexto) fecharBuscaTexto();
+    });
+
+    const selects = Array.from(document.querySelectorAll('.bc-select'));
+
+    function closeAllSelects(except = null) {
+        selects.forEach(s => {
+        if (s !== except) s.classList.remove('is-open');
+        });
+    }
+
+    selects.forEach(select => {
+        const trigger = select.querySelector('.bc-select__trigger');
+        const options = Array.from(select.querySelectorAll('.bc-select__options li'));
+        const valueSpan = select.querySelector('.bc-select__value');
+        const nativeSelect = select.querySelector('select');
+
+        trigger?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = !select.classList.contains('is-open');
+        closeAllSelects(select);
+        select.classList.toggle('is-open', willOpen);
+        });
+
+        options.forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            options.forEach(o => o.classList.remove('is-selected'));
+            option.classList.add('is-selected');
+
+            if (valueSpan) valueSpan.textContent = option.textContent;
+
+            // Atualiza o <select> hidden e dispara change (para sua futura integração)
+            if (nativeSelect) {
+            nativeSelect.value = option.dataset.value || '';
+            nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            select.classList.remove('is-open');
+        });
+        });
+    });
+
+    document.addEventListener('click', () => closeAllSelects());
+
+    const selectNative = document.querySelector('#filtroCategoria select[name="filtroTipo"]');
+
+    selectNative?.addEventListener('change', () => {
+        // console.log('Categoria selecionada:', selectNative.value);
+    });
+
+    inputBusca?.addEventListener('input', () => {
+        // console.log('Texto digitado:', inputBusca.value);
+    });
+
+    const host = document.getElementById('modalHost');
+
+    async function abrirModalProduto(produtoId) {
+        if (!host) return;
+
+        // Remove modal anterior
+        const old = document.getElementById('modalAddProduto');
+        if (old) old.remove();
+
+        try {
+            showSpinner();
+
+            const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!resp.ok) {
+            throw new Error(`Erro HTTP ${resp.status}`);
+            }
+
+            const html = await resp.text();
+            host.insertAdjacentHTML('beforeend', html);
+
+            const modalEl = document.getElementById('modalAddProduto');
+            if (!modalEl) return;
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+            modalEl.addEventListener('hidden.bs.modal', () => {
+            modalEl.remove();
+            }, { once: true });
+
+            modal.show();
+
+        } catch (err) {
+            console.error('Erro ao carregar modal:', err);
+            alert('Não foi possível carregar o produto. Tente novamente.');
+        } finally {
+            hideSpinner();
+        }
+    }
+
+
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.bc-product__add');
+        if (!btn) return;
+
+        e.preventDefault();
         e.stopPropagation();
 
-        options.forEach(o => o.classList.remove('is-selected'));
-        option.classList.add('is-selected');
+        const produtoId = btn.dataset.produtoId;
+        if (!produtoId) return;
 
-        valueSpan.textContent = option.textContent;
-
-        if (nativeSelect) nativeSelect.value = option.dataset.value || '';
-
-        select.classList.remove('is-open');
-      });
+        abrirModalProduto(produtoId);
     });
-  });
-
-  document.addEventListener('click', () => closeAllSelects());
 })();
 </script>
+
+
+
+

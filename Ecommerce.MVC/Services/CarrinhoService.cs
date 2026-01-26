@@ -1,0 +1,108 @@
+using Ecommerce.MVC.Config;
+using Ecommerce.MVC.Entities;
+using Ecommerce.MVC.Helpers;
+using Ecommerce.MVC.Interfaces;
+using Ecommerce.MVC.Models.Produtos;
+using Microsoft.EntityFrameworkCore;
+
+public class CarrinhoService : ICarrinhoService
+{
+    private readonly DatabaseContext _db;
+
+    public CarrinhoService(DatabaseContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<Carrinho> ObterOuCriarCarrinhoAsync(HttpContext http, CancellationToken ct = default)
+    {
+        var token = CartTokenHelper.GetOrCreateToken(http);
+
+        var carrinho = await _db.Carrinhos
+            .Include(c => c.Itens).ThenInclude(i => i.Acompanhamentos)
+            .FirstOrDefaultAsync(c => c.Token == token, ct);
+
+        if (carrinho != null) return carrinho;
+
+        carrinho = new Carrinho { Token = token, UpdatedAtUtc = DateTime.UtcNow };
+        _db.Carrinhos.Add(carrinho);
+        await _db.SaveChangesAsync(ct);
+
+        return carrinho;
+    }
+
+    public async Task<Carrinho> AdicionarAsync(HttpContext http, AdicionarProdutoCarrinhoViewModel req, CancellationToken ct = default)
+    {
+        if (req.ProdutoId == Guid.Empty) throw new InvalidOperationException("Produto inválido.");
+        if (req.Quantidade < 1) req.Quantidade = 1;
+
+        var carrinho = await ObterOuCriarCarrinhoAsync(http, ct);
+
+        // Carrega o produto com categorias e acompanhamentos necessários para validar/snapshot
+        var produto = await _db.Set<Produto>()
+            .Include(p => p.AcompanhamentoCategorias)
+                .ThenInclude(pc => pc.Categoria)
+                    .ThenInclude(cat => cat.Acompanhamentos)
+            .FirstOrDefaultAsync(p => p.Id == req.ProdutoId, ct);
+
+        if (produto == null) throw new InvalidOperationException("Produto não encontrado.");
+
+        // Validação mínima: acompanhamentos precisam pertencer ao produto
+        var categoriasDoProduto = produto.AcompanhamentoCategorias
+            .Select(x => x.Categoria)
+            .GroupBy(c => c.Id)
+            .Select(g => g.First())
+            .ToDictionary(c => c.Id);
+
+        // (Opcional) valida min/max por categoria usando req.Acompanhamentos
+        foreach (var cat in categoriasDoProduto.Values)
+        {
+            var selecionados = req.Acompanhamentos.Count(a => a.CategoriaId == cat.Id);
+            if (cat.Obrigatorio && selecionados < cat.MinSelecionados)
+                throw new InvalidOperationException($"Categoria '{cat.Nome}' exige pelo menos {cat.MinSelecionados} seleção(ões).");
+
+            if (cat.MaxSelecionados > 0 && selecionados > cat.MaxSelecionados)
+                throw new InvalidOperationException($"Categoria '{cat.Nome}' permite no máximo {cat.MaxSelecionados} seleção(ões).");
+        }
+
+        // Monta snapshot do item
+        var item = new CarrinhoItem
+        {
+            CarrinhoId = carrinho.Id,
+            ProdutoId = produto.Id,
+            ProdutoNomeSnapshot = produto.Nome,
+            PrecoBaseSnapshot = produto.Preco,
+            Quantidade = req.Quantidade,
+            Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim()
+        };
+
+        // Snapshot dos acompanhamentos selecionados
+        foreach (var sel in req.Acompanhamentos)
+        {
+            if (!categoriasDoProduto.TryGetValue(sel.CategoriaId, out var cat))
+                throw new InvalidOperationException("Categoria inválida para este produto.");
+
+            var acomp = cat.Acompanhamentos.FirstOrDefault(a => a.Id == sel.AcompanhamentoId && a.Ativo);
+            if (acomp == null)
+                throw new InvalidOperationException("Acompanhamento inválido ou inativo.");
+
+            item.Acompanhamentos.Add(new CarrinhoItemAcompanhamento
+            {
+                AcompanhamentoId = acomp.Id,
+                CategoriaId = cat.Id,
+                NomeSnapshot = acomp.Nome,
+                PrecoSnapshot = acomp.Preco
+            });
+        }
+
+        _db.CarrinhoItems.Add(item);
+
+        carrinho.UpdatedAtUtc = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+
+        // Retorna carrinho atualizado
+        return await _db.Carrinhos
+            .Include(c => c.Itens).ThenInclude(i => i.Acompanhamentos)
+            .FirstAsync(c => c.Id == carrinho.Id, ct);
+    }
+}

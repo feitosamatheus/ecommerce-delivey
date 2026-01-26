@@ -18,7 +18,7 @@ public class ContextFactory : IDesignTimeDbContextFactory<DatabaseContext>
     public DatabaseContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<DatabaseContext>();
-        optionsBuilder.UseNpgsql("Host=ep-patient-tooth-aepjcu1a-pooler.c-2.us-east-2.aws.neon.tech; Database=neondb; Username=neondb_owner; Password=npg_FzTjIn9pRlr2; SSL Mode=VerifyFull; Channel Binding=Require;");
+        optionsBuilder.UseNpgsql("Host=ep-restless-bar-ahnlpuzt-pooler.c-3.us-east-1.aws.neon.tech; Database=ecommerce; Username=neondb_owner; Password=npg_4duekG1SxqcV; SSL Mode=VerifyFull; Channel Binding=Require;");
 
         return new DatabaseContext(optionsBuilder.Options);
     }

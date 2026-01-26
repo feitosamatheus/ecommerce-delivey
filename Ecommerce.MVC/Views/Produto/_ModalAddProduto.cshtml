@@ -1,0 +1,194 @@
+@using System.Globalization
+@using Ecommerce.MVC.Entities
+@model Produto
+
+<div class="modal fade bc-modal--animated" id="modalAddProduto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0" style="border-radius: 12px; overflow: hidden; max-height: 90vh;">
+
+            <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
+                <button type="button" onclick="fecharModal()" class="btn-close-custom shadow-sm bg-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    &times;
+                </button>
+            </div>
+
+            <div class="modal-body p-0" style="overflow-y: auto;">
+                <div class="row g-0">
+                    <div class="col-12 col-md-6">
+                        <img src="@Model.ImagemUrl" alt="@Model.Nome" class="img-fluid w-100" style="height: 300px; object-fit: cover;">
+                    </div>
+
+                    <div class="col-12 col-md-6 p-4">
+                        <h4 class="fw-bold mb-1" style="color: #3c1e0a;">@Model.Nome</h4>
+                        <p class="text-muted small mb-3">@Model.Descricao</p>
+
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="fw-bold fs-5" style="color: #3c1e0a;">
+                                @Model.Preco.ToString("C", new CultureInfo("pt-BR"))
+                            </span>
+                        </div>
+
+                        <!-- hidden base -->
+                        <input type="hidden" id="modalProdutoId" value="@Model.Id" />
+                        <input type="hidden" id="modalPrecoBase" value="@Model.Preco.ToString(CultureInfo.InvariantCulture)" />
+
+                        <!-- =========================
+                             CATEGORIAS DE ACOMPANHAMENTO (via entidade)
+                             Produto -> AcompanhamentoCategorias (join) -> Categoria -> Acompanhamentos
+                             ========================= -->
+                        @if (Model.AcompanhamentoCategorias?.Any() == true)
+                        {
+                            <div class="mt-2">
+                                @foreach (var pc in Model.AcompanhamentoCategorias
+                                    .OrderBy(x => x.Categoria.Ordem)
+                                    .ThenBy(x => x.Categoria.Nome))
+                                {
+                                    var cat = pc.Categoria;
+
+                                    var tipoSelecao = (cat.MaxSelecionados <= 1) ? "radio" : "checkbox";
+                                    var requiredLabel = cat.Obrigatorio ? "Obrigatório" : "Opcional";
+                                    var inputName = $"acomp_{cat.Id:N}";
+
+                                    <div class="mb-3 p-3 rounded-3" style="background: #f7f7f7;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="pe-3">
+                                                <div class="fw-bold" style="color:#3c1e0a;">@cat.Nome</div>
+
+                                                <div class="text-muted small">
+                                                    @requiredLabel
+                                                    @if (cat.MinSelecionados > 0)
+                                                    {
+                                                        <span> • Mín. @cat.MinSelecionados</span>
+                                                    }
+                                                    @if (cat.MaxSelecionados > 0)
+                                                    {
+                                                        <span> • Máx. @cat.MaxSelecionados</span>
+                                                    }
+                                                </div>
+
+                                                @if (!string.IsNullOrWhiteSpace(cat.Descricao))
+                                                {
+                                                    <div class="text-muted small">@cat.Descricao</div>
+                                                }
+                                            </div>
+
+                                            <span class="badge rounded-pill" style="background:#3c1e0a; color:#fff;">
+                                                @requiredLabel
+                                            </span>
+                                        </div>
+
+                                        <div class="mt-3"
+                                             data-acomp-categoria
+                                             data-categoria-id="@cat.Id"
+                                             data-min="@cat.MinSelecionados"
+                                             data-max="@cat.MaxSelecionados"
+                                             data-obrigatorio="@(cat.Obrigatorio ? "1" : "0")">
+
+                                            @{
+                                                var itens = (cat.Acompanhamentos ?? new List<Acompanhamento>())
+                                                    .Where(a => a.Ativo)
+                                                    .OrderBy(a => a.Ordem)
+                                                    .ThenBy(a => a.Nome)
+                                                    .ToList();
+                                            }
+
+                                            @if (itens.Any())
+                                            {
+                                                @foreach (var item in itens)
+                                                {
+                                                    <label class="d-flex justify-content-between align-items-center py-2 border-bottom"
+                                                           style="border-color: rgba(0,0,0,.06) !important; cursor:pointer;">
+                                                        <div class="pe-3">
+                                                            <div class="fw-semibold">@item.Nome</div>
+                                                            @if (!string.IsNullOrWhiteSpace(item.Descricao))
+                                                            {
+                                                                <div class="text-muted small">@item.Descricao</div>
+                                                            }
+                                                        </div>
+
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <div class="fw-bold" style="color:#3c1e0a;">
+                                                                @item.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                                            </div>
+
+                                                            <input type="@tipoSelecao"
+                                                                   name="@inputName"
+                                                                   class="form-check-input acomp-input"
+                                                                   value="@item.Id"
+                                                                   data-preco="@item.Preco.ToString(CultureInfo.InvariantCulture)"
+                                                                   data-categoria-id="@cat.Id"
+                                                                   aria-label="Selecionar @item.Nome" />
+                                                        </div>
+                                                    </label>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="text-muted small">Nenhum item disponível nesta categoria.</div>
+                                            }
+                                        </div>
+
+                                        <div class="text-danger small mt-2 d-none" data-acomp-erro="@cat.Id">
+                                            Selecione no mínimo @cat.MinSelecionados item(ns).
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- Observação -->
+                        <div class="bg-light p-3 rounded-3 mb-3">
+                            <label class="fw-bold mb-2 d-block" style="color: #3c1e0a; font-size: 0.9rem;">
+                                Alguma observação?
+                            </label>
+                            <textarea id="modalProdutoObs" class="form-control border-0 bg-white" rows="2"
+                                      placeholder="Ex: tirar cebola, maionese à parte..."
+                                      style="resize: none; font-size: 0.85rem;"></textarea>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-top p-3 bg-white">
+                <div class="container-fluid p-0">
+                    <div class="row align-items-center">
+                        <div class="col-5 col-md-4">
+                            <div class="d-flex align-items-center justify-content-between border rounded-pill px-2 py-1">
+                                <button type="button"
+                                        class="btn btn-link p-0 text-decoration-none btn-qtd"
+                                        data-delta="-1"
+                                        style="color: #d4a017; font-weight: bold; font-size: 1.2rem;">
+                                    &minus;
+                                </button>
+
+                                <input id="modalProdutoQtd" type="number" value="1" min="1"
+                                    class="form-control border-0 text-center p-0 fw-bold"
+                                    style="width: 30px; background: transparent;" readonly>
+
+                                <button type="button"
+                                        class="btn btn-link p-0 text-decoration-none btn-qtd merda"
+                                        data-delta="1"
+                                        style="color: #d4a017; font-weight: bold; font-size: 1.2rem;">
+                                    &plus;
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-7 col-md-8">
+                            <button type="button" id="btnConfirmarAddProduto"
+                                    class="btn w-100 fw-bold text-white d-flex justify-content-between align-items-center px-3 py-2"
+                                    style="background-color: #3c1e0a; border-radius: 8px;">
+                                <span>Adicionar</span>
+                                <span id="totalModal">@Model.Preco.ToString("C", new CultureInfo("pt-BR"))</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+

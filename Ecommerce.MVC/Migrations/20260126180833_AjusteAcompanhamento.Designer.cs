@@ -3,6 +3,7 @@ using System;
 using Ecommerce.MVC.Config;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ecommerce.MVC.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260126180833_AjusteAcompanhamento")]
+    partial class AjusteAcompanhamento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,7 +53,7 @@ namespace Ecommerce.MVC.Migrations
 
                     b.HasIndex("AcompanhamentoCategoriaId");
 
-                    b.ToTable("Acompanhamentos");
+                    b.ToTable("Acompanhamento");
                 });
 
             modelBuilder.Entity("Ecommerce.MVC.Entities.AcompanhamentoCategoria", b =>
@@ -79,89 +82,7 @@ namespace Ecommerce.MVC.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AcompanhamentoCategorias");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.Carrinho", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("varchar(64)");
-
-                    b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Carrinhos");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.CarrinhoItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CarrinhoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Observacao")
-                        .HasColumnType("varchar(800)");
-
-                    b.Property<decimal>("PrecoBaseSnapshot")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("ProdutoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ProdutoNomeSnapshot")
-                        .IsRequired()
-                        .HasColumnType("varchar(150)");
-
-                    b.Property<int>("Quantidade")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CarrinhoId");
-
-                    b.ToTable("CarrinhoItems");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.CarrinhoItemAcompanhamento", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AcompanhamentoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CarrinhoItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CategoriaId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("NomeSnapshot")
-                        .IsRequired()
-                        .HasColumnType("varchar(150)");
-
-                    b.Property<decimal>("PrecoSnapshot")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CarrinhoItemId");
-
-                    b.ToTable("CarrinhoItemAcompanhamentos");
+                    b.ToTable("AcompanhamentoCategoria");
                 });
 
             modelBuilder.Entity("Ecommerce.MVC.Entities.Categoria", b =>
@@ -276,28 +197,6 @@ namespace Ecommerce.MVC.Migrations
                     b.Navigation("Categoria");
                 });
 
-            modelBuilder.Entity("Ecommerce.MVC.Entities.CarrinhoItem", b =>
-                {
-                    b.HasOne("Ecommerce.MVC.Entities.Carrinho", "Carrinho")
-                        .WithMany("Itens")
-                        .HasForeignKey("CarrinhoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Carrinho");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.CarrinhoItemAcompanhamento", b =>
-                {
-                    b.HasOne("Ecommerce.MVC.Entities.CarrinhoItem", "Item")
-                        .WithMany("Acompanhamentos")
-                        .HasForeignKey("CarrinhoItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-                });
-
             modelBuilder.Entity("Ecommerce.MVC.Entities.Produto", b =>
                 {
                     b.HasOne("Ecommerce.MVC.Entities.Categoria", "Categoria")
@@ -333,16 +232,6 @@ namespace Ecommerce.MVC.Migrations
                     b.Navigation("Acompanhamentos");
 
                     b.Navigation("Produtos");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.Carrinho", b =>
-                {
-                    b.Navigation("Itens");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.CarrinhoItem", b =>
-                {
-                    b.Navigation("Acompanhamentos");
                 });
 
             modelBuilder.Entity("Ecommerce.MVC.Entities.Categoria", b =>
