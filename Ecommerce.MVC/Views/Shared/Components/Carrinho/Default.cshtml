@@ -1,0 +1,101 @@
+@using System.Globalization
+@using Ecommerce.MVC.Models.Carrinhos
+@model CarrinhoViewModel
+
+<div class="col-12 col-lg-3">
+    <div class="bc-panel p-3 bc-cart bc-cart--sticky">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h5 class="mb-0 fw-bold bc-cart__title">Carrinho</h5>
+        </div>
+
+        <hr />
+
+        @if (Model.EstaVazio)
+        {
+            <div class="bc-cart__empty py-4 text-center">
+                <div class="bc-cart__illustration mb-3"></div>
+                <div class="text-muted">Seu carrinho está vazio</div>
+            </div>
+        }
+        else
+        {
+            <ul class="list-unstyled mb-3">
+                @foreach (var item in Model.Itens)
+                {
+                    <li class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="fw-bold">@item.Nome</div>
+                                <small class="text-muted">Qtd: @item.Quantidade</small>
+                            </div>
+                            <div class="fw-bold">
+                                @item.Total.ToString("C", new System.Globalization.CultureInfo("pt-BR"))
+                            </div>
+                        </div>
+
+                        @if (item.Acompanhamentos.Any())
+                        {
+                            <ul class="list-unstyled small text-muted ms-3 mt-1">
+                                @foreach (var a in item.Acompanhamentos)
+                                {
+                                    <li>
+                                        + @a.Nome
+                                        <span class="float-end">
+                                            @a.Preco.ToString("C", new System.Globalization.CultureInfo("pt-BR"))
+                                        </span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+
+        <hr />
+
+        <div class="mb-3">
+            <div class="fw-bold mb-2">Totais</div>
+
+            <div class="d-flex justify-content-between text-muted">
+                <span>Subtotal</span>
+                <span>@Model.Subtotal.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
+            </div>
+
+            <div class="d-flex justify-content-between text-muted">
+                <span>Entrega</span>
+                <span>@Model.Entrega.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
+            </div>
+
+            <div class="d-flex justify-content-between fw-bold bc-cart__total">
+                <span>Total</span>
+                <span>@Model.Total.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
+            </div>
+        </div>
+
+        @if (true) // Aqui você manteria sua lógica de Estabelecimento Aberto
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                <button class="btn w-100 btn-primary" @(Model.EstaVazio ? "disabled" : "") 
+                        data-bs-toggle="modal" data-bs-target="#modalFinalizarPedido">
+                    FINALIZAR PEDIDO
+                </button>
+            }
+            else
+            {
+                <button type="button"
+                            class="btn btn-light d-none d-md-flex align-items-center fw-bold shadow-sm btn-lift"
+                            id="btn-abrir-login"
+                            style="color: #4b2c20; border-radius: 50px; padding: 6px 18px; white-space: nowrap; font-size: 0.9rem;"
+                            title="Entrar">
+
+                        <i class="fa-solid fa-circle-user fs-5 me-2" style="color: #4a2a15;"></i>
+                        <span class="text-truncate" style="max-width: 100px;">                    FAÇA LOGIN PARA FINALIZAR
+</span>
+                        <i class="fa-solid fa-chevron-down ms-2 small opacity-50 seta-menu"></i>
+                    </button>
+            }
+        }
+    </div>
+</div>

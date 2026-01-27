@@ -1,0 +1,54 @@
+@using System.Globalization
+a<div class="modal fade" id="modalFinalizarPedido" tabindex="-1" aria-labelledby="modalFinalizarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="modalFinalizarLabel">Finalizar Pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formFinalizarPedido">
+                    <div class="mb-4">
+                        <label class="fw-bold mb-2 d-block small uppercase text-muted">Como deseja receber?</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="tipoEntrega" id="entrega" checked>
+                            <label class="btn btn-outline-primary" for="entrega">Entrega</label>
+
+                            <input type="radio" class="btn-check" name="tipoEntrega" id="retirada">
+                            <label class="btn btn-outline-primary" for="retirada">Retirada</label>
+                        </div>
+                    </div>
+
+                    <div id="secaoEndereco" class="mb-4">
+                        <label class="fw-bold mb-2 small text-muted">Endereço de Entrega</label>
+                        <input type="text" class="form-control mb-2" placeholder="Rua, Número e Bairro" required>
+                        <input type="text" class="form-control" placeholder="Complemento (opcional)">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="fw-bold mb-2 small text-muted">Forma de Pagamento</label>
+                        <select class="form-select" required>
+                            <option value="">Selecione...</option>
+                            <option value="pix">Pix (Desconto de 5%)</option>
+                            <option value="cartao_entrega">Cartão na Entrega</option>
+                            <option value="dinheiro">Dinheiro</option>
+                        </select>
+                    </div>
+
+                    <div class="p-3 bg-light rounded shadow-sm border mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Total do pedido:</span>
+                            <span class="fw-bold text-primary">1000</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Voltar</button>
+                <button type="submit" form="formFinalizarPedido" class="btn btn-success px-4">
+                    Confirmar e Enviar Pedido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

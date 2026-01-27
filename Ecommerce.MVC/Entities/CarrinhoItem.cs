@@ -37,5 +37,20 @@ namespace Ecommerce.MVC.Entities
     public string Observacao { get; set; }
 
     public ICollection<CarrinhoItemAcompanhamento> Acompanhamentos { get; set; } = new List<CarrinhoItemAcompanhamento>();
+
+    public decimal CalcularTotalUnitario()
+    {
+        var totalAcompanhamentos =
+            Acompanhamentos?.Sum(a => a.PrecoSnapshot) ?? 0m;
+
+        return PrecoBaseSnapshot + totalAcompanhamentos;
+    }
+
+    public decimal CalcularTotal()
+    {
+        return CalcularTotalUnitario() * Quantidade;
+    }
+
+
     }
 }
