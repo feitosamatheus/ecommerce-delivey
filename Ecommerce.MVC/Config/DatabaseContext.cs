@@ -20,4 +20,8 @@ public class DatabaseContext : DbContext
     public DbSet<CarrinhoItem> CarrinhoItems { get; set; }
     public DbSet<CarrinhoItemAcompanhamento> CarrinhoItemAcompanhamentos { get; set; }
     public DbSet<ProdutoAcompanhamentoCategoria> ProdutoAcompanhamentoCategorias { get; set; }
+
+    public DbSet<Pedido> Pedidos { get; set; }
+    public DbSet<PedidoItem> PedidoItens { get; set; }
+    public DbSet<PedidoEndereco> PedidoEnderecos { get; set; }
 }

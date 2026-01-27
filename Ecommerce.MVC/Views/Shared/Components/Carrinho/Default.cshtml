@@ -77,8 +77,7 @@
         {
             if (User.Identity.IsAuthenticated)
             {
-                <button class="btn w-100 btn-primary" @(Model.EstaVazio ? "disabled" : "") 
-                        data-bs-toggle="modal" data-bs-target="#modalFinalizarPedido">
+                <button class="btn w-100 btn-primary" @(Model.EstaVazio ? "disabled" : "") data-carrinho-id="@Model.CarrinhoId" id="btnConfirmarAddProduto">
                     FINALIZAR PEDIDO
                 </button>
             }
@@ -99,3 +98,29 @@
         }
     </div>
 </div>
+
+<script>
+$(document).on('click', '#btnConfirmarAddProduto', function () {
+
+  $.ajax({
+    url: '/Pedido/ModalProduto',
+    method: 'GET',
+    success: function (html) {
+
+      $('#modalFinalizarPedidoBody').html(html);
+
+      const el = document.getElementById('modalFinalizarPedido');
+      const modal = bootstrap.Modal.getOrCreateInstance(el);
+      modal.show();
+
+      if (window.wizardInitFinalizarPedido)
+        window.wizardInitFinalizarPedido();
+    },
+    error: function (xhr) {
+      alert(xhr.responseText || 'Erro ao carregar o modal.');
+    }
+  });
+
+});
+</script>
+

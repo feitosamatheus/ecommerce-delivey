@@ -1,9 +1,9 @@
 <section class="bc-hero">
     <div class="bc-hero__banner"></div>
 
-    <header class="p-3 mx-2 mx-md-3 rounded-2 box-shadown-custom bc-hero__header">
+    <header class="p-3 mx-2 mx-md-3 box-shadown-custom bc-hero__header">
         <div class="row">
-            <div class="col-12 col-md-10 d-flex flex-column flex-md-row align-items-center gap-0 gap-md-3">
+            <div class="col-12 col-lg-10 d-flex flex-column flex-md-row align-items-center gap-0 gap-md-3">
                 <div class="w-100 d-flex justify-content-end position-absolute" style="top:35px; margin-right: 60px;">
                     <a href="/login" class="btn btn-login-icon d-flex d-md-none gap-2 text-dark">
                         <i class="fa-solid fa-bars"></i>
@@ -16,8 +16,8 @@
 
                 <div class="text-center text-md-start">
                     <h1 class="bc-hero__title mb-1">Barriga Cheia</h1>
-                    <p class="bc-hero__subtitle mb-0">Sopas & Caldos · Lanchonete</p>
-                    <small class="bc-hero__meta">
+                    <p class="bc-hero__subtitle mb-0" style="color: #e0c9a6;"><span>Sopas & Caldos</span> · <span>Lanchonete</span></p>
+                    <small class="bc-hero__meta" style="color: #e0c9a6;">
                         Olinda-PE · Rua Nilson Sabino Pinho, 222
                     </small>
 
@@ -30,7 +30,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-md-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
+            <div class="col-12 col-lg-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
                 <button type="button" id="btn-acompanhar-pedido" class="btn bc-nav-btn shadow-sm">
                     <i class="fa-solid fa-location-dot me-2"></i>
                     Acompanhar pedido
@@ -57,7 +57,7 @@
                         </button>
 
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" 
-                            style="border-radius: 15px; min-width: 220px; background-color: #ffffff; bottom: 115% !important; top: auto !important; margin-top: 8px;">
+                            style="border-radius: 15px; min-width: 250px; background-color: #ffffff; bottom: 115% !important; top: auto !important; margin-top: 8px;">
                             
                             <li class="px-3 py-3">
                                 <div class="d-flex flex-column">
@@ -69,13 +69,33 @@
                             <li><hr class="dropdown-divider my-2 opacity-50"></li>
 
                             <li>
-                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-abrir-minha-conta">
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-meus-pedidos">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
-                                        <i class="fa-solid fa-user-gear text-primary" style="font-size: 0.85rem;"></i>
+                                        <i class="fa-solid fa-basket-shopping text-secondary" style="font-size: 0.85rem;"></i>
                                     </div>
-                                    <span class="fw-semibold">Gerenciar conta</span>
+                                    <span class="fw-semibold">Meus Pedidos</span>
                                 </button>
                             </li>
+
+                            <li>
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-acompanhar-pedido-dropdown">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-location-dot text-secondary" style="font-size: 0.85rem;"></i>
+                                    </div>
+                                    <span class="fw-semibold">Acompanhar Pedido</span>
+                                </button>
+                            </li>
+
+                            <li>
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-alterar-senha">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-lock text-secondary" style="font-size: 0.85rem;"></i>
+                                    </div>
+                                    <span class="fw-semibold">Alterar Senha</span>
+                                </button>
+                            </li>
+
+                            <li><hr class="dropdown-divider my-2 opacity-50"></li>
 
                             <li>
                                 <button class="dropdown-item py-2 d-flex align-items-center rounded-3 text-danger" type="button" id="btn-sair">
@@ -107,6 +127,151 @@
                     Ver mais
                 </button>
             </div>
+        </div>
+    </header>
+</section>
+
+<section class="bc-mb-hero">
+    <div class="bc-mb-hero__banner"></div>
+    <header class="bc-mb-header">
+        <div class="container-fluid px-3">
+            <div class="d-flex align-items-center gap-3"> 
+                <div class="bc-mb-logo-wrapper">
+                    <img class="bc-mb-logo" src="~/img/logo.jpg" alt="Logo Barriga Cheia" />
+                </div>
+
+                <div class="bc-mb-info-group">
+                    <div class="d-flex align-items-baseline flex-wrap gap-2">
+                        <h1 class="bc-mb-title mb-0">Barriga Cheia</h1>
+                        
+                        <a href="javascript:void(0)" 
+                        class="text-decoration-none fw-bold ms-2" 
+                        style="color: #e0c9a6; font-size: 0.85rem; white-space: nowrap;" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#modalVerMais">
+                            Ver mais
+                        </a>
+                    </div>
+                    @* <h1 class="bc-mb-title">Barriga Cheia</h1> *@
+                    @* <p class="bc-mb-tagline">
+                        <span class="badge bc-mb-badge">Sopas & Caldos</span>
+                        <span class="bc-mb-separator">•</span>
+                        <span class="bc-mb-category">Lanchonete</span>
+                    </p> *@
+                    <div class="bc-mb-location">
+                        <i class="fa-solid fa-location-dot me-1"></i>
+                        <span>Olinda-PE · Rua Nilson Sabino Pinho, 222</span>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-start justify-content-md-end mt-md-2 align-items-end mt-3 mt-md-0 gap-3">
+                <button type="button" id="btn-acompanhar-pedido" class="btn bc-nav-btn shadow-sm">
+                    <i class="fa-solid fa-location-dot me-2"></i>
+                    Acompanhar pedido
+                </button>
+               
+                @if (ViewBag.Autenticado)
+                {
+                    <div class="dropdown d-inline-block">
+                        <button type="button"
+                                class="d-flex align-items-center fw-bold shadow-sm btn-lift"
+                                id="btn-conta-dropdown-mobile"
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false"
+                                title="Minha conta"
+                                style="color: #4b2c20; border-radius: 50px; padding: 3px 17px; border: 1px solid #eee;">
+
+                            <i class="fa-solid fa-circle-user fs-5 me-2" style="color: #4a2a15;"></i>
+                            
+                            <span class="text-truncate" style="max-width: 110px; font-size: 0.9rem;">
+                                @ViewBag.NomeCliente.Split(' ')[0]
+                            </span>
+
+                            <i class="fa-solid fa-chevron-down ms-2 seta-menu" style="font-size: 0.7rem; opacity: 0.6;"></i> 
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2"  id="menu-conta-mobile"
+                            style="border-radius: 15px; min-width: 220px; background-color: #ffffff; bottom: 115% !important; top: auto !important; margin-top: 8px;">
+                            
+                            <li class="px-3 py-3">
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold" style="font-size: 0.95rem; color: #4b2c20;">Olá, @ViewBag.NomeCliente.Split(' ')[0]!</span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">O que deseja fazer agora?</small>
+                                </div>
+                            </li>
+
+                            <li><hr class="dropdown-divider my-2 opacity-50"></li>
+
+                            <li>
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-meus-pedidos">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-basket-shopping text-secondary" style="font-size: 0.85rem;"></i>
+                                    </div>
+                                    <span class="fw-semibold">Meus Pedidos</span>
+                                </button>
+                            </li>
+
+                            <li>
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-acompanhar-pedido-dropdown">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-location-dot text-secondary" style="font-size: 0.85rem;"></i>
+                                    </div>
+                                    <span class="fw-semibold">Acompanhar Pedido</span>
+                                </button>
+                            </li>
+
+                            <li>
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-alterar-senha">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-lock text-secondary" style="font-size: 0.85rem;"></i>
+                                    </div>
+                                    <span class="fw-semibold">Alterar Senha</span>
+                                </button>
+                            </li>
+
+                            <li><hr class="dropdown-divider my-2 opacity-50"></li>
+
+                            <li>
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3 text-danger" type="button" id="btn-sair">
+                                    <div class="bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-right-from-bracket" style="font-size: 0.85rem;"></i>
+                                    </div>
+                                    <span class="fw-semibold">Sair da conta</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <button type="button"
+                            class="btn btn-light d-none d-md-flex align-items-center fw-bold shadow-sm btn-lift"
+                            id="btn-abrir-login"
+                            style="color: #4b2c20; border-radius: 50px; padding: 6px 18px; white-space: nowrap; font-size: 0.9rem;"
+                            title="Entrar">
+
+                        <i class="fa-solid fa-circle-user fs-5 me-2" style="color: #4a2a15;"></i>
+                        <span class="text-truncate" style="max-width: 100px;">Entrar</span>
+                        <i class="fa-solid fa-chevron-down ms-2 small opacity-50 seta-menu"></i>
+                    </button>
+                }
+
+
+                @* <button type="button" class="btn bc-nav-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerMais">
+                    Ver mais
+                </button> *@
+            </div
+
+            @* <div class="bc-mb-quick-actions mt-4">
+                <button type="button" id="btn-acompanhar-pedido" class="btn bc-mb-btn-glass p-2">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    Acompanhar Pedido
+                </button>
+                
+                <button type="button" class="btn bc-mb-btn-info  p-2" data-bs-toggle="modal" data-bs-target="#modalVerMais">
+                    Ver mais
+                </button>
+            </div> *@
         </div>
     </header>
 </section>
@@ -153,22 +318,15 @@
         });
     }
 
-/**
-     * NOVA LÓGICA: Transição entre Acompanhamento e Login
-     * Esta função será chamada pelo botão "Fazer Login agora" no estado deslogado do rastreio
-     */
     window.irParaLogin = function() {
         const modalAcompanhamentoEl = document.getElementById('modalAcompanhamentoCliente');
         const instanciaAcompanhamento = bootstrap.Modal.getInstance(modalAcompanhamentoEl);
 
         if (instanciaAcompanhamento) {
-            // 1. Fecha o modal de acompanhamento
             instanciaAcompanhamento.hide();
 
-            // 2. Aguarda o evento de "hidden" (escondido) para abrir o próximo
-            // Isso evita conflitos de animação e backdrop no Bootstrap
             modalAcompanhamentoEl.addEventListener('hidden.bs.modal', function handler() {
-                abrirModalConta(); // Abre o modal de Login
+                abrirModalConta(); 
                 modalAcompanhamentoEl.removeEventListener('hidden.bs.modal', handler);
             }, { once: true });
         } else {
@@ -176,50 +334,86 @@
         }
     };
     
-  // deslogado
-  $(document).on('click', '#btn-abrir-login', abrirModalConta);
+    $(document).on('click', '#btn-abrir-login', abrirModalConta);
 
-  // logado: item do dropdown
-  $(document).on('click', '#btn-abrir-minha-conta', abrirModalConta);
+    $(document).on('click', '#btn-abrir-minha-conta', abrirModalConta);
 
+    $(document).on('click', '#btn-acompanhar-pedido', function () {
+        $.ajax({
+            url: '/Pedido/AcompanhamentoCliente',
+            method: 'GET',
+            success: function (html) {
+            $('#modalAcompanhamentoClienteBody').html(html);
 
-  $(document).on('click', '#btn-acompanhar-pedido', abrirModalAcompanhamento);
-
-
-  // sair
-  document.addEventListener('click', async function (e) {
-    if (!e.target.closest('#btn-sair')) return;
-
-    const response = await fetch('/Cliente/Logout', {
-      method: 'POST',
-      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            const el = document.getElementById('modalAcompanhamentoCliente');
+            bootstrap.Modal.getOrCreateInstance(el).show();
+            },
+            error: function (xhr) {
+            alert(xhr.responseText || 'Erro ao carregar pedidos.');
+            }
+        });
     });
 
-    if (response.ok) window.location.reload();
-    else alert('Não foi possível sair. Tente novamente.');
-  });
+    document.addEventListener('click', async function (e) {
+        if (!e.target.closest('#btn-sair')) return;
 
+        const response = await fetch('/Cliente/Logout', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        if (response.ok) window.location.reload();
+        else alert('Não foi possível sair. Tente novamente.');
+    });
+
+    // Seletores
     const btn = document.getElementById('btn-conta-dropdown');
-    if (!btn) return;
+    const btnMobile = document.getElementById('btn-conta-dropdown-mobile');
 
-    const dropdown = bootstrap.Dropdown.getOrCreateInstance(btn);
+    // Instâncias separadas
+    let dropdownDesktop = btn ? bootstrap.Dropdown.getOrCreateInstance(btn) : null;
+    let dropdownMobile = btnMobile ? bootstrap.Dropdown.getOrCreateInstance(btnMobile) : null;
+
     let aberto = false;
+    let abertoMobile = false;
 
-    // Toggle no clique do botão
-    btn.addEventListener('click', function (e) {
-        e.stopPropagation();
+    // Lógica Desktop
+    if (btn) {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (aberto) dropdownDesktop.hide(); 
+            else dropdownDesktop.show();
+            
+            aberto = !aberto;
+            btn.setAttribute('aria-expanded', aberto);
+        });
+    }
 
-        if (aberto) {
-            dropdown.hide();
-        } else {
-            dropdown.show();
+    // Lógica Mobile
+    if (btnMobile) {
+        btnMobile.addEventListener('click', function (e) {
+            e.stopPropagation();
+            // Importante: Usar a instância correta (dropdownMobile)
+            if (abertoMobile) dropdownMobile.hide(); 
+            else dropdownMobile.show();
+
+            abertoMobile = !abertoMobile;
+            btnMobile.setAttribute('aria-expanded', abertoMobile);
+        });
+    }
+
+    // Fechar ambos ao clicar fora
+    document.addEventListener('click', function (e) {
+        if (dropdownDesktop && aberto) {
+            dropdownDesktop.hide();
+            aberto = false;
         }
-
-        aberto = !aberto;
-        btn.setAttribute('aria-expanded', aberto);
+        if (dropdownMobile && abertoMobile) {
+            dropdownMobile.hide();
+            abertoMobile = false;
+        }
     });
 
-    // Fechar ao clicar fora
     document.addEventListener('click', function (e) {
         if (!btn.closest('.dropdown')?.contains(e.target)) {
             dropdown.hide();
@@ -228,7 +422,6 @@
         }
     });
 
-    // Fechar com ESC
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             dropdown.hide();
@@ -236,7 +429,5 @@
             btn.setAttribute('aria-expanded', 'false');
         }
     });
-
-
   })();
 </script>

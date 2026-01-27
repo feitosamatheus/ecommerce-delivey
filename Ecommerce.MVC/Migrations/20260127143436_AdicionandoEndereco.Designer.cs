@@ -3,6 +3,7 @@ using System;
 using Ecommerce.MVC.Config;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ecommerce.MVC.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260127143436_AdicionandoEndereco")]
+    partial class AdicionandoEndereco
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -286,143 +289,6 @@ namespace Ecommerce.MVC.Migrations
                     b.ToTable("Endereco");
                 });
 
-            modelBuilder.Entity("Ecommerce.MVC.Entities.Pedido", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ClienteId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CriadoEmUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("MetodoEntrega")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Observacao")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Pagamento")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TaxaEntrega")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClienteId");
-
-                    b.ToTable("Pedidos");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.PedidoEndereco", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Bairro")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Cep")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Cidade")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Complemento")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Estado")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Logradouro")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Numero")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("PedidoId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PedidoId")
-                        .IsUnique();
-
-                    b.ToTable("PedidoEnderecos");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.PedidoItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("PedidoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("PrecoAcompanhamentosSnapshot")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("PrecoBaseSnapshot")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("ProdutoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ProdutoNomeSnapshot")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Quantidade")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("TotalLinha")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PedidoId");
-
-                    b.ToTable("PedidoItens");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.PedidoItemAcompanhamento", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AcompanhamentoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CategoriaId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("NomeSnapshot")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("PedidoItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("PrecoSnapshot")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PedidoItemId");
-
-                    b.ToTable("PedidoItemAcompanhamento");
-                });
-
             modelBuilder.Entity("Ecommerce.MVC.Entities.Produto", b =>
                 {
                     b.Property<Guid>("Id")
@@ -511,50 +377,6 @@ namespace Ecommerce.MVC.Migrations
                     b.Navigation("Cliente");
                 });
 
-            modelBuilder.Entity("Ecommerce.MVC.Entities.Pedido", b =>
-                {
-                    b.HasOne("Ecommerce.MVC.Entities.Cliente", "Cliente")
-                        .WithMany()
-                        .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Cliente");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.PedidoEndereco", b =>
-                {
-                    b.HasOne("Ecommerce.MVC.Entities.Pedido", "Pedido")
-                        .WithOne("Endereco")
-                        .HasForeignKey("Ecommerce.MVC.Entities.PedidoEndereco", "PedidoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Pedido");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.PedidoItem", b =>
-                {
-                    b.HasOne("Ecommerce.MVC.Entities.Pedido", "Pedido")
-                        .WithMany("Itens")
-                        .HasForeignKey("PedidoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Pedido");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.PedidoItemAcompanhamento", b =>
-                {
-                    b.HasOne("Ecommerce.MVC.Entities.PedidoItem", "PedidoItem")
-                        .WithMany("Acompanhamentos")
-                        .HasForeignKey("PedidoItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PedidoItem");
-                });
-
             modelBuilder.Entity("Ecommerce.MVC.Entities.Produto", b =>
                 {
                     b.HasOne("Ecommerce.MVC.Entities.Categoria", "Categoria")
@@ -610,18 +432,6 @@ namespace Ecommerce.MVC.Migrations
             modelBuilder.Entity("Ecommerce.MVC.Entities.Cliente", b =>
                 {
                     b.Navigation("Enderecos");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.Pedido", b =>
-                {
-                    b.Navigation("Endereco");
-
-                    b.Navigation("Itens");
-                });
-
-            modelBuilder.Entity("Ecommerce.MVC.Entities.PedidoItem", b =>
-                {
-                    b.Navigation("Acompanhamentos");
                 });
 
             modelBuilder.Entity("Ecommerce.MVC.Entities.Produto", b =>

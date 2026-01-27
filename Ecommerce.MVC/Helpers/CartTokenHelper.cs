@@ -10,7 +10,7 @@ namespace Ecommerce.MVC.Helpers
     {
         private const string CookieName = "cart_token";
 
-    public static string GetOrCreateToken(HttpContext http)
+        public static string GetOrCreateToken(HttpContext http)
     {
         if (http.Request.Cookies.TryGetValue(CookieName, out var token) && !string.IsNullOrWhiteSpace(token))
             return token;
@@ -30,5 +30,10 @@ namespace Ecommerce.MVC.Helpers
 
         return newToken;
     }
+    
+        public static void ClearToken(HttpContext http)
+        {
+            http.Response.Cookies.Delete(CookieName);
+        }
     }
 }

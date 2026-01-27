@@ -1,0 +1,404 @@
+@using System.Globalization
+@model Ecommerce.MVC.Models.FinalizarPedidoModalViewModel
+
+@{
+    var pt = new CultureInfo("pt-BR");
+    var enderecoPrincipal = Model.Enderecos.FirstOrDefault(e => e.EhPrincipal) ?? Model.Enderecos.FirstOrDefault();
+}
+
+<style>
+/* (mantenha seu CSS aqui por enquanto; ideal mover para arquivo .css) */
+.card-option{background:#fff;border:1px solid #eee;border-radius:12px;cursor:pointer;transition:all .2s}
+.card-option:hover{background:#f8f9fa}
+.custom-radio{width:20px;height:20px;border:2px solid #ddd;border-radius:50%;position:relative;flex-shrink:0}
+.btn-check:checked + .card-option{border-color:#7033ff;box-shadow:0 4px 12px rgba(112,51,255,.1)}
+.btn-check:checked + .card-option .custom-radio{border-color:#7033ff}
+.btn-check:checked + .card-option .custom-radio::after{content:"";width:10px;height:10px;background:#7033ff;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.text-primary{color:#7033ff!important}
+.btn-outline-primary{border-color:#7033ff;color:#7033ff}
+.btn-outline-primary:hover{background:#7033ff;color:#fff}
+.wizard-progress{position:relative;margin-bottom:12px}
+.wizard-line{position:absolute;top:16px;left:0;right:0;height:3px;background:#e9ecef;border-radius:2px;z-index:0}
+.wizard-step-indicator{position:relative;z-index:1;text-align:center;flex:1}
+.wizard-step-indicator span{width:34px;height:34px;background:#e9ecef;color:#adb5bd;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:4px;transition:all .25s ease}
+.wizard-step-indicator small{display:block;font-size:.7rem;color:#adb5bd}
+.wizard-step-indicator.active span{background:#7033ff;color:#fff}
+.wizard-step-indicator.active small{color:#7033ff}
+.wizard-step-indicator.completed span{background:#7033ff;color:#fff}
+.wizard-step-indicator.completed span::after{content:"✓";font-size:.8rem}
+</style>
+
+<!-- Barra superior -->
+<div class="wizard-progress px-4 pt-2">
+  <div class="d-flex justify-content-between position-relative">
+    <div class="wizard-line"></div>
+
+    <div class="wizard-step-indicator active" data-step="1">
+      <span>1</span><small>Entrega</small>
+    </div>
+    <div class="wizard-step-indicator" data-step="2">
+      <span>2</span><small>Confirmação</small>
+    </div>
+    <div class="wizard-step-indicator" data-step="3">
+      <span>3</span><small>Pagamento</small>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 1 -->
+<section class="wizard-step" data-step="1">
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm">
+    <div>
+      <small class="text-muted d-block">Este pedido será entregue a:</small>
+      <strong class="d-block">@Model.ClienteNome</strong>
+      <span class="text-primary small">@Model.ClienteTelefone</span>
+    </div>
+  </div>
+
+  <h6 class="fw-bold mb-3" style="font-size: 0.95rem;">Escolha como receber o pedido</h6>
+
+  <div class="delivery-methods mb-4">
+
+  <!-- Retirar -->
+  <input type="radio" class="btn-check" name="metodoEntrega" id="retirarLoja" autocomplete="off" checked>
+  <label class="card-option p-3 mb-2 d-flex align-items-center" for="retirarLoja">
+    <div class="custom-radio me-3"></div>
+    <div>
+      <span class="fw-bold d-block">Retirar na loja</span>
+      <small class="text-muted">Endereço da loja (configure aqui)</small>
+    </div>
+  </label>
+
+  <!-- Endereços existentes -->
+  @foreach (var end in Model.Enderecos.OrderByDescending(e => e.EhPrincipal))
+  {
+      var inputId = $"end_{end.Id}";
+      var checkedAttr = (Model.EnderecoSelecionadoId.HasValue && Model.EnderecoSelecionadoId.Value == end.Id)
+                        || (!Model.EnderecoSelecionadoId.HasValue && end.EhPrincipal);
+
+      <input type="radio"
+             class="btn-check"
+             name="metodoEntrega"
+             id="@inputId"
+             value="@end.Id"
+             data-tipo="delivery"
+             autocomplete="off"
+             @(checkedAttr ? "checked" : null) />
+
+      <label class="card-option p-3 mb-2 d-flex align-items-center justify-content-between" for="@inputId">
+        <div class="d-flex align-items-center">
+          <div class="custom-radio me-3"></div>
+          <div>
+            <span class="fw-bold d-block">Entrega</span>
+            <small class="text-muted">@end.Texto</small>
+          </div>
+        </div>
+
+        <button type="button"
+                class="btn btn-sm btn-outline-danger rounded-pill px-3 btn-remover-endereco"
+                data-endereco-id="@end.Id">
+        Remover
+        </button>
+
+      </label>
+  }
+
+  <!-- SEMPRE exibir cadastrar novo -->
+  <input type="radio" class="btn-check" name="metodoEntrega" id="entregaNovo" autocomplete="off">
+  <label class="card-option p-3 mb-2 d-flex align-items-center" for="entregaNovo">
+    <div class="custom-radio me-3"></div>
+    <div>
+      <span class="fw-bold d-block">+ Cadastrar novo endereço</span>
+      <small class="text-muted">Entrega via Delivery</small>
+    </div>
+  </label>
+
+  <!-- Host do formulário (sempre presente) -->
+  <div id="novoEnderecoHost" class="d-none mt-3"></div>
+
+</div>
+
+
+  <h6 class="fw-bold mb-2" style="font-size: 0.95rem;">Alguma observação para o seu pedido?</h6>
+  <textarea id="obsPedido"
+            class="form-control border-0 bg-white shadow-sm rounded-4 mb-4"
+            rows="3"
+            placeholder="Informe uma observação (Opcional)"></textarea>
+        
+    
+</section>
+
+<!-- STEP 2 -->
+<section class="wizard-step d-none" data-step="2">
+  <h6 class="fw-bold mb-3">Confirmação do pedido</h6>
+
+  <!-- Itens do carrinho -->
+  <div class="bg-white p-3 rounded-4 shadow-sm mb-3">
+    @foreach (var item in Model.Carrinho.Itens)
+    {
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <div class="fw-bold">@item.Quantidade x @item.ProdutoNome</div>
+
+            @if (item.Acompanhamentos?.Any() == true)
+            {
+                <small class="text-muted d-block">
+                  @string.Join(", ", item.Acompanhamentos)
+                </small>
+            }
+          </div>
+
+          <div class="fw-bold">
+            @item.TotalLinha.ToString("C", pt)
+          </div>
+        </div>
+
+        <hr class="my-2" />
+    }
+  </div>
+
+  <!-- Totais -->
+  <div class="border-top pt-3 mb-4">
+    <div class="d-flex justify-content-between mb-1">
+      <span class="text-muted">Subtotal</span>
+      <span id="confSubtotal">@Model.Carrinho.Subtotal.ToString("C", pt)</span>
+    </div>
+
+    <div class="d-flex justify-content-between mb-1">
+      <span class="text-muted">Taxa de Entrega</span>
+      <span id="confTaxa">@Model.Carrinho.TaxaEntrega.ToString("C", pt)</span>
+    </div>
+
+    <div class="d-flex justify-content-between fw-bold fs-5 mt-2">
+      <span>Total</span>
+      <span id="confTotal" style="color:#7033ff;">@Model.Carrinho.Total.ToString("C", pt)</span>
+    </div>
+  </div>
+
+  <div class="alert alert-light border rounded-4">
+    <strong>Entrega:</strong> <span id="confEntrega">—</span><br />
+    <strong>Observação:</strong> <span id="confObs" class="text-muted">(Nenhuma)</span>
+  </div>
+</section>
+
+<!-- STEP 3 -->
+<section class="wizard-step d-none" data-step="3">
+  <h6 class="fw-bold mb-3">Pagamento</h6>
+
+  <div class="mb-3">
+    <input type="radio" class="btn-check" name="pagamento" id="pix" autocomplete="off" checked>
+    <label class="card-option p-3 mb-2 d-flex align-items-center" for="pix">
+      <div class="custom-radio me-3"></div>
+      <div>
+        <span class="fw-bold d-block">PIX</span>
+        <small class="text-muted">Aprovação imediata</small>
+      </div>
+    </label>
+
+    <input type="radio" class="btn-check" name="pagamento" id="cartao" autocomplete="off">
+    <label class="card-option p-3 mb-2 d-flex align-items-center" for="cartao">
+      <div class="custom-radio me-3"></div>
+      <div>
+        <span class="fw-bold d-block">Cartão</span>
+        <small class="text-muted">Crédito/Débito</small>
+      </div>
+    </label>
+  </div>
+
+  <div class="alert alert-warning rounded-4 mb-0">
+    Ao confirmar, o pedido será enviado para processamento.
+  </div>
+</section>
+
+
+        @* <script>
+(() => {
+  
+</script> *@
+
+<script>
+(function () {
+
+  // 1) Quando o usuário selecionar o radio "entregaNovo", carrega o formulário
+    $(document).on('change', 'input[name="metodoEntrega"]', function () {
+    const id = this.id;
+
+    if (id === 'entregaNovo') {
+      const $host = $('#novoEnderecoHost');
+
+      // se já carregou antes, só exibe
+      if ($host.data('loaded') === true) {
+        $host.removeClass('d-none');
+        return;
+      }
+
+      $.ajax({
+        url: '/Endereco/NovoPartial',
+        method: 'GET',
+        success: function (html) {
+          $host.html(html);
+          $host.data('loaded', true);
+          $host.removeClass('d-none');
+        },
+        error: function (xhr) {
+          alert(xhr.responseText || 'Erro ao carregar formulário de endereço.');
+        }
+      });
+
+    } else {
+      // selecionou retirarLoja ou um endereço existente
+      $('#novoEnderecoHost').addClass('d-none');
+    }
+  });
+
+  // 2) Cancelar cadastro
+    $(document).on('click', '#btnCancelarNovoEndereco', function () {
+    $('#novoEnderecoHost').addClass('d-none');
+
+    // volta a seleção para "retirarLoja" ou para o primeiro endereço existente
+    const $first = $('input[name="metodoEntrega"]').not('#entregaNovo').first();
+    if ($first.length) $first.prop('checked', true).trigger('change');
+  });
+
+  // 3) Salvar endereço (POST) e depois recarregar o modal de finalização
+    $(document).on('click', '#btnSalvarNovoEndereco', function () {
+    const payload = {
+      cep: $('#endCep').val(),
+      logradouro: $('#endLogradouro').val(),
+      numero: $('#endNumero').val(),
+      complemento: $('#endComplemento').val(),
+      bairro: $('#endBairro').val(),
+      cidade: $('#endCidade').val(),
+      estado: $('#endEstado').val()
+    };
+
+    $.ajax({
+      url: '/Endereco/Criar',
+      method: 'POST',
+      contentType: 'application/json; charset=utf-8',
+      data: JSON.stringify(payload),
+      success: function () {
+
+        // Recarrega o HTML do modal de finalização para aparecer o novo endereço na lista
+        $.ajax({
+          url: '/Pedido/ModalProduto', // ou /Pedido/ModalFinalizacao (GET)
+          method: 'GET',
+          success: function (html) {
+            $('#modalFinalizarPedidoBody').html(html);
+            if (window.wizardInitFinalizarPedido) window.wizardInitFinalizarPedido();
+          }
+        });
+
+      },
+      error: function (xhr) {
+        alert(xhr.responseText || 'Erro ao salvar endereço.');
+      }
+    });
+  });
+
+    // Remover endereço
+    $(document).on('click', '.btn-remover-endereco', function () {
+        const enderecoId = $(this).data('endereco-id');
+
+        if (!confirm('Deseja remover este endereço?')) return;
+
+        $.ajax({
+            url: '/Endereco/Remover',
+            method: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ enderecoId }),
+            success: function () {
+            // Recarrega o modal para atualizar a lista de endereços
+            $.ajax({
+                url: '/Pedido/ModalProduto',
+                method: 'GET',
+                success: function (html) {
+                $('#modalFinalizarPedidoBody').html(html);
+                if (window.wizardInitFinalizarPedido) window.wizardInitFinalizarPedido();
+                }
+            });
+            },
+            error: function (xhr) {
+            alert(xhr.responseText || 'Erro ao remover endereço.');
+            }
+        });
+    });
+
+    $(document).on('click', '#btnConfirmarPedido', function (e) {
+        e.preventDefault();
+        confirmarPedido();
+    });
+
+    function getEntregaSelecionada() {
+        const $selected = $('input[name="metodoEntrega"]:checked');
+        if (!$selected.length) return { tipo: null, enderecoId: null, label: null };
+
+        if ($selected.attr('id') === 'retirarLoja') {
+            return { tipo: 'retirar', enderecoId: null, label: 'Retirar na loja' };
+        }
+
+        if ($selected.attr('id') === 'entregaNovo') {
+            return { tipo: 'novo', enderecoId: null, label: 'Cadastrar novo endereço' };
+        }
+
+        // delivery existente
+        return {
+            tipo: 'delivery',
+            enderecoId: $selected.val() || null,
+            label: $(`label[for="${$selected.attr('id')}"]`).text().trim()
+        };
+        }
+
+    function getPagamentoSelecionado() {
+        const $p = $('input[name="pagamento"]:checked');
+        return $p.length ? $p.attr('id') : null; // "pix" | "cartao"
+        }
+
+    function confirmarPedido() {
+        const entrega = getEntregaSelecionada();
+        const pagamento = getPagamentoSelecionado();
+        const observacao = ($('#obsPedido').val() || '').trim();
+
+        // validações mínimas
+        if (!entrega.tipo) {
+            alert('Selecione um método de entrega.');
+            return;
+        }
+        if (entrega.tipo === 'novo') {
+            alert('Cadastre o endereço antes de confirmar.');
+            return;
+        }
+        if (!pagamento) {
+            alert('Selecione um método de pagamento.');
+            return;
+        }
+
+        const payload = {
+            metodoEntrega: entrega.tipo,        // "retirar" | "delivery"
+            enderecoId: entrega.enderecoId,     // Guid ou null
+            pagamento: pagamento,               // "pix" | "cartao"
+            observacao: observacao
+        };
+
+        $.ajax({
+            url: '/Pedido/Confirmar',
+            method: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(payload),
+            success: function (res) {
+            // Fechar modal
+            const el = document.getElementById('modalFinalizarPedido');
+            bootstrap.Modal.getInstance(el)?.hide();
+
+            // Redirecionar (ou exibir tela de sucesso)
+            // Ex.: res.pedidoId
+            window.location.href = '/?cart=1';
+            },
+            error: function (xhr) {
+            alert(xhr.responseText || 'Erro ao confirmar pedido.');
+            }
+        });
+    }
+})();
+</script>
+
