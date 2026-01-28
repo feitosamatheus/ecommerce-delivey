@@ -2,6 +2,10 @@
    FILTRO (sticky + estado)
    ========================================================= */
 
+.bc-container-home-mb{
+  display: none;
+}
+
 .bc-filter {
   background-color: #fff;
   border-radius: 5px;
@@ -75,7 +79,7 @@
 .bc-filter__input {
   height: 44px;
   border: 2px solid rgb(207, 207, 207);
-  padding: 0 40px 0 34px; /* espaço para ícone + botão X */
+  padding: 0 40px 0 10px; /* espaço para ícone + botão X */
   border-radius: 5px;
   font-weight: 500;
   color: #1f1f1f !important;
@@ -86,6 +90,7 @@
 #filtroNome:active {
   box-shadow: 0 0 0 2px #663E1A !important;
   outline: none !important;
+  border: none;
 }
 
 .bc-filter__icon {

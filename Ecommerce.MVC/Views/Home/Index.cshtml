@@ -25,7 +25,7 @@
     }
 }
 
-<div class="my-3">
+<div class="my-3 bc-container-home-desktop">
     <div class="row g-3">
         <div class="col-12 col-lg-9">
 
@@ -221,51 +221,196 @@
             }
         }  
     </div>
-    <!-- CARRINHO -->
-        @* <div class="col-12 col-lg-3">
-            <div class="bc-panel p-3 bc-cart bc-cart--sticky">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h5 class="mb-0 fw-bold bc-cart__title">Carrinho</h5>
-                </div>
-
-                <hr />
-
-                <div class="bc-cart__empty py-4 text-center">
-                    <div class="bc-cart__illustration mb-3"></div>
-                    <div class="text-muted">Seu carrinho está vazio</div>
-                </div>
-
-                <hr />
-
-                <div class="mb-3">
-                    <div class="fw-bold mb-2">Totais</div>
-
-                    <div class="d-flex justify-content-between text-muted">
-                        <span>Subtotal</span><span>R$ 0,00</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between text-muted">
-                        <span>Entrega</span><span>R$ 0,00</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between fw-bold bc-cart__total">
-                        <span>Total</span><span>R$ 0,00</span>
-                    </div>
-                </div>
-
-                <button class="btn w-100 btn-secondary" disabled>
-                    ESTABELECIMENTO FECHADO
-                </button>
-            </div>
-        </div> *@
-
     @await Component.InvokeAsync("Carrinho")
+</div>
+</div>
 
+
+<div class="my-2 bc-container-home-mb">
+    <!-- FILTRO -->
+    <div class="bc-filter bc-filter-mb bc-filter--sticky p-3 mb-2 box-shadown-custom">
+        <div class="row g-3 align-items-center">
+            <div class="col-12 px-1">
+                <div class="d-flex gap-3 align-items-center">
+
+                    <div class="bc-select w-100" data-name="filtroTipo" id="filtroCategoriaMobile">
+                        <button type="button" class="bc-select__trigger">
+                            <span class="bc-select__value">Categorias</span>
+                            <span class="bc-select__arrow"></span>
+                        </button>
+                        <ul class="bc-select__options">
+                            <li data-value="">Todas</li>
+                            @foreach (var c in Model.Categorias.OrderBy(c => c.Nome))
+                            {
+                                <li data-value="@c.Id">@c.Nome</li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="position-relative d-none bc-filter__search" id="filtroTextoMobile" style="width: 100%;">
+                        <i class="bi bi-search bc-filter__icon"></i>
+                        <input type="text" id="filtroNomeMobile" class="form-control bc-filter__input" placeholder="Buscar..." />
+                        <button type="button" class="bc-filter__close" id="btnFecharBuscaMobile">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <button class="btn bc-filter__btn" type="button" id="btnPesquisarMobile">
+                        <i class="fa-solid fa-keyboard" style="color: white !important;"></i>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Categorias.Count() <= 0)
+    {
+        <div class="bc-panel p-3 mb-3 text-center">
+            <div class="py-4 col-12">
+                <div class="fw-bold mb-1">Nenhum item disponível no momento</div>
+                <div class="text-muted">
+                    Ainda não temos categorias com produtos para exibir. Volte em instantes ou tente novamente mais tarde.
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- CATEGORIAS TIPO CARROSSEL -->
+        @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Carrossel))
+        {
+            var carouselId = $"carrossel_{categoria.Id:N}";
+            var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
+            var slides = Chunk(produtos, 3).ToList(); // 3 itens por slide (como seu layout atual)
+
+            <div class="bc-panel p-3 mb-3" data-categoria-id="@categoria.Id">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="mb-0 fw-bold">@categoria.Nome</h5>
+                </div>
+
+                <div id="@carouselId" class="carousel slide mb-2" data-bs-ride="false">
+
+                    <!-- INDICADORES -->
+                    @if (slides.Count > 1)
+                    {
+                        <div class="carousel-indicators bc-carousel__indicators">
+                            @for (int i = 0; i < slides.Count; i++)
+                            {
+                                <button type="button"
+                                        data-bs-target="#@carouselId"
+                                        data-bs-slide-to="@i"
+                                        class="@(i == 0 ? "active" : "")"
+                                        aria-current="@(i == 0 ? "true" : "false")"
+                                        aria-label="Slide @(i + 1)"></button>
+                            }
+                        </div>
+                    }
+
+                    <div class="carousel-inner">
+                        @for (int i = 0; i < slides.Count; i++)
+                        {
+                            var slide = slides[i];
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <div class="row g-3">
+                                    @foreach (var p in slide)
+                                    {
+                                        <div class="col-12 col-md-4 bc-carousel-col">
+                                            <div class="bc-product bc-product--vertical bc-prod-col p-3" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                                                <div class="bc-product__thumb"
+                                                    style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) 
+                                                            ? "" 
+                                                            : $"background-image:url('{p.ImagemUrl}')")">
+                                                </div>
+
+                                                <div class="bc-product__info mt-3 text-center">
+                                                    <div class="bc-product__title fw-bold">
+                                                        @p.Nome
+                                                    </div>
+
+                                                    <div class="bc-product__price fw-bold mt-1">
+                                                        @p.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                                    </div>
+                                                </div>
+                                                <!-- BOTÃO + -->
+                                                <button type="button" class="bc-product__add" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                                    <i class="fa-solid fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- CONTROLES -->
+                    @if (slides.Count > 1)
+                    {
+                        <button class="carousel-control-prev bc-carousel__btn"
+                                type="button"
+                                data-bs-target="#@carouselId"
+                                data-bs-slide="prev">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+
+                        <button class="carousel-control-next bc-carousel__btn"
+                                type="button"
+                                data-bs-target="#@carouselId"
+                                data-bs-slide="next">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- CATEGORIAS TIPO LISTA/BLOCO -->
+        @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Bloco))
+        {
+            var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
+
+            <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id">
+                <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
+
+                <div class="row g-3">
+                    @foreach (var p in produtos)
+                    {
+                        <div class="col-12 col-md-6 bc-prod-col">
+                            <div class="bc-product p-3 bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                                <div class="d-flex gap-3">
+                                    <div class="flex-grow-1 bc-product__info">
+                                        <div class="fw-bold">@p.Nome</div>
+                                        @if (!string.IsNullOrWhiteSpace(p.Descricao))
+                                        {
+                                            <div class="text-muted small">
+                                                @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
+                                            </div>
+                                        }
+                                        <div class="mt-2 fw-bold bc-product__price">@p.Preco.ToString("C", new CultureInfo("pt-BR"))</div>
+                                    </div>
+
+                                    <div class="bc-product__thumb"
+                                            style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                    </div>
+                                </div>
+                                <button type="button" class="bc-product__add" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <!-- BOTÃO + -->
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }  
 </div>
 <div id="modalHost"></div>
 <script>
      
 (function () {
+
     const spinner = document.getElementById('modalSpinner');
 
     function showSpinner() {
@@ -276,107 +421,154 @@
     spinner?.classList.add('d-none');
     }
 
-    const filtro = document.querySelector('.bc-filter');
-    if (!filtro) return;
-
+    @* const filtro = document.querySelector('.bc-filter');
     const offsetTop = filtro.offsetTop;
-
     window.addEventListener('scroll', () => {
         if (window.scrollY > offsetTop - 15) filtro.classList.add('is-sticky');
         else filtro.classList.remove('is-sticky');
     });
 
-    const btnPesquisar = document.getElementById('btnPesquisar');
-    const btnFecharBusca = document.getElementById('btnFecharBusca');
-    const filtroCategoria = document.getElementById('filtroCategoria');
-    const filtroTexto = document.getElementById('filtroTexto');
-    const inputBusca = document.getElementById('filtroNome');
+    const filtroMb = document.querySelector('.bc-filter-mb');
+    const offsetTopMb = filtroMb.offsetTop;
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > offsetTopMb - 15) filtroMb.classList.add('is-sticky');
+        else filtroMb.classList.remove('is-sticky');
+    }); *@
 
-    let modoBuscaTexto = false;
+    const aplicarSticky = () => {
+        // Seleciona todos os elementos que devem ter comportamento sticky
+        const seletores = ['.bc-filter', '.bc-filter-mb'];
+        const scrollPos = window.scrollY;
 
-    function abrirBuscaTexto() {
-        filtroCategoria?.classList.add('d-none');
-        filtroTexto?.classList.remove('d-none');
-        btnPesquisar?.classList.add('d-none');
-        modoBuscaTexto = true;
-        inputBusca?.focus();
-    }
+        seletores.forEach(seletor => {
+            const elemento = document.querySelector(seletor);
+            
+            // Só processa se o elemento existir e estiver visível na tela (display != none)
+            if (elemento && elemento.offsetParent !== null) {
+                // Se for a primeira execução, guardamos o offset original para não perder a referência
+                if (!elemento.dataset.originalOffset) {
+                    elemento.dataset.originalOffset = elemento.offsetTop;
+                }
 
-    function fecharBuscaTexto() {
-        filtroTexto?.classList.add('d-none');
-        filtroCategoria?.classList.remove('d-none');
-        btnPesquisar?.classList.remove('d-none');
-        modoBuscaTexto = false;
+                const offsetReferencia = parseInt(elemento.dataset.originalOffset);
 
-        if (inputBusca) {
-        inputBusca.value = '';
-        // dispara evento para quem estiver ouvindo
-        inputBusca.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-    }
-
-    btnPesquisar?.addEventListener('click', () => {
-        if (!modoBuscaTexto) abrirBuscaTexto();
-        else inputBusca?.focus();
-    });
-
-    btnFecharBusca?.addEventListener('click', fecharBuscaTexto);
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modoBuscaTexto) fecharBuscaTexto();
-    });
-
-    const selects = Array.from(document.querySelectorAll('.bc-select'));
-
-    function closeAllSelects(except = null) {
-        selects.forEach(s => {
-        if (s !== except) s.classList.remove('is-open');
-        });
-    }
-
-    selects.forEach(select => {
-        const trigger = select.querySelector('.bc-select__trigger');
-        const options = Array.from(select.querySelectorAll('.bc-select__options li'));
-        const valueSpan = select.querySelector('.bc-select__value');
-        const nativeSelect = select.querySelector('select');
-
-        trigger?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const willOpen = !select.classList.contains('is-open');
-        closeAllSelects(select);
-        select.classList.toggle('is-open', willOpen);
-        });
-
-        options.forEach(option => {
-        option.addEventListener('click', (e) => {
-            e.stopPropagation();
-
-            options.forEach(o => o.classList.remove('is-selected'));
-            option.classList.add('is-selected');
-
-            if (valueSpan) valueSpan.textContent = option.textContent;
-
-            // Atualiza o <select> hidden e dispara change (para sua futura integração)
-            if (nativeSelect) {
-            nativeSelect.value = option.dataset.value || '';
-            nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                if (scrollPos > offsetReferencia - 5) {
+                    elemento.classList.add('is-sticky');
+                } else {
+                    elemento.classList.remove('is-sticky');
+                }
+            } else if (elemento) {
+                // Se o elemento estiver oculto (ex: filtro desktop no mobile), removemos o sticky por segurança
+                elemento.classList.remove('is-sticky');
             }
-
-            select.classList.remove('is-open');
         });
+    };
+
+    // Um único listener para controlar ambos
+    window.addEventListener('scroll', aplicarSticky, { passive: true });
+
+    function setupFilterLogic(suffix = '') {
+        // Elementos da Busca
+        const btnPesquisar = document.getElementById('btnPesquisar' + suffix);
+        const btnFecharBusca = document.getElementById('btnFecharBusca' + suffix);
+        const filtroCategoria = document.getElementById('filtroCategoria' + suffix);
+        const filtroTexto = document.getElementById('filtroTexto' + suffix);
+        const inputBusca = document.getElementById('filtroNome' + suffix);
+
+        let modoBuscaTexto = false;
+
+        // --- Lógica de Troca de Interface (Busca vs Select) ---
+        function abrirBuscaTexto() {
+            filtroCategoria?.classList.add('d-none');
+            filtroTexto?.classList.remove('d-none');
+            btnPesquisar?.classList.add('d-none');
+            modoBuscaTexto = true;
+            setTimeout(() => inputBusca?.focus(), 50); // Timeout para garantir foco no mobile
+        }
+
+        function fecharBuscaTexto() {
+            filtroTexto?.classList.add('d-none');
+            filtroCategoria?.classList.remove('d-none');
+            btnPesquisar?.classList.remove('d-none');
+            modoBuscaTexto = false;
+
+            if (inputBusca) {
+                inputBusca.value = '';
+                inputBusca.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+
+        btnPesquisar?.addEventListener('click', () => {
+            if (!modoBuscaTexto) abrirBuscaTexto();
+            else inputBusca?.focus();
         });
-    });
 
-    document.addEventListener('click', () => closeAllSelects());
+        btnFecharBusca?.addEventListener('click', fecharBuscaTexto);
 
-    const selectNative = document.querySelector('#filtroCategoria select[name="filtroTipo"]');
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modoBuscaTexto) fecharBuscaTexto();
+        });
 
-    selectNative?.addEventListener('change', () => {
-        // console.log('Categoria selecionada:', selectNative.value);
-    });
+        // --- Lógica do Select Customizado ---
+        const selectWrap = document.getElementById('filtroCategoria' + suffix);
+        if (selectWrap) {
+            const trigger = selectWrap.querySelector('.bc-select__trigger');
+            const optionsList = Array.from(selectWrap.querySelectorAll('.bc-select__options li'));
+            const valueSpan = selectWrap.querySelector('.bc-select__value');
+            const nativeSelect = selectWrap.querySelector('select');
 
-    inputBusca?.addEventListener('input', () => {
-        // console.log('Texto digitado:', inputBusca.value);
+            // Abre/Fecha Select
+            trigger?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = selectWrap.classList.contains('is-open');
+                // Fecha outros selects antes de abrir este
+                document.querySelectorAll('.bc-select').forEach(s => s.classList.remove('is-open'));
+                if (!isOpen) selectWrap.classList.add('is-open');
+            });
+
+            // Seleção de Opção
+            optionsList.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    optionsList.forEach(o => o.classList.remove('is-selected'));
+                    option.classList.add('is-selected');
+
+                    if (valueSpan) valueSpan.textContent = option.textContent;
+
+                    if (nativeSelect) {
+                        nativeSelect.value = option.dataset.value || '';
+                        nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+
+                    selectWrap.classList.remove('is-open');
+                });
+            });
+        }
+
+        // --- Listeners de Eventos (Integração) ---
+        const selectNative = selectWrap?.querySelector('select');
+        selectNative?.addEventListener('change', () => {
+            console.log(`Filtro ${suffix || 'Desktop'} Categoria:`, selectNative.value);
+        });
+
+        inputBusca?.addEventListener('input', () => {
+            console.log(`Filtro ${suffix || 'Desktop'} Texto:`, inputBusca.value);
+        });
+    }
+
+    // 2. Inicialização Global
+    document.addEventListener('DOMContentLoaded', () => {
+        // Inicializa Desktop
+        setupFilterLogic(''); 
+        
+        // Inicializa Mobile
+        setupFilterLogic('Mobile');
+
+        // Clique fora fecha qualquer select aberto
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.bc-select').forEach(s => s.classList.remove('is-open'));
+        });
     });
 
     const host = document.getElementById('modalHost');
@@ -421,7 +613,6 @@
             hideSpinner();
         }
     }
-
 
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('.bc-product__add');
