@@ -1,4 +1,4 @@
-@media (max-width: 1220px) {
+@media (max-width: 1200px) {
     .bc-hero { display: none; }
     .bc-mb-hero { display: block; background-color: #fff; }
 
@@ -155,5 +155,12 @@
 
     .btn-lift:active {
         transform: translateY(-1px) !important; /* Abaixa levemente ao clicar */
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus,
+    .dropdown-item:active {
+        background-color: #fff9f0; /* creme clarinho */
+        color: #4b2c20;
     }
 }

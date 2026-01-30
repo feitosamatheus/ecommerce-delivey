@@ -1,10 +1,25 @@
+
+<style>
+    .shadow-sm-hover:hover {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+        transform: translateY(-2px);
+    }
+    .transition-all { transition: all 0.2s ease-in-out; }
+    .extra-small { font-size: 0.75rem; }
+</style>
 <div class="modal fade" id="modalVerMais" tabindex="-1" aria-labelledby="modalVerMaisLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content bc-modal border-0 shadow-lg" style="border-radius: 5px; overflow: hidden;">
-            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center">
+        <div class="modal-content bc-modal border-0 shadow-lg" style="overflow: hidden;">
+            @* <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center">
                 <h5 class="modal-title fw-bold" id="modalVerMaisLabel" style="color: #3c1e0a;">Barriga Cheia</h5>
-                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar" style="position: static; font-size: 2rem;">&times;</button>
+                <button type="button" class="btn-close-custom" title="Fechar" data-bs-dismiss="modal" aria-label="Fechar" style="position: static; font-size: 1.5rem;">&times;</button>
+            </div> *@
+            <div class="modal-header" style="position: absolute; border:none;right: 4px; top: 5px;" >
+                <button type="button" class="btn-close-custom" title="Fechar" data-bs-dismiss="modal" aria-label="Fechar" style="position: static; font-size: 1.5rem;">&times;</button>
             </div>
+
             <div class="modal-body pt-2 px-4">
                 <ul class="nav nav-tabs bc-tabs border-0" id="bcTabs" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -17,21 +32,34 @@
                         <button class="nav-link" id="tab-pagamento" data-bs-toggle="tab" data-bs-target="#pane-pagamento" type="button" role="tab">Pagamento</button>
                     </li>
                 </ul>
-                <div class="tab-content pt-4" id="bcTabsContent">
-                    <div class="tab-pane fade show active" id="pane-sobre" role="tabpanel">
+                <div class="tab-content px-0 pt-3" style="border-radius: 0px 5px 5px 5px;" id="bcTabsContent">
+                    <div class="tab-pane fade show active p-2" id="pane-sobre" role="tabpanel">
                         <div class="mb-4">
                             <div class="bc-section-title">Nossa História</div>
                             <p class="text-muted small">
                                 Sopas e caldos artesanais, salgados e bolos. Feito pelo chef com ingredientes selecionados. Aceitamos encomendas para eventos.
                             </p>
-                            <a href="#" class="bc-link">Ver cardápio completo</a>
+                            <a href="/" class="bc-link">Ver cardápio completo</a>
                         </div>
                         <div class="mb-4">
-                            <div class="bc-section-title">Onde Estamos</div>
-                            <div class="text-muted small">
-                                <i class="bi bi-geo-alt-fill me-1"></i> Rua Nilson Sabino Pinho, 222<br />
-                                Olinda - PE
-                            </div>
+                            <div class="bc-section-title mb-2">Onde Estamos</div>
+                            
+                            <a href="https://www.google.com/maps/search/?api=1&query=Soparia+Barriga+Cheia+Rua+Nilson+Sabino+Pinho+222+Olinda" 
+                            target="_blank" 
+                            class="d-flex align-items-center px-3 p-2 text-decoration-none border rounded-3 bg-light shadow-sm-hover transition-all">
+                                
+                                @* <div class="bg-danger bg-opacity-10 p-2 rounded-circle me-3">
+                                    <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+                                </div> *@
+
+                                <div class="text-start">
+                                    <span class="d-block fw-bold text-dark small">Rua Nilson Sabino Pinho, 222</span>
+                                    <span class="text-muted extra-small">Jardim Atlântico, Olinda - PE</span>
+                                    <div class="text-primary mt-1 extra-small fw-semibold">
+                                        Ver no Google Maps <i class="bi bi-arrow-up-right small"></i>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                         <div class="mb-2">
                             <div class="bc-section-title">Informações Legais</div>
@@ -39,8 +67,8 @@
                         </div>
                     </div>
                     <div class="tab-pane fade" id="pane-horario" role="tabpanel">
-                        <div class="bg-light p-3 rounded-3 border">
-                            <div class="bc-section-title"><i class="bi bi-clock me-2"></i>Horários de Entrega</div>
+                        <div class="bg-light p-3">
+                            <div class="bc-section-title"><i class="bi bi-clock"></i>Horários de Funcionamento</div>
                             <div class="text-muted small">
                                 <strong>Segunda a Sexta:</strong> 11:00 às 22:00<br />
                                 <strong>Sábado:</strong> 11:00 às 23:00<br />
@@ -48,13 +76,45 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="pane-pagamento" role="tabpanel">
-                        <div class="bc-section-title">Aceitamos no Local e Delivery</div>
-                        <div class="d-flex flex-wrap gap-2 mt-2">
-                            <span class="badge rounded-pill px-3 py-2" style="background-color: #f8f9fa; color: #3c1e0a; border: 1px solid #dee2e6;">Pix</span>
-                            <span class="badge rounded-pill px-3 py-2" style="background-color: #f8f9fa; color: #3c1e0a; border: 1px solid #dee2e6;">Cartão de Crédito</span>
-                            <span class="badge rounded-pill px-3 py-2" style="background-color: #f8f9fa; color: #3c1e0a; border: 1px solid #dee2e6;">Cartão de Débito</span>
-                            <span class="badge rounded-pill px-3 py-2" style="background-color: #f8f9fa; color: #3c1e0a; border: 1px solid #dee2e6;">Dinheiro</span>
+                    <div class="tab-pane fade px-3" id="pane-pagamento" role="tabpanel">
+                        <div class="bc-section-title mb-3" style="color: #4B2C20;">Formas de Pagamento</div>
+                        
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center p-3 border rounded-3 bg-white shadow-sm transition-all shadow-sm-hover">
+                                    <div class="me-3">
+                                        <i class="fa-brands fa-pix fa-lg" style="color: #32BCAD;"></i>
+                                    </div>
+                                    <span class="fw-bold text-dark small">Pix</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-6">
+                                <div class="d-flex align-items-center p-3 border rounded-3 bg-white shadow-sm transition-all shadow-sm-hover">
+                                    <div class="me-3">
+                                        <i class="fa-solid fa-credit-card fa-lg" style="color: #D4A017;"></i>
+                                    </div>
+                                    <span class="fw-bold text-dark small">Crédito</span>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="d-flex align-items-center p-3 border rounded-3 bg-white shadow-sm transition-all shadow-sm-hover">
+                                    <div class="me-3">
+                                        <i class="fa-solid fa-money-check-dollar fa-lg" style="color: #4B2C20;"></i>
+                                    </div>
+                                    <span class="fw-bold text-dark small">Débito</span>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="d-flex align-items-center p-3 border rounded-3 bg-white shadow-sm transition-all shadow-sm-hover">
+                                    <div class="me-3">
+                                        <i class="fa-solid fa-money-bill-1-wave fa-lg" style="color: #28a745;"></i>
+                                    </div>
+                                    <span class="fw-bold text-dark small">Dinheiro</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

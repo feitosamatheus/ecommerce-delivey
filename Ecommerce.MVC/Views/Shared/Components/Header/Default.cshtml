@@ -33,7 +33,7 @@
             <div class="col-12 col-lg-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
                 <button type="button" id="btn-acompanhar-pedido" class="btn bc-nav-btn shadow-sm">
                     <i class="fa-solid fa-location-dot me-2"></i>
-                    Acompanhar pedido
+                    <span style="position: relative; top: -1px;">Acompanhar pedido</span>
                 </button>
                
                 @if (ViewBag.Autenticado)
@@ -78,7 +78,7 @@
                             </li>
 
                             <li>
-                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-acompanhar-pedido-dropdown">
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3  btn-acompanhar-pedido" type="button">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
                                         <i class="fa-solid fa-location-dot text-secondary" style="font-size: 0.85rem;"></i>
                                     </div>
@@ -124,7 +124,7 @@
 
 
                 <button type="button" class="btn bc-nav-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerMais">
-                    Ver mais
+                    <span style="position: relative; top: -1px;">Ver mais</span>
                 </button>
             </div>
         </div>
@@ -152,12 +152,6 @@
                             Ver mais
                         </a>
                     </div>
-                    @* <h1 class="bc-mb-title">Barriga Cheia</h1> *@
-                    @* <p class="bc-mb-tagline">
-                        <span class="badge bc-mb-badge">Sopas & Caldos</span>
-                        <span class="bc-mb-separator">•</span>
-                        <span class="bc-mb-category">Lanchonete</span>
-                    </p> *@
                     <div class="bc-mb-location">
                         <i class="fa-solid fa-location-dot me-1"></i>
                         <span>Olinda-PE · Rua Nilson Sabino Pinho, 222</span>
@@ -165,9 +159,9 @@
                 </div>
             </div>
             <div class="d-flex justify-content-start mt-md-2 align-items-end mt-3 mt-md-0 gap-3" style="position: absolute; top: -55px; right: 7px;">
-                <button type="button" id="btn-acompanhar-pedido" class="btn bc-nav-btn shadow-sm">
+                <button type="button" class="btn bc-nav-btn shadow-sm  btn-acompanhar-pedido">
                     <i class="fa-solid fa-location-dot me-2"></i>
-                    Acompanhar pedido
+                    <span style="position: relative; top: -1px;">Acompanhar pedido</span>
                 </button>
                
                 @if (ViewBag.Autenticado)
@@ -212,7 +206,7 @@
                             </li>
 
                             <li>
-                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-acompanhar-pedido-dropdown">
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-acompanhar-pedido" type="button">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
                                         <i class="fa-solid fa-location-dot text-secondary" style="font-size: 0.85rem;"></i>
                                     </div>
@@ -255,23 +249,7 @@
                         <i class="fa-solid fa-chevron-down ms-2 small opacity-50 seta-menu"></i>
                     </button>
                 }
-
-
-                @* <button type="button" class="btn bc-nav-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerMais">
-                    Ver mais
-                </button> *@
             </div
-
-            @* <div class="bc-mb-quick-actions mt-4">
-                <button type="button" id="btn-acompanhar-pedido" class="btn bc-mb-btn-glass p-2">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                    Acompanhar Pedido
-                </button>
-                
-                <button type="button" class="btn bc-mb-btn-info  p-2" data-bs-toggle="modal" data-bs-target="#modalVerMais">
-                    Ver mais
-                </button>
-            </div> *@
         </div>
     </header>
 </section>
@@ -338,7 +316,7 @@
 
     $(document).on('click', '#btn-abrir-minha-conta', abrirModalConta);
 
-    $(document).on('click', '#btn-acompanhar-pedido', function () {
+    $(document).on('click', '.btn-acompanhar-pedido', function () {
         $.ajax({
             url: '/Pedido/AcompanhamentoCliente',
             method: 'GET',
@@ -366,18 +344,15 @@
         else alert('Não foi possível sair. Tente novamente.');
     });
 
-    // Seletores
     const btn = document.getElementById('btn-conta-dropdown');
     const btnMobile = document.getElementById('btn-conta-dropdown-mobile');
 
-    // Instâncias separadas
     let dropdownDesktop = btn ? bootstrap.Dropdown.getOrCreateInstance(btn) : null;
     let dropdownMobile = btnMobile ? bootstrap.Dropdown.getOrCreateInstance(btnMobile) : null;
 
     let aberto = false;
     let abertoMobile = false;
 
-    // Lógica Desktop
     if (btn) {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -389,7 +364,6 @@
         });
     }
 
-    // Lógica Mobile
     if (btnMobile) {
         btnMobile.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -402,7 +376,6 @@
         });
     }
 
-    // Fechar ambos ao clicar fora
     document.addEventListener('click', function (e) {
         if (dropdownDesktop && aberto) {
             dropdownDesktop.hide();
@@ -415,11 +388,11 @@
     });
 
     document.addEventListener('click', function (e) {
-        if (!btn.closest('.dropdown')?.contains(e.target)) {
+        @* if (!btn.closest('.dropdown')?.contains(e.target)) {
             dropdown.hide();
             aberto = false;
             btn.setAttribute('aria-expanded', 'false');
-        }
+        } *@
     });
 
     document.addEventListener('keydown', function (e) {

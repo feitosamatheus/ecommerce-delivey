@@ -198,6 +198,12 @@
     color: #4b2c20;
 }
 
+.dropdown-item:hover,
+.dropdown-item:focus,
+.dropdown-item:active {
+    background-color: #fff9f0; /* creme clarinho */
+    color: #4b2c20;
+}
 
 /* Classe para o efeito de subir */
 .btn-lift {

@@ -64,7 +64,7 @@
 }
 
 .btn-close-custom:hover {
-    transform: scale(1.2);
+    /* transform: scale(1.1); */
     color: #d4a017;
 }
 

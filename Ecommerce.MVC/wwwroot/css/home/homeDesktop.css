@@ -1,6 +1,3 @@
-/* =========================================================
-   FILTRO (sticky + estado)
-   ========================================================= */
 
 .bc-container-home-mb{
   display: none;
@@ -12,7 +9,6 @@
   transition: background-color .25s ease, box-shadow .25s ease;
 }
 
-/* container sticky (fixo por CSS) */
 .bc-filter--sticky {
   position: sticky;
   top: 15px;
@@ -28,7 +24,6 @@
     background-color .25s ease;
 }
 
-/* estado acionado por JS */
 .bc-filter.is-sticky {
   background-color: #6B3E1E;
   box-shadow:
@@ -36,7 +31,6 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Botão de abrir busca */
 .bc-filter__btn {
   width: clamp(28px, 6vw, 36px);
   height: clamp(28px, 6vw, 36px);
@@ -70,7 +64,6 @@
   outline: none;
 }
 
-/* Busca */
 .bc-filter__search {
   width: 100%;
   color: #1f1f1f !important;
@@ -79,7 +72,7 @@
 .bc-filter__input {
   height: 44px;
   border: 2px solid rgb(207, 207, 207);
-  padding: 0 40px 0 10px; /* espaço para ícone + botão X */
+  padding: 0 40px 0 10px; 
   border-radius: 5px;
   font-weight: 500;
   color: #1f1f1f !important;
@@ -126,10 +119,6 @@
 .bc-filter__close:hover {
   background-color: rgba(102, 62, 26, 0.10);
 }
-
-/* =========================================================
-   SELECT CUSTOM
-   ========================================================= */
 
 .bc-select {
   position: relative;
@@ -216,10 +205,6 @@
   color: #ffffff;
 }
 
-/* =========================================================
-   PAINEL / CARD PRODUTO
-   ========================================================= */
-
 .bc-panel {
   background: #fff;
   border-radius: 5px;
@@ -229,8 +214,8 @@
 }
 
 .bc-product {
-   position: relative; /* garante o contexto do absolute do botão + */
-  overflow: hidden;   /* opcional: evita o botão escapar do card */
+   position: relative;
+  overflow: hidden;   
   background: #fff;
   border-radius: 10px;
   border: 1px solid rgba(0,0,0,.04);
@@ -265,11 +250,6 @@
   background-position: center;
 }
 
-/* =========================================================
-   CARROSSEL (setas)
-   ========================================================= */
-
-/* remove padrão do Bootstrap */
 .carousel-control-prev,
 .carousel-control-next {
   width: auto;
@@ -325,10 +305,6 @@
   opacity: 1;
 }
 
-/* =========================================================
-   CARRINHO (sticky)
-   ========================================================= */
-
 .bc-cart--sticky {
   position: sticky;
   top: 16px;
@@ -348,12 +324,7 @@
   color: rgb(255, 207, 105);
 }
 
-/* =========================================================
-   CARD PRODUTO - VERTICAL (CARROSSEL)
-   ========================================================= */
-
 .bc-product--vertical {
-  /* display: flex; */
   flex-direction: column;
   align-items: center;
   text-align: center;
@@ -371,24 +342,19 @@
 
 .bc-product__title {
   font-size: 0.95rem;
-  /* color: #3b2f2f; */
   color: rgb(90, 90, 90) !important;
   line-height: 1.3;
 }
 
 .bc-product__price {
   font-size: 1rem;
-  /* color: #4a2a15;  */
-  color: #E6A23C; /* destaque para o preço */
+  color: #E6A23C; 
 
 }
 
 .bc-product:hover .bc-product__price {
-  color: #D98C1A; /* dourado mais escuro */
+  color: #D98C1A; 
 }
-/* =========================================================
-   BOTÃO ADICIONAR (+) – PALETA DO SITE
-   ========================================================= */
 
 .bc-product__add {
   position: absolute;
@@ -399,7 +365,7 @@
   height: 36px;
   border-radius: 50%;
 
-  background-color: #4a2a15; /* dourado principal */
+  background-color: #4a2a15; 
   border: none;
 
   display: flex;
@@ -419,12 +385,12 @@
 }
 
 .bc-product__add:hover {
-  background-color: #D98C1A; /* dourado mais escuro */
+  background-color: #D98C1A; 
   transform: scale(1.05);
   box-shadow: 0 8px 18px rgba(74, 42, 21, 0.45);
 }
 
 .bc-product__add:active {
-  background-color: #663E1A; /* marrom do site */
+  background-color: #663E1A; 
   transform: scale(0.95);
 }

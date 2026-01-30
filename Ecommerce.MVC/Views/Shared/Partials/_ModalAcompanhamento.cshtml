@@ -1,4 +1,4 @@
-<div class="modal fade" id="modalAcompanhamentoCliente" tabindex="-1" aria-hidden="true">
+@* <div class="modal fade" id="modalAcompanhamentoCliente" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content bc-modal" style="border-radius: 5px;">
       <div class="modal-body" id="modalAcompanhamentoClienteBody">
@@ -6,4 +6,29 @@
       </div>
     </div>
   </div>
+</div> *@
+
+
+<style>
+    .shadow-sm-hover:hover {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+        transform: translateY(-2px);
+    }
+    .transition-all { transition: all 0.2s ease-in-out; }
+    .extra-small { font-size: 0.75rem; }
+</style>
+<div class="modal fade" id="modalAcompanhamentoCliente" tabindex="-1" aria-labelledby="modalAcompanhamentoClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bc-modal border-0 shadow-lg" style="overflow: hidden;">
+            <div class="modal-header" style="position: absolute; border:none;right: 4px; top: 5px;" >
+                <button type="button" class="btn-close-custom" title="Fechar" data-bs-dismiss="modal" aria-label="Fechar" style="position: static; font-size: 1.5rem;">&times;</button>
+            </div>
+
+            <div class="modal-body pt-2 px-4" id="modalAcompanhamentoClienteBody">
+                <div class="text-muted">Carregando...</div>
+            </div>
+        </div>
+    </div>
 </div>

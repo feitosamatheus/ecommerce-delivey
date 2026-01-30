@@ -1,21 +1,15 @@
-/* =========================================================
-   HOME MOBILE - ESTILOS EXCLUSIVOS
-   ========================================================= */
-
-/* Container base do Filtro */
 .bc-container-home-desktop{
   display: none;
 }
 
 .bc-filter {
     background-color: #fff;
-    border-radius: 10px;
     transition: background-color .25s ease, box-shadow .25s ease;
 }
 
 .bc-filter--sticky {
     position: sticky;
-    top: 15px;
+    top: 0px;
     z-index: 20;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 1px 0 rgba(0, 0, 0, 0.04);
     transition: box-shadow .25s ease, transform .25s ease, background-color .25s ease;
@@ -32,11 +26,10 @@
     font-size: 14px;
 }
 
-/* O botão do select */
 .bc-select__trigger {
     width: 100%;
     height: 40px;
-    padding: 0 16px 0 14px;
+    padding: 0 16px 0 10px;
     background: #ffffff;
     border: 2px solid rgb(207, 207, 207);
     border-radius: 10px;
@@ -53,7 +46,6 @@
     border-color: #663E1A;
 }
 
-/* A seta do select */
 .bc-select__arrow {
     width: 7px; height: 7px;
     border-right: 2px solid #663E1A;
@@ -68,7 +60,6 @@
     transform: rotate(-135deg);
 }
 
-/* Lista de opções (Dropdown) */
 .bc-select__options {
     position: absolute;
     top: calc(100% + 6px);
@@ -95,7 +86,6 @@
 .bc-select__options li:hover { background-color: #F5EBDD; }
 .bc-select__options li.is-selected { background-color: #663E1A; color: #ffffff; }
 
-/* Botão circular de abrir busca (Laranja) */
 .bc-filter__btn {
     width: clamp(28px, 6vw, 36px);
     height: clamp(28px, 6vw, 36px);
@@ -113,7 +103,6 @@
     transform: translateY(-1px);
 }
 
-/* Input de texto da busca */
 .bc-filter__input {
     height: 40px;
     border: 2px solid rgb(207, 207, 207);
@@ -125,7 +114,6 @@
     width: 100%;
 }
 
-/* Ícone de fechar (X) dentro da busca */
 .bc-filter__close {
     position: absolute;
     top: 50%; right: 10px;
@@ -153,29 +141,14 @@
 
 .bc-panel {
     background: #fff;
-    border-radius: 10px;
+    /* border-radius: 10px; */
     border: 1px solid rgba(0,0,0,.05);
     box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px;
 }
 
-/* .bc-product {
-    position: relative; 
-    overflow: hidden;
-    background: #fff;
-    border-radius: 10px;
-    border: 1px solid rgba(0,0,0,.04);
-    box-shadow: 0 2px 6px rgba(0,0,0,.06), 0 8px 20px rgba(0,0,0,.04);
-    transition: transform .15s ease, box-shadow .15s ease;
-}
-
-.bc-product:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(0,0,0,.12), 0 12px 28px rgba(0,0,0,.08);
-} */
-
 .bc-product {
     border: 1px solid rgba(0,0,0,.06);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Sombra mais suave */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     transition: transform .25s cubic-bezier(0.4, 0, 0.2, 1), 
                 box-shadow .25s cubic-bezier(0.4, 0, 0.2, 1),
                 border-color .25s ease;
@@ -190,13 +163,11 @@
     border-color: #F5EBDD;
 }
 
-/* Ajuste na Thumb para mobile ficar mais nítida */
 .bc-product__thumb {
     border-radius: 8px;
     box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
 }
 
-/* Info e Títulos */
 .bc-product__info {
     color: rgb(90, 90, 90) !important;
     display: flex;
@@ -204,15 +175,9 @@
     align-items: start;
 }
 
-/* .bc-product__title {
-    font-size: 0.95rem;
-    color: rgb(90, 90, 90) !important;
-    line-height: 1.3;
-} */
-
 .bc-product__title {
-    font-size: 1.05rem !important; /* Aumentado levemente */
-    color: #2D2D2D !important; /* Quase preto para melhor leitura */
+    font-size: 1.05rem !important; 
+    color: #2D2D2D !important; 
     font-weight: 700;
     line-height: 1.2;
 }
@@ -223,15 +188,9 @@
     margin-top: 4px;
 }
 
-/* Preço */
-/* .bc-product__price {
-    font-size: 1rem;
-    color: #E6A23C; 
-} */
-
 .bc-product__price {
     font-size: 1.1rem;
-    color: #D98C1A; /* Um tom mais "quente" de dourado */
+    color: #D98C1A; 
     font-weight: 800;
     margin-top: 8px;
 }
@@ -240,7 +199,6 @@
     color: #D98C1A;
 }
 
-/* Imagem (Thumb) */
 .bc-product__thumb {
     width: 150px;
     height: 104px;
@@ -250,7 +208,6 @@
     background-position: center;
 }
 
-/* Variante Vertical (usada no Carrossel) */
 .bc-product--vertical {
     flex-direction: column;
     align-items: center;
@@ -285,7 +242,6 @@
         transition: background-color .2s ease, transform .15s ease, box-shadow .2s ease;
 }
 
-/* Estado ativo (Toque) instantâneo */
 .bc-product__add:active {
     background-color: #D98C1A !important;
     transform: scale(0.85) !important;
@@ -293,12 +249,11 @@
 }
 
 .bc-product__add:hover {
-  background-color: #D98C1A; /* dourado mais escuro */
+  background-color: #D98C1A; 
   transform: scale(1.05);
   box-shadow: 0 8px 18px rgba(74, 42, 21, 0.45);
 }
 
-/* Garante que em telas menores o botão não suma */
 @media (max-width: 576px) {
     .bc-product__add {
         bottom: 8px;
@@ -308,7 +263,6 @@
     }
 }
 
-/* Botões de navegação (Setas) */
 .bc-carousel__btn {
     width: 36px;
     height: 36px;
@@ -328,7 +282,6 @@
 .carousel-control-prev.bc-carousel__btn { left: -28px; }
 .carousel-control-next.bc-carousel__btn { right: -28px; }
 
-/* Indicadores (Bolinhas) */
 .bc-carousel__indicators {
     margin-bottom: -17px; 
 }
@@ -349,7 +302,6 @@
 
 .bc-panel h5.fw-bold {
     font-size: 1.25rem;
-    color: #4A2A15; /* Marrom mais profundo para títulos */
-    letter-spacing: -0.5px;
+    color: #4A2A15; 
     margin-bottom: 1.2rem;
 }

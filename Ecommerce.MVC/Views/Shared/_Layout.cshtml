@@ -12,13 +12,18 @@
     <link rel="stylesheet" href="/css/header/headerMobile.css" asp-append-version="true">
     <link rel="stylesheet" href="/css/header/headerDesktop.css" media="(min-width: 1220px)" asp-append-version="true">
     <link rel="stylesheet" href="/css/comun/comunDesktop.css" media="(min-width: 1220px)" asp-append-version="true">
-    <link rel="stylesheet" href="/css/modalCommun/modalCommun.css" media="(min-width: 1220px)" asp-append-version="true">
-    <link rel="stylesheet" href="/css/modalVerMais/modalVerMais.css" media="(min-width: 1220px)" asp-append-version="true">
-    <link rel="stylesheet" href="/css/home/homeMobile.css" media="(max-width: 1219px)" asp-append-version="true">
-    <link rel="stylesheet" href="/css/home/homeDesktop.css" media="(min-width: 1220px)" asp-append-version="true">
+
+    <link rel="stylesheet" href="/css/modalCommun/modalCommun.css" asp-append-version="true">
+    <link rel="stylesheet" href="/css/modalVerMais/modalVerMais.css" asp-append-version="true">
+    
+    <link rel="stylesheet" href="/css/home/homeMobile.css" media="(max-width: 1199px)" asp-append-version="true">
+    <link rel="stylesheet" href="/css/home/homeDesktop.css" media="(min-width: 1200px)" asp-append-version="true">
     <link rel="stylesheet" href="~/Ecommerce.MVC.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    @* <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet"> *@
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 
 </head>
 <body class="container-fluid container-lg px-0">
@@ -26,7 +31,7 @@
     @await Html.PartialAsync("Partials/_Animacao.cshtml")
     @await Component.InvokeAsync("Header")
 
-    <div class="mx-2 mx-md-3">
+    <div class="mx-0 mx-xl-3">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
