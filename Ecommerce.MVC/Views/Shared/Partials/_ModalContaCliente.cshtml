@@ -1,39 +1,16 @@
-@* <div class="modal fade" id="modalContaCliente" tabindex="-1" aria-labelledby="modalContaClienteLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-bc" style="border-radius: 8px;">
-            <div class="modal-header border-0">
-                <h6 class="modal-title fw-bold" id="modalContaClienteLabel">
-                    Bem-vindo(a)!
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <div class="modal-body text-center">
-                <p class="mb-2">
-                    Olá, <strong>João</strong> 👋
-                </p>
-                <p class="text-muted mb-3">
-                    Você entrou com sucesso na sua conta.
-                </p>
-                <div class="d-grid gap-2">
-                <a href="/meus-pedidos" class="btn btn-primary">
-                    Ver meus pedidos
-                </a>
-                <a href="/perfil" class="btn btn-outline-secondary">
-                    Meu perfil
-                </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> *@
-
-
 <div class="modal fade" id="modalContaCliente" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content bc-modal" style="border-radius: 5px;">
-      <div class="modal-body" id="modalContaClienteBody">
-        <div class="text-muted">Carregando...</div>
-      </div>
+        <div class="modal-header border-0 d-flex align-items-center justify-content-between">
+            <div class="text-start">
+                <h5 class="modal-title fw-bolder mb-0" style="color: #3c1e0a; font-weight: bold !important; font-size: 1rem; margin-bottom: 0.5rem !important;" >Histórico de Pedidos</h5>
+                
+            </div>
+            <button type="button" class="btn-close-custom" title="Fechar" data-bs-dismiss="modal" aria-label="Fechar" style="position: static; font-size: 1.5rem;">&times;</button>
+        </div>
+        <div class="modal-body" id="modalContaClienteBody">
+            <div class="text-muted">Carregando...</div>
+        </div>
     </div>
   </div>
 </div>

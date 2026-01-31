@@ -29,6 +29,7 @@
 <body class="container-fluid container-lg px-0">
     
     @await Html.PartialAsync("Partials/_Animacao.cshtml")
+    @await Html.PartialAsync("Partials/_LoadingSpinner.cshtml")
     @await Component.InvokeAsync("Header")
 
     <div class="mx-0 mx-xl-3">
@@ -42,7 +43,6 @@
     @await Html.PartialAsync("Partials/_ModalAcompanhamento.cshtml")
     @await Html.PartialAsync("Partials/_ModalFinalizarPedido.cshtml")
 
-    @await Html.PartialAsync("_Spinner.cshtml")
 
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

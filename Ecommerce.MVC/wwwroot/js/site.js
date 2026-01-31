@@ -1,4 +1,21 @@
 ﻿(function ($) {
+window.addLoading = function (text) {
+    if (text != "" && text != null) {
+        var textSpinner = document.querySelector(".text-spinner");
+        textSpinner.textContent = text;
+    }
+
+    document.body.classList.add('loading');
+}
+
+window.removeLoading = function () {
+    var textSpinner = document.querySelector(".text-spinner");
+
+    document.body.classList.remove('loading');
+    textSpinner.textContent = "Carregando...";
+}
+
+
 
   function somaAcompanhamentos($modal) {
     debugger

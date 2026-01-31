@@ -1,141 +1,146 @@
 <style>
+    /* Tipografia Fluida com Clamp */
+    /* clamp(tamanho-min, preferência-fluida, tamanho-max) */
+    .txt-pedido { font-size: clamp(0.85rem, 2vw, 1rem); }
+    .txt-data { font-size: clamp(0.75rem, 1.5vw, 0.875rem); }
+    .txt-total { font-size: clamp(0.9rem, 2.5vw, 1.1rem); }
+
+    /* Container de Cards (Substitui a Table) */
+    .order-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .order-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 16px;
+        transition: all 0.2s ease;
+        border: 1px solid #f0f0f0;
+        display: grid;
+        /* Layout adaptável: 1 coluna no mobile, 4 colunas no desktop */
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 8px;
+    }
+
+    @@media (min-width: 768px) {
+        .order-card {
+            grid-template-columns: 1fr 1.5fr 1fr 1fr auto;
+            padding: 12px 24px;
+        }
+    }
+
+    .order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        border-color: #3c1e0a33;
+    }
+
+    /* Status Customizado */
+    .badge-status {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        display: inline-block;
+        width: fit-content;
+    }
+
+    .status-finalizado { background: #e7f5ea; color: #1f7a33; }
+    .status-pendente { background: #fff4e5; color: #b07100; }
+
+    /* Estilo das Nav-Pills (Mobile Friendly) */
+    .nav-pills {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .nav-pills .nav-link {
-        color: #3c1e0a;
-        font-weight: 500;
-        border-radius: 8px;
-        transition: 0.3s;
+        white-space: nowrap;
+        border-radius: 12px;
+        color: #666;
+        font-weight: 600;
     }
 
     .nav-pills .nav-link.active {
         background-color: #3c1e0a !important;
-        color: #fff !important;
-    }
-
-    .nav-pills .nav-link:hover:not(.active) {
-        background-color: #f8f1eb;
-        color: #d4a017;
-    }
-
-    .badge.bg-success {
-        background-color: #28a745 !important;
     }
 </style>
-<div class="row g-0">
-    <div class="col-md-3 border-end bg-light">
-        <div class="p-4">
-            <h5 class="fw-bold mb-4" style="color: #3c1e0a;">Minha Conta</h5>
-            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <button class="nav-link active text-start mb-2 py-3 d-flex align-items-center" id="v-pills-pedidos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-pedidos" type="button" role="tab">
-                    <i class="fa fa-shopping-bag me-2"></i> Meus Pedidos
-                </button>
-                <button class="nav-link text-start mb-2 py-3 d-flex align-items-center" id="v-pills-rastreio-tab" data-bs-toggle="pill" data-bs-target="#v-pills-rastreio" type="button" role="tab">
-                    <i class="fa fa-truck me-2"></i> Acompanhar Pedido
-                </button>
-                <button class="nav-link text-start mb-2 py-3 d-flex align-items-center" id="v-pills-senha-tab" data-bs-toggle="pill" data-bs-target="#v-pills-senha" type="button" role="tab">
-                    <i class="fa fa-lock me-2"></i> Alterar Senha
-                </button>
-                <hr>
-                <button class="nav-link text-danger text-start py-3" onclick="logout()">
-                    <i class="fa fa-sign-out-alt me-2"></i> Sair
-                </button>
-            </div>
-        </div>
-    </div>
+<div class="container-fluid p-0">
 
-    <div class="col-md-9">
-        <div class="tab-content p-4" id="v-pills-tabContent">
+    <ul class="nav nav-pills mb-4 gap-2" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-todos" style="border-radius: 20px;">
+                Todos <span class="badge bg-light text-dark ms-1">2</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-finalizados" style="border-radius: 20px;">
+                Finalizados <span class="badge bg-light text-dark ms-1">1</span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="tab-todos">
             
-            <div class="tab-pane fade show active" id="v-pills-pedidos" role="tabpanel">
-                <h5 class="fw-bold mb-3">Histórico de Pedidos</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Pedido</th>
-                                <th>Data</th>
-                                <th>Status</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-pedidos">
-                            <tr>
-                                <td>#1234</td>
-                                <td>12/10/2025</td>
-                                <td><span class="badge bg-success">Concluído</span></td>
-                                <td>R$ 150,00</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="d-none d-md-grid grid-template-columns mb-2 px-4 text-muted fw-bold" 
+                 style="grid-template-columns: 1fr 1.5fr 1fr 1fr auto; font-size: 0.75rem; text-transform: uppercase;">
+                <span>Pedido</span>
+                <span>Data</span>
+                <span>Status</span>
+                <span>Total</span>
+                <span></span>
             </div>
 
-            <div class="tab-pane fade" id="v-pills-rastreio" role="tabpanel">
-                <h5 class="fw-bold mb-3">Rastrear Entrega</h5>
-                <div class="input-group mb-4">
-                    <input type="text" class="form-control" placeholder="Digite o número do pedido">
-                    <button class="btn text-white" style="background-color: #3c1e0a;">Buscar</button>
-                </div>
-                <div class="tracking-list py-3">
-                    <div class="d-flex mb-3">
-                        <div class="text-center me-3">
-                            <i class="fa fa-check-circle text-success"></i>
-                        </div>
-                        <div>
-                            <p class="mb-0 fw-bold">Pedido Confirmado</p>
-                            <small class="text-muted">12/10/2025 - 10:30</small>
-                        </div>
+            <div class="order-list">
+                
+                <div class="order-card">
+                    <div class="d-flex flex-column">
+                        <span class="text-muted small d-md-none">Pedido</span>
+                        <span class="fw-bold txt-pedido text-dark">#1234</span>
                     </div>
-                </div>
-            </div>
+                    
+                    <div class="d-flex flex-column">
+                        <span class="text-muted small d-md-none">Data</span>
+                        <span class="text-secondary txt-data">12/10/2025</span>
+                    </div>
 
-            <div class="tab-pane fade" id="v-pills-senha" role="tabpanel">
-                <h5 class="fw-bold mb-3">Segurança da Conta</h5>
-                <form id="formAlterarSenha">
-                    <div class="mb-3">
-                        <label class="form-label">Senha Atual</label>
-                        <input type="password" class="form-control" required>
+                    <div>
+                        <span class="badge-status status-finalizado">Finalizado</span>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nova Senha</label>
-                        <input type="password" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Confirmar Nova Senha</label>
-                        <input type="password" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn text-white w-100" style="background-color: #3c1e0a;">Atualizar Senha</button>
-                </form>
-            </div>
 
-        </div>
+                    <div class="text-md-start">
+                        <span class="fw-bolder txt-total text-dark">R$ 150,00</span>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="d-flex flex-column">
+                        <span class="text-muted small d-md-none">Pedido</span>
+                        <span class="fw-bold txt-pedido text-dark">#1235</span>
+                    </div>
+                    
+                    <div class="d-flex flex-column">
+                        <span class="text-muted small d-md-none">Data</span>
+                        <span class="text-secondary txt-data">15/10/2025</span>
+                    </div>
+
+                    <div>
+                        <span class="badge-status status-pendente">Pendente</span>
+                    </div>
+
+                    <div>
+                        <span class="fw-bolder txt-total text-dark">R$ 220,00</span>
+                    </div>
+                </div>
+
+            </div> </div>
     </div>
 </div>
-<script>
-    const modalDialog = document.querySelector('#modalContaCliente .modal-dialog');
-    if (modalDialog) {
-        modalDialog.classList.remove('modal-lg');
-        modalDialog.classList.add('modal-xl');
-    }
-
-    // Ao abrir o modal, carregar pedidos do cliente
-    document.getElementById('modalContaCliente').addEventListener('shown.bs.modal', function () {
-        carregarPedidos();
-    });
-
-    async function carregarPedidos() {
-        try {
-            const response = await fetch('/Cliente/ObterPedidos');
-            const pedidos = await response.json();
-            
-            // Aqui você faria o loop para popular a tabela #lista-pedidos
-        } catch (error) {
-            console.error("Erro ao carregar pedidos:", error);
-        }
-    }
-
-    function logout() {
-        if(confirm("Deseja realmente sair?")) {
-            window.location.href = '/Cliente/Logout';
-        }
-    }
-</script>
