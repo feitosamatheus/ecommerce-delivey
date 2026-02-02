@@ -1,39 +1,83 @@
-
 <style>
-    .shadow-sm-hover:hover {
-        background-color: #f8f9fa !important;
-        border-color: #dee2e6 !important;
-        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
-        transform: translateY(-2px);
+    :root {
+        --bh-primary: #3c1e0a;
+        --bh-success: #1f7a33;
+        --bh-border: #eeeeee;
+        --bh-text-muted: #888888;
+        --bh-bg-light: #f8f9fa;
     }
-    .transition-all { transition: all 0.2s ease-in-out; }
-    .extra-small { font-size: 0.75rem; }
+
+    /* Reset e Fontes */
+    .bc-modal-container { font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    /* Modal Customizado */
+    .bc-modal { border-radius: 16px; border: none; }
+    
+    /* Botão de Fechar */
+    .btn-close-custom {
+        background: none; border: none; font-size: 1.8rem;
+        color: var(--bh-text-muted); line-height: 1; transition: 0.2s;
+    }
+    .btn-close-custom:hover { color: var(--bh-primary); transform: scale(1.1); }
+
+    /* Tabs (Mesmo estilo do Histórico) */
+    .bc-modal .nav-tabs { border-bottom: 2px solid var(--bh-border); }
+    .bc-modal .nav-link { 
+        border: none; color: var(--bh-text-muted); font-weight: 600; 
+        padding: 12px 20px; font-size: 0.9rem; transition: 0.3s;
+    }
+    .bc-modal .nav-link.active { 
+        color: var(--bh-primary); background: none; 
+        border-bottom: 3px solid var(--bh-primary); 
+    }
+
+    /* Seções Internas */
+    .bc-section-title { 
+        font-size: 0.75rem; font-weight: 800; text-transform: uppercase; 
+        color: var(--bh-text-muted); letter-spacing: 0.5px; margin-bottom: 8px; 
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Cards de Endereço e Pagamento */
+    .bc-card-action {
+        background: #fff; border: 1px solid var(--bh-border); border-radius: 12px;
+        padding: 15px; text-decoration: none; transition: all 0.2s ease-in-out;
+    }
+    .bc-card-action:hover {
+        background-color: var(--bh-bg-light); border-color: #dee2e6;
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); transform: translateY(-2px);
+    }
+
+    /* Utilitários */
+    .extra-small { font-size: 0.7rem; }
+    .bc-link { color: var(--bh-primary); font-weight: 700; text-decoration: none; font-size: 0.85rem; }
+    .bc-link:hover { text-decoration: underline; }
+    .bc-footnote { font-size: 0.7rem; color: var(--bh-text-muted); }
 </style>
-<div class="modal fade" id="modalVerMais" tabindex="-1" aria-labelledby="modalVerMaisLabel" aria-hidden="true">
+
+<div class="modal fade bc-modal-container" id="modalVerMais" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content bc-modal border-0 shadow-lg" style="overflow: hidden;">
-            @* <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center">
-                <h5 class="modal-title fw-bold" id="modalVerMaisLabel" style="color: #3c1e0a;">Barriga Cheia</h5>
-                <button type="button" class="btn-close-custom" title="Fechar" data-bs-dismiss="modal" aria-label="Fechar" style="position: static; font-size: 1.5rem;">&times;</button>
-            </div> *@
-            <div class="modal-header" style="position: absolute; border:none;right: 4px; top: 5px;" >
-                <button type="button" class="btn-close-custom" title="Fechar" data-bs-dismiss="modal" aria-label="Fechar" style="position: static; font-size: 1.5rem;">&times;</button>
+        <div class="modal-content bc-modal shadow-lg">
+            
+            <div style="position: absolute; right: 15px; top: 10px; z-index: 10;">
+                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">×</button>
             </div>
 
-            <div class="modal-body pt-2 px-4">
-                <ul class="nav nav-tabs bc-tabs border-0" id="bcTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="tab-sobre" data-bs-toggle="tab" data-bs-target="#pane-sobre" type="button" role="tab">Sobre</button>
+            <div class="modal-body p-4">
+                <ul class="nav nav-tabs mb-4" id="bcTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pane-sobre" type="button">Sobre</button>
                     </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tab-horario" data-bs-toggle="tab" data-bs-target="#pane-horario" type="button" role="tab">Horário</button>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pane-horario" type="button">Horário</button>
                     </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tab-pagamento" data-bs-toggle="tab" data-bs-target="#pane-pagamento" type="button" role="tab">Pagamento</button>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pane-pagamento" type="button">Pagamento</button>
                     </li>
                 </ul>
-                <div class="tab-content px-0 pt-3" style="border-radius: 0px 5px 5px 5px;" id="bcTabsContent">
-                    <div class="tab-pane fade show active p-2" id="pane-sobre" role="tabpanel">
+
+                <div class="tab-content mt-2">
+                    <div class="tab-pane fade show active" id="pane-sobre">
                         <div class="mb-4">
                             <div class="bc-section-title">Nossa História</div>
                             <p class="text-muted small">
@@ -41,86 +85,74 @@
                             </p>
                             <a href="/" class="bc-link">Ver cardápio completo</a>
                         </div>
+                        
                         <div class="mb-4">
-                            <div class="bc-section-title mb-2">Onde Estamos</div>
-                            
-                            <a href="https://www.google.com/maps/search/?api=1&query=Soparia+Barriga+Cheia+Rua+Nilson+Sabino+Pinho+222+Olinda" 
-                            target="_blank" 
-                            class="d-flex align-items-center px-3 p-2 text-decoration-none border rounded-3 bg-light shadow-sm-hover transition-all">
-                                
-                                @* <div class="bg-danger bg-opacity-10 p-2 rounded-circle me-3">
-                                    <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
-                                </div> *@
-
+                            <div class="bc-section-title">Onde Estamos</div>
+                            <a href="https://maps.google.com" target="_blank" class="d-flex align-items-center bc-card-action">
                                 <div class="text-start">
                                     <span class="d-block fw-bold text-dark small">Rua Nilson Sabino Pinho, 222</span>
                                     <span class="text-muted extra-small">Jardim Atlântico, Olinda - PE</span>
-                                    <div class="text-primary mt-1 extra-small fw-semibold">
-                                        Ver no Google Maps <i class="bi bi-arrow-up-right small"></i>
+                                    <div class="mt-1 extra-small fw-bold" style="color: var(--bh-primary);">
+                                        Ver no Google Maps <i class="fa-solid fa-arrow-up-right-from-square ms-1" style="font-size: 0.6rem;"></i>
                                     </div>
                                 </div>
                             </a>
                         </div>
+
                         <div class="mb-2">
                             <div class="bc-section-title">Informações Legais</div>
-                            <div class="text-muted small">CNPJ: 00.000.000/0001-00</div>
+                            <div class="text-muted small fw-bold">CNPJ: 00.000.000/0001-00</div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="pane-horario" role="tabpanel">
-                        <div class="bg-light p-3">
-                            <div class="bc-section-title"><i class="bi bi-clock"></i>Horários de Funcionamento</div>
-                            <div class="text-muted small">
-                                <strong>Segunda a Sexta:</strong> 11:00 às 22:00<br />
-                                <strong>Sábado:</strong> 11:00 às 23:00<br />
-                                <strong>Domingo:</strong> 16:00 às 22:00
+
+                    <div class="tab-pane fade" id="pane-horario">
+                        <div class="p-4 rounded-3" style="background-color: var(--bh-bg-light); border: 1px solid var(--bh-border);">
+                            <div class="bc-section-title"><i class="fa-solid fa-clock"></i> Horários de Funcionamento</div>
+                            <div class="row mt-3">
+                                <div class="col-sm-6 mb-2">
+                                    <span class="small d-block text-muted">Segunda a Sexta</span>
+                                    <span class="fw-bold">11:00 às 22:00</span>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="small d-block text-muted">Sábado</span>
+                                    <span class="fw-bold">11:00 às 23:00</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="small d-block text-muted">Domingo</span>
+                                    <span class="fw-bold">16:00 às 22:00</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade px-3" id="pane-pagamento" role="tabpanel">
-                        <div class="bc-section-title mb-3" style="color: #4B2C20;">Formas de Pagamento</div>
-                        
+
+                    <div class="tab-pane fade" id="pane-pagamento">
+                        <div class="bc-section-title mb-3">Formas de Pagamento</div>
                         <div class="row g-3">
-                            <div class="col-6">
-                                <div class="d-flex align-items-center p-3 border rounded-3 bg-white shadow-sm transition-all shadow-sm-hover">
-                                    <div class="me-3">
-                                        <i class="fa-brands fa-pix fa-lg" style="color: #32BCAD;"></i>
+                            @{
+                                var pagamentos = new[] {
+                                    new { Icon = "fa-pix", Label = "Pix", Color = "#32BCAD" },
+                                    new { Icon = "fa-credit-card", Label = "Crédito", Color = "#D4A017" },
+                                    new { Icon = "fa-money-check-dollar", Label = "Débito", Color = "var(--bh-primary)" },
+                                    new { Icon = "fa-money-bill-1-wave", Label = "Dinheiro", Color = "#1f7a33" }
+                                };
+                            }
+                            @foreach (var p in pagamentos) {
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center bc-card-action">
+                                        <div class="me-3">
+                                            <i class="fa-solid @p.Icon fa-lg" style="color: @p.Color;"></i>
+                                        </div>
+                                        <span class="fw-bold text-dark small">@p.Label</span>
                                     </div>
-                                    <span class="fw-bold text-dark small">Pix</span>
                                 </div>
-                            </div>
-                            
-                            <div class="col-6">
-                                <div class="d-flex align-items-center p-3 border rounded-3 bg-white shadow-sm transition-all shadow-sm-hover">
-                                    <div class="me-3">
-                                        <i class="fa-solid fa-credit-card fa-lg" style="color: #D4A017;"></i>
-                                    </div>
-                                    <span class="fw-bold text-dark small">Crédito</span>
-                                </div>
-                            </div>
-
-                            <div class="col-6">
-                                <div class="d-flex align-items-center p-3 border rounded-3 bg-white shadow-sm transition-all shadow-sm-hover">
-                                    <div class="me-3">
-                                        <i class="fa-solid fa-money-check-dollar fa-lg" style="color: #4B2C20;"></i>
-                                    </div>
-                                    <span class="fw-bold text-dark small">Débito</span>
-                                </div>
-                            </div>
-
-                            <div class="col-6">
-                                <div class="d-flex align-items-center p-3 border rounded-3 bg-white shadow-sm transition-all shadow-sm-hover">
-                                    <div class="me-3">
-                                        <i class="fa-solid fa-money-bill-1-wave fa-lg" style="color: #28a745;"></i>
-                                    </div>
-                                    <span class="fw-bold text-dark small">Dinheiro</span>
-                                </div>
-                            </div>
+                            }
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="bc-footnote text-center pb-4 pt-2">
-                * Os preços apresentados no cardápio são definidos pela própria loja.
+
+                <div class="bc-footnote text-center mt-5 mb-2">
+                    * Os preços apresentados no cardápio são definidos pela própria loja.
+                </div>
             </div>
         </div>
     </div>

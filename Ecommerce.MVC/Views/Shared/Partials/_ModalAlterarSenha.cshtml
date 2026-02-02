@@ -1,0 +1,111 @@
+<style>
+    .shadow-sm-hover:hover {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+        transform: translateY(-2px);
+    }
+    .transition-all { transition: all 0.2s ease-in-out; }
+    .extra-small { font-size: 0.75rem; }
+    
+    /* Padronização do botão de fechar para os modais */
+    .btn-close-custom {
+        background: none; border: none; color: #888; transition: 0.2s;
+    }
+    .btn-close-custom:hover { color: #3c1e0a; transform: scale(1.1); }
+</style>
+
+<div class="modal fade" id="modalAlterarSenhaCliente" tabindex="-1" aria-labelledby="modalAlterarSenhaClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bc-modal border-0 shadow-lg" style="overflow: hidden; border-radius: 15px;">
+           <div class="modal-header border-0 d-flex align-items-center justify-content-end pb-0">
+                <button type="button" class="btn-close-custom" title="Fechar" data-bs-dismiss="modal" aria-label="Fechar" style="font-size: 1.5rem; margin-top: -3px;">&times;</button>
+            </div>
+
+            <div class="modal-body pt-0 px-4" id="modalAlterarSenhaClienteBody">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 px-2 px-md-5 py-2" id="change-password-form">
+                        <div class="text-center mb-2">
+                            <img src="~/img/logo4.png" alt="Logo" style="width: 70px;">
+                        </div>
+                        
+                        <div class="text-center mb-4">
+                            <h4 class="fw-bold" style="color: #3c1e0a;">Alterar sua Senha</h4>
+                            <p class="text-muted small">Para sua segurança, informe sua senha atual antes de cadastrar a nova.</p>
+                        </div>
+
+                        <form id="changePasswordForm">
+                            <div class="mb-3 text-start">
+                                <label class="form-label fw-bold mb-1">Senha Atual</label>
+                                <input type="password" id="currentPassword" class="form-control shadow-sm" placeholder="Sua senha de acesso hoje" required>
+                            </div>
+                            <div class="mb-3 text-start">
+                                <label class="form-label fw-bold mb-1">Nova Senha</label>
+                                <input type="password" id="newPassword" class="form-control shadow-sm" placeholder="Mínimo 6 caracteres" required>
+                            </div>
+
+                            <div class="mb-4 text-start">
+                                <label class="form-label fw-bold mb-1">Confirmar Nova Senha</label>
+                                <input type="password" id="confirmNewPassword" class="form-control shadow-sm" placeholder="Repita a nova senha" required>
+                            </div>
+
+                            <button type="submit" class="btn w-100 fw-bold text-white py-2" 
+                                    style="background-color: #3c1e0a; border-radius: 8px;">
+                                Salvar Nova Senha
+                            </button>
+
+                            <div class="text-center mt-3">
+                                <small>
+                                    <a href="javascript:void(0)" data-bs-dismiss="modal" style="color: var(--bh-text-muted); text-decoration: none;">
+                                        Cancelar
+                                    </a>
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelector('#changePasswordForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const senhaAtual = document.getElementById('currentPassword').value;
+        const novaSenha = document.getElementById('newPassword').value;
+        const confirmaSenha = document.getElementById('confirmNewPassword').value;
+
+        if (novaSenha !== confirmaSenha) {
+            alert("A nova senha e a confirmação não coincidem!");
+            return;
+        }
+
+        const data = {
+            SenhaAtual: senhaAtual,
+            NovaSenha: novaSenha
+        };
+
+        try {
+            const response = await fetch('/Cliente/AlterarSenha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message || "Senha atualizada com sucesso!");
+                bootstrap.Modal.getInstance(document.getElementById('modalAlterarSenhaCliente')).hide();
+                this.reset();
+            } else {
+                alert(result.message || "Erro ao atualizar senha.");
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert("Erro de comunicação com o servidor.");
+        }
+    });
+</script>

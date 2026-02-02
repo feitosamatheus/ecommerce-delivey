@@ -1,146 +1,194 @@
+@using System.Globalization
+@{
+    var pt = new CultureInfo("pt-BR");
+
+    var todosPedidos = new List<dynamic> {
+        new { Id = "12540", Data = DateTime.Now.AddMinutes(-30), Status = "Em Preparo", Step = 3, Total = 65.90, Metodo = "entrega", Endereco = "Rua das Palmeiras, 450", Finalizado = false, Itens = new List<dynamic> { new { Nome = "Hambúrguer Gourmet", Qtd = 1, Preco = 45.90, Acompanhamentos = new List<string> { "Carne Mal Passada", "Bacon Extra" } } } },
+        new { Id = "12535", Data = DateTime.Now.AddHours(-1), Status = "Aguardando Retirada", Step = 4, Total = 32.00, Metodo = "retirar", Endereco = "Retirada na Unidade Centro", Finalizado = false, Itens = new List<dynamic> { new { Nome = "Milkshake Chocolate", Qtd = 1, Preco = 32.00, Acompanhamentos = new List<string>() } } },
+        new { Id = "12500", Data = DateTime.Now.AddDays(-2), Status = "Finalizado", Step = 5, Total = 120.00, Metodo = "entrega", Endereco = "Av. Brasil, 100", Finalizado = true, Itens = new List<dynamic> { new { Nome = "Combo Família", Qtd = 1, Preco = 120.00, Acompanhamentos = new List<string>() } } }
+    };
+}
+
 <style>
-    /* Tipografia Fluida com Clamp */
-    /* clamp(tamanho-min, preferência-fluida, tamanho-max) */
-    .txt-pedido { font-size: clamp(0.85rem, 2vw, 1rem); }
-    .txt-data { font-size: clamp(0.75rem, 1.5vw, 0.875rem); }
-    .txt-total { font-size: clamp(0.9rem, 2.5vw, 1.1rem); }
-
-    /* Container de Cards (Substitui a Table) */
-    .order-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+    :root {
+        --bh-primary: #3c1e0a;
+        --bh-success: #1f7a33;
+        --bh-border: #eeeeee;
+        --bh-text-muted: #888888;
     }
 
-    .order-card {
-        background: #fff;
-        border-radius: 16px;
-        padding: 16px;
-        transition: all 0.2s ease;
-        border: 1px solid #f0f0f0;
-        display: grid;
-        /* Layout adaptável: 1 coluna no mobile, 4 colunas no desktop */
-        grid-template-columns: 1fr auto;
-        align-items: center;
-        gap: 8px;
-    }
+    .bh-history { font-family: 'Segoe UI', sans-serif; }
 
-    @@media (min-width: 768px) {
-        .order-card {
-            grid-template-columns: 1fr 1.5fr 1fr 1fr auto;
-            padding: 12px 24px;
+    /* Tabs (Filtros) */
+    .bh-history .nav-pills .nav-link { border-radius: 12px; font-weight: 600; color: #666; background: #f0f0f0; margin-right: 8px; border: none; font-size: 0.85rem; }
+    .bh-history .nav-pills .nav-link.active { background-color: var(--bh-primary) !important; color: #fff; }
+
+    /* Card Wrapper */
+    .order-wrapper { background: #fff; border: 1px solid var(--bh-border); border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
+    
+    /* Grid System */
+    .order-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; align-items: center; cursor: pointer; }
+    @@media (min-width: 992px) { .order-grid { grid-template-columns: 1.2fr 1.2fr 1fr 1fr 40px; } }
+
+    /* Botão Mobile */
+    @@media (max-width: 991px) {
+        .col-btn { 
+            grid-column: span 2;
+            text-align: center;
+            background: #0f0f0fa8;
+            border-radius: 20px;
+            margin-top: 5px;
+            width: 25%;
+            position: relative;
+            left: 77%;
         }
+        .col-btn .fa-solid { color: white !important; }
     }
 
-    .order-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-        border-color: #3c1e0a33;
-    }
+    .label-mobile { font-size: 0.65rem; color: var(--bh-text-muted); text-transform: uppercase; font-weight: 800; display: block; }
+    @@media (min-width: 992px) { .label-mobile { display: none; } }
 
-    /* Status Customizado */
-    .badge-status {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-weight: 700;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        display: inline-block;
-        width: fit-content;
-    }
+    /* Stepper */
+    .order-stepper { display: flex; justify-content: space-between; padding: 20px; background: #fff; border-bottom: 1px solid var(--bh-border); }
+    .step { flex: 1; text-align: center; font-size: 0.6rem; color: var(--bh-text-muted); position: relative; }
+    .step::after { content: ''; position: absolute; top: 10px; right: -50%; width: 100%; height: 2px; background: var(--bh-border); z-index: 1; }
+    .step:last-child::after { display: none; }
+    .step-circle { width: 22px; height: 22px; border-radius: 50%; background: #eee; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; z-index: 2; position: relative; }
 
-    .status-finalizado { background: #e7f5ea; color: #1f7a33; }
-    .status-pendente { background: #fff4e5; color: #b07100; }
+    .step.done { color: var(--bh-success); }
+    .step.done .step-circle { background: var(--bh-success); color: #fff; }
+    .step.done::after { background: var(--bh-success); }
+    .step.active { color: var(--bh-primary); font-weight: 700; }
+    .step.active .step-circle { background: var(--bh-primary); color: #fff; box-shadow: 0 0 0 3px rgba(60, 30, 10, 0.1); }
 
-    /* Estilo das Nav-Pills (Mobile Friendly) */
-    .nav-pills {
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 8px;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .nav-pills .nav-link {
-        white-space: nowrap;
-        border-radius: 12px;
-        color: #666;
-        font-weight: 600;
-    }
-
-    .nav-pills .nav-link.active {
-        background-color: #3c1e0a !important;
-    }
+    .btn-toggle-detalhes { background: none; border: none; padding: 8px; transition: 0.3s; }
 </style>
-<div class="container-fluid p-0">
 
-    <ul class="nav nav-pills mb-4 gap-2" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-todos" style="border-radius: 20px;">
-                Todos <span class="badge bg-light text-dark ms-1">2</span>
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-finalizados" style="border-radius: 20px;">
-                Finalizados <span class="badge bg-light text-dark ms-1">1</span>
-            </button>
-        </li>
+<div class="bh-history">
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-todos">Todos</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-andamento">Em Andamento</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-finalizados">Finalizados</button></li>
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane fade show active" id="tab-todos">
-            
-            <div class="d-none d-md-grid grid-template-columns mb-2 px-4 text-muted fw-bold" 
-                 style="grid-template-columns: 1fr 1.5fr 1fr 1fr auto; font-size: 0.75rem; text-transform: uppercase;">
-                <span>Pedido</span>
-                <span>Data</span>
-                <span>Status</span>
-                <span>Total</span>
-                <span></span>
-            </div>
+        @{
+            void RenderLista(IEnumerable<dynamic> lista) {
+                if (!lista.Any()) {
+                    <div class="text-center py-5 opacity-50"><p class="small">Nenhum registro encontrado.</p></div>
+                    return;
+                }
 
-            <div class="order-list">
-                
-                <div class="order-card">
-                    <div class="d-flex flex-column">
-                        <span class="text-muted small d-md-none">Pedido</span>
-                        <span class="fw-bold txt-pedido text-dark">#1234</span>
-                    </div>
-                    
-                    <div class="d-flex flex-column">
-                        <span class="text-muted small d-md-none">Data</span>
-                        <span class="text-secondary txt-data">12/10/2025</span>
-                    </div>
+                foreach (var p in lista) {
+                    var colId = "ped_" + p.Id;
+                    <div class="order-wrapper">
+                        <div class="order-grid toggle-detalhes" data-target="@colId">
+                            <div>
+                                <span class="label-mobile">Pedido</span>
+                                <div class="fw-bold" style="color:var(--bh-primary)">#@p.Id</div>
+                            </div>
+                            <div>
+                                <span class="label-mobile">Data/Hora</span>
+                                <div class="text-muted small">@p.Data.ToString("dd/MM HH:mm")</div>
+                            </div>
+                            <div>
+                                <span class="label-mobile">Status</span>
+                                <span class="badge @(p.Finalizado ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning") px-3">@p.Status</span>
+                            </div>
+                            <div>
+                                <span class="label-mobile">Total</span>
+                                <div class="fw-bold">@p.Total.ToString("C", pt)</div>
+                            </div>
+                            <div class="col-btn">
+                                <button class="btn-toggle-detalhes">
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
 
-                    <div>
-                        <span class="badge-status status-finalizado">Finalizado</span>
-                    </div>
+                        <div id="@colId" class="collapse border-top">
+                            <div class="order-stepper">
+                                <div class="step @(p.Step >= 1 ? "done" : "") @(p.Step == 1 ? "active" : "")">
+                                    <div class="step-circle">@if(p.Step > 1){ <i class="fa-solid fa-check"></i> } else { <i class="fa-solid fa-clock"></i> }</div>
+                                    <span>Pedido</span>
+                                </div>
+                                <div class="step @(p.Step >= 2 ? "done" : "") @(p.Step == 2 ? "active" : "")">
+                                    <div class="step-circle">@if(p.Step > 2){ <i class="fa-solid fa-check"></i> } else { <i class="fa-solid fa-receipt"></i> }</div>
+                                    <span>Aprovado</span>
+                                </div>
+                                <div class="step @(p.Step >= 3 ? "done" : "") @(p.Step == 3 ? "active" : "")">
+                                    <div class="step-circle">@if(p.Step > 3){ <i class="fa-solid fa-check"></i> } else { <i class="fa-solid fa-fire-burner"></i> }</div>
+                                    <span>Preparo</span>
+                                </div>
+                                <div class="step @(p.Step >= 4 ? "done" : "") @(p.Step == 4 ? "active" : "")">
+                                    <div class="step-circle">@if(p.Step > 4){ <i class="fa-solid fa-check"></i> } else { <i class="fa-solid @(p.Metodo == "retirar" ? "fa-box-open" : "fa-motorcycle")"></i> }</div>
+                                    <span>@(p.Metodo == "retirar" ? "Pronto" : "Rota")</span>
+                                </div>
+                                <div class="step @(p.Step >= 5 ? "done" : "") @(p.Step == 5 ? "active" : "")">
+                                    <div class="step-circle">@if(p.Step > 5){ <i class="fa-solid fa-check"></i> } else { <i class="fa-solid fa-house-chimney-check"></i> }</div>
+                                    <span>@(p.Metodo == "retirar" ? "Retirado" : "Entregue")</span>
+                                </div>
+                            </div>
 
-                    <div class="text-md-start">
-                        <span class="fw-bolder txt-total text-dark">R$ 150,00</span>
+                            <div class="p-4 bg-light">
+                                <div class="row g-3">
+                                    <div class="col-md-7">
+                                        <h6 class="label-mobile d-block mb-3" style="display:block !important">Resumo dos Itens</h6>
+                                        @foreach (var it in p.Itens) {
+                                            <div class="mb-3 pb-2 border-bottom">
+                                                <div class="d-flex justify-content-between">
+                                                    <div>
+                                                        <div class="fw-bold small">@it.Qtd x @it.Nome</div>
+                                                        @if (it.Acompanhamentos.Count > 0) {
+                                                            <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                                                                <i class="fa-solid fa-plus-circle me-1 opacity-50"></i>
+                                                                @string.Join(", ", it.Acompanhamentos)
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <span class="small fw-bold">@it.Preco.ToString("C", pt)</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-md-5">
+                                         <div class="p-3 bg-white rounded border shadow-sm">
+                                            <small class="text-muted d-block mb-1">Local de @(p.Metodo == "retirar" ? "Retirada" : "Entrega"):</small>
+                                            <p class="small fw-bold mb-0">@p.Endereco</p>
+                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                }
+            }
+        }
 
-                <div class="order-card">
-                    <div class="d-flex flex-column">
-                        <span class="text-muted small d-md-none">Pedido</span>
-                        <span class="fw-bold txt-pedido text-dark">#1235</span>
-                    </div>
-                    
-                    <div class="d-flex flex-column">
-                        <span class="text-muted small d-md-none">Data</span>
-                        <span class="text-secondary txt-data">15/10/2025</span>
-                    </div>
-
-                    <div>
-                        <span class="badge-status status-pendente">Pendente</span>
-                    </div>
-
-                    <div>
-                        <span class="fw-bolder txt-total text-dark">R$ 220,00</span>
-                    </div>
-                </div>
-
-            </div> </div>
+        <div class="tab-pane fade show active" id="tab-todos">@{ RenderLista(todosPedidos); }</div>
+        <div class="tab-pane fade" id="tab-andamento">@{ RenderLista(todosPedidos.Where(x => !x.Finalizado)); }</div>
+        <div class="tab-pane fade" id="tab-finalizados">@{ RenderLista(todosPedidos.Where(x => x.Finalizado)); }</div>
     </div>
 </div>
+
+<script>
+$(function () {
+    $(document).on('click', '.toggle-detalhes', function () {
+        const $btn = $(this);
+        const targetId = $btn.data('target');
+        const el = document.getElementById(targetId);
+        const $icon = $btn.find('.fa-chevron-down, .fa-chevron-up');
+
+        let collapseInstance = bootstrap.Collapse.getInstance(el);
+        if (!collapseInstance) collapseInstance = new bootstrap.Collapse(el, { toggle: false });
+
+        if ($(el).hasClass('show')) {
+            collapseInstance.hide();
+            $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        } else {
+            collapseInstance.show();
+            $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        }
+    });
+});
+</script>
