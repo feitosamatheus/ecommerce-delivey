@@ -101,25 +101,28 @@
 
 <script>
 $(document).on('click', '#btnConfirmarAddProduto', function () {
+    addLoading("Carregando...");
 
-  $.ajax({
-    url: '/Pedido/ModalProduto',
-    method: 'GET',
-    success: function (html) {
+      $.ajax({
+        url: '/Pedido/ModalProduto',
+        method: 'GET',
+        success: function (html) {
+            $('#modalFinalizarPedidoBody').html(html);
 
-      $('#modalFinalizarPedidoBody').html(html);
+            const el = document.getElementById('modalFinalizarPedido');
+            const modal = bootstrap.Modal.getOrCreateInstance(el);
+            modal.show();
 
-      const el = document.getElementById('modalFinalizarPedido');
-      const modal = bootstrap.Modal.getOrCreateInstance(el);
-      modal.show();
+            if (window.wizardInitFinalizarPedido)
+                window.wizardInitFinalizarPedido();
 
-      if (window.wizardInitFinalizarPedido)
-        window.wizardInitFinalizarPedido();
-    },
-    error: function (xhr) {
-      alert(xhr.responseText || 'Erro ao carregar o modal.');
-    }
-  });
+            removeLoading();
+        },
+        error: function (xhr) {
+            alert(xhr.responseText || 'Erro ao carregar o modal.');
+            removeLoading();
+        }
+      });
 
 });
 </script>

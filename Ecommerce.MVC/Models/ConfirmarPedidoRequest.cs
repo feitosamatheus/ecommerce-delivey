@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ecommerce.MVC.Models
+namespace Ecommerce.MVC.Models;
+
+public class ConfirmarPedidoRequest
 {
-    public class ConfirmarPedidoRequest
-    {
-        public string MetodoEntrega { get; set; } // "retirar" | "delivery"
-        public Guid? EnderecoId { get; set; }     // obrigatório se delivery
-        public string Pagamento { get; set; }     // "pix" | "cartao"
-        public string Observacao { get; set; }
-    }
+    public DateTime HorarioRetirada { get; set; }
+    public string Observacao { get; set; }
 }

@@ -1,6 +1,5 @@
 <section class="bc-hero">
     <div class="bc-hero__banner"></div>
-
     <header class="p-3 mx-2 mx-md-3 box-shadown-custom bc-hero__header">
         <div class="row">
             <div class="col-12 col-lg-10 d-flex flex-column flex-md-row align-items-center gap-0 gap-md-3">
@@ -249,7 +248,7 @@
                         <i class="fa-solid fa-chevron-down ms-2 small opacity-50 seta-menu"></i>
                     </button>
                 }
-            </div
+            </div>
         </div>
     </header>
 </section>
@@ -259,6 +258,9 @@
 <script>
   (function () {
      function abrirModalConta() {
+        
+        $('#modalAcompanhamentoClienteBody').empty();
+
         const $body = $('#modalContaClienteBody');
         const modalEl = document.getElementById('modalContaCliente');
 
@@ -274,29 +276,6 @@
         .fail(function () {
             $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
             modal.show();
-        });
-    }
-
-    function abrirModalAcompanhamento() {
-        debugger
-        addLoading("Carregando...")
-        const $bodyAcompanhamento = $('#modalAcompanhamentoClienteBody')
-        const modalElAcompanhamento = document.getElementById('modalAcompanhamentoCliente');
-
-        const modalAcompanhamento = bootstrap.Modal.getOrCreateInstance(modalElAcompanhamento);
-
-        $bodyAcompanhamento.html('<div class="text-muted p-3">Carregando...</div>');
-
-        $.get('/Cliente/AcompanhamentoClienteModal')
-        .done(function (html) {
-            $bodyAcompanhamento.html(html);
-            modalAcompanhamento.show();
-            removeLoading()
-        })
-        .fail(function () {
-            $bodyAcompanhamento.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
-            modalAcompanhamento.show();
-            removeLoading();
         });
     }
 
@@ -329,6 +308,8 @@
                 url: '/Pedido/AcompanhamentoCliente',
                 method: 'GET',
                 success: function (html) {
+                    $('#modalAcompanhamentoClienteBody').empty();
+                    $('#modalContaClienteBody').empty();
                     $('#modalAcompanhamentoClienteBody').html(html);
 
                     const el = document.getElementById('modalAcompanhamentoCliente');

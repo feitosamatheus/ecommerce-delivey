@@ -3,6 +3,7 @@ using System;
 using Ecommerce.MVC.Config;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ecommerce.MVC.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260202175313_AddStatusPedido")]
+    partial class AddStatusPedido
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -299,9 +302,6 @@ namespace Ecommerce.MVC.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CriadoEmUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("HorarioRetirada")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("MetodoEntrega")

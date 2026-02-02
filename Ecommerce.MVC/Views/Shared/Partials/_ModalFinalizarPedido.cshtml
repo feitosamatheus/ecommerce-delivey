@@ -3,24 +3,26 @@
     <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; background: #fcfcfc;">
 
       <div class="modal-header border-0 pb-0">
-        <button type="button" class="btn btn-link text-dark p-0" id="btnWizardBack">
+        @* <button type="button" class="btn btn-link text-dark p-0" id="btnWizardBack">
           <i class="bi bi-arrow-left fs-4"></i>
-        </button>
+        </button> *@
+                <div style="position: absolute; right: 15px; top: 10px; z-index: 10;">
+                    <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">×</button>
+                </div>
 
-        <h6 class="modal-title fw-bold mx-auto" id="wizardTitle">Método de Entrega</h6>
-        <div style="width: 24px;"></div>
+            <div style="width: 24px;"></div>
       </div>
 
-      <div class="modal-body p-4" id="modalFinalizarPedidoBody"></div>
+            <div class="modal-body" id="modalFinalizarPedidoBody" style="transform: scale(0.9);"></div>
 
-      <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
-        <button type="button" class="btn btn-light w-50 fw-bold py-3 rounded-4"
-                id="btnWizardPrev" style="background: #e9ecef;">
+            <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2" style="transform: scale(0.9); margin-top: -44px;">
+        <button type="button" class="btn btn-light w-25 fw-bold py-3"
+                        id="btnWizardPrev" style="background: #e9ecef;     border-radius: 32px !important;">
           Voltar
         </button>
 
-        <button type="button" class="btn w-50 fw-bold py-3 rounded-4 text-white"
-                id="btnWizardNext" style="background:#7033ff;">
+                <button type="button" class="btn w-50 fw-bold py-3 text-white btn-proximo"
+                        id="btnWizardNext" style="background:#3c1e0a;     border-radius: 32px !important;">
           Avançar
         </button>
       </div>
@@ -30,233 +32,242 @@
 </div>
 
 <script>
-(() => {
-  const MODAL_ID = 'modalFinalizarPedido';
+    // -----------------------------
+    // Util: Atualiza resumo Step 2
+    // -----------------------------
+    function atualizarResumo() {
+      const diaTexto = $('input[name="diaSelecionado"]:checked')
+        .next('label')
+        .text()
+        .replace(/\s+/g, ' ')
+        .trim();
 
-  const titles = {
-    1: 'Método de Entrega',
-    2: 'Confirmação do pedido',
-    3: 'Pagamento'
-  };
+      const horaTexto = $('input[name="horarioFinal"]:checked').next('label').text().trim();
+      const obs = ($('#obsPedido').val() || '').trim() || 'Nenhuma observação';
 
-  let step = 1;
-
-  function root() {
-    return document.getElementById(MODAL_ID);
-  }
-
-  function qs(sel) {
-    return root()?.querySelector(sel);
-  }
-
-  function qsa(sel) {
-    return root()?.querySelectorAll(sel) ?? [];
-  }
-
-  function updateWizardProgress(currentStep) {
-    // IMPORTANTE: procurar dentro do modal (conteúdo vem via AJAX)
-    qsa('.wizard-step-indicator').forEach(indicator => {
-      const s = Number(indicator.dataset.step);
-      indicator.classList.remove('active', 'completed');
-      if (s < currentStep) indicator.classList.add('completed');
-      if (s === currentStep) indicator.classList.add('active');
-    });
-  }
-
-  function setTitle(currentStep) {
-    const titleEl = qs('#wizardTitle');
-    if (titleEl) titleEl.textContent = titles[currentStep] || '';
-  }
-
-  function setButtons(currentStep) {
-  const prevBtn = qs('#btnWizardPrev');
-  const backBtn = qs('#btnWizardBack');
-  const nextBtn = qs('#btnWizardNext');
-
-  if (prevBtn) prevBtn.disabled = (currentStep === 1);
-  if (backBtn) backBtn.style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
-
-  if (!nextBtn) return;
-
-  if (currentStep === 3) {
-    nextBtn.textContent = 'Confirmar pedido';
-    nextBtn.classList.remove('btn-light');
-    nextBtn.classList.add('btn-primary');
-  } else {
-    nextBtn.textContent = 'Avançar';
-    nextBtn.classList.remove('btn-primary');
-    nextBtn.classList.add('btn-light');
-  }
-}
-
-  function showStep(nextStep) {
-    step = nextStep;
-
-    // Se o partial ainda não foi injetado, não faz nada
-    if (!qsa('.wizard-step').length) return;
-
-    qsa('.wizard-step').forEach(s => s.classList.add('d-none'));
-    const current = qs(`.wizard-step[data-step="${step}"]`);
-    if (current) current.classList.remove('d-none');
-
-    setTitle(step);
-    setButtons(step);
-    updateWizardProgress(step);
-  }
-
-  function validateStep1() {
-    const selected = qs('input[name="metodoEntrega"]:checked');
-    if (!selected) { alert('Selecione um método de entrega.'); return false; }
-    return true;
-  }
-
-  function validateStep3() {
-    const selected = qs('input[name="pagamento"]:checked');
-    if (!selected) { alert('Selecione um método de pagamento.'); return false; }
-    return true;
-  }
-
-  function fillConfirmation() {
-    const selected = qs('input[name="metodoEntrega"]:checked');
-    const label = selected ? qs(`label[for="${selected.id}"]`) : null;
-    const entrega = label?.querySelector('.fw-bold')?.textContent?.trim() || '—';
-
-    const obs = (qs('#obsPedido')?.value || '').trim();
-
-    const entregaEl = qs('#confEntrega');
-    const obsEl = qs('#confObs');
-
-    if (entregaEl) entregaEl.textContent = entrega;
-    if (obsEl) obsEl.textContent = obs.length ? obs : '(Nenhuma)';
-  }
-
-  function submitPedido() {
-    if (step === 3) {
-        if (!validateStep3()) return;
-
-        // chama o AJAX real da partial (ou melhor: coloque confirmarPedido num JS global)
-        if (typeof window.confirmarPedido === 'function') {
-            window.confirmarPedido();
-        } else if (typeof confirmarPedido === 'function') {
-            confirmarPedido();
-        } else {
-            alert('Função confirmarPedido não encontrada.');
-        }
-
-        return;
-    }
-  }
-
-  // Delegação de eventos (funciona com conteúdo injetado)
-  document.addEventListener('click', (e) => {
-    if (!root()) return;
-
-    // Voltar
-    if (e.target.closest(`#${MODAL_ID} #btnWizardPrev`) || e.target.closest(`#${MODAL_ID} #btnWizardBack`)) {
-      if (step > 1) showStep(step - 1);
-      return;
+      $('#resumoDataHora').text(horaTexto ? `${diaTexto} às ${horaTexto}` : 'Horário não selecionado');
+      $('#resumoObs').text(obs);
     }
 
-    // Avançar / Confirmar
-    if (e.target.closest(`#${MODAL_ID} #btnWizardNext`)) {
-      if (step === 1) {
-        if (!validateStep1()) return;
-        fillConfirmation();
-        showStep(2);
-        return;
-      }
-      if (step === 2) {
-        showStep(3);
-        return;
-      }
-      if (step === 3) {
-        if (!validateStep3()) return;
-        submitPedido();
-        return;
-      }
-    }
-  });
+    // -----------------------------
+    // Wizard (somente navegação)
+    // -----------------------------
+    (() => {
+      const MODAL_ID = 'modalFinalizarPedido';
+      const titles = { 1: 'Recebimento do Pedido', 2: 'Confirmação do pedido', 3: 'Pagamento' };
+      let step = 1;
 
-  // Quando abrir via Bootstrap
-  document.addEventListener('shown.bs.modal', (e) => {
-    if (e.target?.id === MODAL_ID) showStep(1);
-  });
+      function root() { return document.getElementById(MODAL_ID); }
+      function qs(sel) { return root()?.querySelector(sel); }
+      function qsa(sel) { return root()?.querySelectorAll(sel) ?? []; }
 
-  // Quando você injeta o HTML via AJAX, chame window.wizardInit()
-  window.wizardInitFinalizarPedido = function () {
-    step = 1;
-    showStep(1);
-  };
+      // Caso você ainda precise ler step fora (opcional)
+      window.getWizardStepFinalizarPedido = () => step;
 
-    function getEntregaSelecionada() {
-        const $selected = $('input[name="metodoEntrega"]:checked');
-        if (!$selected.length) return { tipo: null, enderecoId: null, label: null };
-
-        if ($selected.attr('id') === 'retirarLoja') {
-            return { tipo: 'retirar', enderecoId: null, label: 'Retirar na loja' };
-        }
-
-        if ($selected.attr('id') === 'entregaNovo') {
-            return { tipo: 'novo', enderecoId: null, label: 'Cadastrar novo endereço' };
-        }
-
-        // delivery existente
-        return {
-            tipo: 'delivery',
-            enderecoId: $selected.val() || null,
-            label: $(`label[for="${$selected.attr('id')}"]`).text().trim()
-        };
-        }
-
-    function getPagamentoSelecionado() {
-        const $p = $('input[name="pagamento"]:checked');
-        return $p.length ? $p.attr('id') : null; // "pix" | "cartao"
-        }
-
-    function confirmarPedido() {
-        const entrega = getEntregaSelecionada();
-        const pagamento = getPagamentoSelecionado();
-        const observacao = ($('#obsPedido').val() || '').trim();
-
-        // validações mínimas
-        if (!entrega.tipo) {
-            alert('Selecione um método de entrega.');
-            return;
-        }
-        if (entrega.tipo === 'novo') {
-            alert('Cadastre o endereço antes de confirmar.');
-            return;
-        }
-        if (!pagamento) {
-            alert('Selecione um método de pagamento.');
-            return;
-        }
-
-        const payload = {
-            metodoEntrega: entrega.tipo,        // "retirar" | "delivery"
-            enderecoId: entrega.enderecoId,     // Guid ou null
-            pagamento: pagamento,               // "pix" | "cartao"
-            observacao: observacao
-        };
-
-        $.ajax({
-            url: '/Pedido/Confirmar',
-            method: 'POST',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify(payload),
-            success: function (res) {
-            // Fechar modal
-            const el = document.getElementById('modalFinalizarPedido');
-            bootstrap.Modal.getInstance(el)?.hide();
-
-            // Redirecionar (ou exibir tela de sucesso)
-            // Ex.: res.pedidoId
-            window.location.href = '/?cart=1';
-            },
-            error: function (xhr) {
-            alert(xhr.responseText || 'Erro ao confirmar pedido.');
-            }
+      function updateWizardProgress(currentStep) {
+        qsa('.wizard-step-indicator').forEach(indicator => {
+          const s = Number(indicator.dataset.step);
+          indicator.classList.remove('active', 'completed');
+          if (s < currentStep) indicator.classList.add('completed');
+          if (s === currentStep) indicator.classList.add('active');
         });
-    }
-})();
+      }
+
+      function setTitle(currentStep) {
+        const titleEl = qs('#wizardTitle');
+        if (titleEl) titleEl.textContent = titles[currentStep] || '';
+      }
+
+      function canGoNextStep1() {
+        const metodo = qs('input[name="metodoEntrega"]:checked');
+        if (!metodo) return false;
+
+        const horario = (qs('#inputHorarioFinal')?.value || '').trim();
+        return !!horario;
+      }
+
+      function setButtons(currentStep) {
+        const prevBtn = qs('#btnWizardPrev');
+        const nextBtn = qs('#btnWizardNext');
+
+        if (prevBtn) prevBtn.disabled = (currentStep === 1);
+        if (!nextBtn) return;
+
+        // 🔥 Regra principal: só no Step 2 o botão tem data-action="confirmar"
+        nextBtn.removeAttribute('data-action');
+
+        if (currentStep === 1) {
+          nextBtn.textContent = 'Avançar';
+          nextBtn.disabled = !canGoNextStep1();
+          return;
+        }
+
+        if (currentStep === 2) {
+          nextBtn.textContent = 'Confirmar pedido';
+          nextBtn.disabled = false;
+
+          // ✅ marcador para o handler do AJAX
+          nextBtn.setAttribute('data-action', 'confirmar');
+          return;
+        }
+
+        if (currentStep === 3) {
+          nextBtn.textContent = 'Fechar';
+          nextBtn.disabled = false;
+        }
+      }
+
+      function showStep(nextStep) {
+        step = nextStep;
+
+        if (!qsa('.wizard-step').length) return;
+
+        qsa('.wizard-step').forEach(s => s.classList.add('d-none'));
+        const current = qs(`.wizard-step[data-step="${step}"]`);
+        if (current) current.classList.remove('d-none');
+
+        setTitle(step);
+        setButtons(step);
+        updateWizardProgress(step);
+      }
+
+      function validarStep1() {
+        if (!canGoNextStep1()) {
+          alert('Selecione um dia e um horário para retirada.');
+          return false;
+        }
+        return true;
+      }
+
+      // -----------------------------
+      // Navegação do wizard (SEM AJAX)
+      // -----------------------------
+      document.addEventListener('click', (e) => {
+        if (!root()) return;
+
+        // Voltar
+        if (e.target.closest(`#${MODAL_ID} #btnWizardPrev`)) {
+          if (step > 1) showStep(step - 1);
+          return;
+        }
+
+        // Botão principal
+        if (e.target.closest(`#${MODAL_ID} #btnWizardNext`)) {
+
+          // Step 1 -> Step 2
+          if (step === 1) {
+            if (!validarStep1()) return;
+            atualizarResumo();
+            showStep(2);
+            return;
+          }
+
+          // Step 2 -> NÃO FAZ NADA AQUI
+          // porque o handler do AJAX (abaixo) vai capturar
+          if (step === 2) {
+            return;
+          }
+
+          // Step 3 -> Fechar modal
+          if (step === 3) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById(MODAL_ID));
+            modal?.hide();
+            return;
+          }
+        }
+      });
+
+      // Habilita/desabilita botão no Step 1 conforme seleção
+      document.addEventListener('change', (e) => {
+        if (!root()) return;
+
+        if (e.target.matches('.btn-check-dia')) {
+          setButtons(1);
+          return;
+        }
+
+        if (e.target.matches('input[name="horarioFinal"]')) {
+          const hidden = qs('#inputHorarioFinal');
+          if (hidden) hidden.value = e.target.value;
+          setButtons(1);
+          return;
+        }
+
+        if (e.target.matches('input[name="metodoEntrega"]')) {
+          setButtons(1);
+          return;
+        }
+      });
+
+      // Modal open
+      document.addEventListener('shown.bs.modal', (e) => {
+        if (e.target?.id === MODAL_ID) showStep(1);
+      });
+
+      // Se injetar via AJAX
+      window.wizardInitFinalizarPedido = function () {
+        step = 1;
+        showStep(1);
+      };
+
+      // Expõe showStep para o handler do AJAX usar no success
+      window._wizardShowStepFinalizarPedido = showStep;
+    })();
+
+    // -----------------------------
+    // Step 2: Confirmar pedido (AJAX) – SOMENTE quando data-action="confirmar"
+    // -----------------------------
+    $(document).on('click', '#btnWizardNext[data-action="confirmar"]', function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation(); // ✅ impede que o wizard trate esse clique também
+
+      addLoading("Confirmando...");
+
+      const horario = ($('#inputHorarioFinal').val() || '').trim();
+      const observacao = ($('#obsPedido').val() || '').trim();
+
+      if (!horario) {
+        alert('Por favor, selecione um horário para retirada.');
+        return;
+      }
+
+      const payload = {
+        horarioRetirada: horario,
+        observacao: observacao
+      };
+
+      const $btn = $(this);
+      $btn.prop('disabled', true)
+        .html('<span class="spinner-border spinner-border-sm"></span> Processando...');
+
+      $.ajax({
+        url: '/Pedido/Confirmar',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify(payload),
+        success: function (res) {
+          // ✅ aqui você preenche o Step 3 com o retorno (QR code / copia e cola / expiração etc.)
+          // Exemplo:
+          // $('#pixQrImg').attr('src', 'data:image/png;base64,' + res.qrCodeBase64);
+          // $('#pixCopiaCola').val(res.pixCopiaCola);
+
+          // Vai pro Step 3
+          if (typeof window._wizardShowStepFinalizarPedido === 'function') {
+            window._wizardShowStepFinalizarPedido(3);
+          }
+
+          // O setButtons(3) já coloca "Fechar"
+          $btn.prop('disabled', false).text('Fechar');
+          removeLoading();
+        },
+        error: function (xhr) {
+          $btn.prop('disabled', false).text('Confirmar pedido');
+          alert(xhr.responseText || 'Erro ao processar pedido.');
+          removeLoading();
+        }
+      });
+    });
 </script>
+
+
+

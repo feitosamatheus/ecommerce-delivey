@@ -30,7 +30,9 @@ namespace Ecommerce.MVC.Entities
     [Column(TypeName = "decimal(18,2)")]
     public decimal PrecoBaseSnapshot { get; set; }
 
-    [Required]
+    public int TempoPreparoMinutosSnapshot { get; set; }
+
+        [Required]
     public int Quantidade { get; set; } = 1;
 
     [Column(TypeName = "varchar(800)")]

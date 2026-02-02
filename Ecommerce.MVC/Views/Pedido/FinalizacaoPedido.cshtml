@@ -3,402 +3,584 @@
 
 @{
     var pt = new CultureInfo("pt-BR");
-    var enderecoPrincipal = Model.Enderecos.FirstOrDefault(e => e.EhPrincipal) ?? Model.Enderecos.FirstOrDefault();
 }
 
 <style>
-/* (mantenha seu CSS aqui por enquanto; ideal mover para arquivo .css) */
-.card-option{background:#fff;border:1px solid #eee;border-radius:12px;cursor:pointer;transition:all .2s}
-.card-option:hover{background:#f8f9fa}
-.custom-radio{width:20px;height:20px;border:2px solid #ddd;border-radius:50%;position:relative;flex-shrink:0}
-.btn-check:checked + .card-option{border-color:#7033ff;box-shadow:0 4px 12px rgba(112,51,255,.1)}
-.btn-check:checked + .card-option .custom-radio{border-color:#7033ff}
-.btn-check:checked + .card-option .custom-radio::after{content:"";width:10px;height:10px;background:#7033ff;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
-.text-primary{color:#7033ff!important}
-.btn-outline-primary{border-color:#7033ff;color:#7033ff}
-.btn-outline-primary:hover{background:#7033ff;color:#fff}
-.wizard-progress{position:relative;margin-bottom:12px}
-.wizard-line{position:absolute;top:16px;left:0;right:0;height:3px;background:#e9ecef;border-radius:2px;z-index:0}
-.wizard-step-indicator{position:relative;z-index:1;text-align:center;flex:1}
-.wizard-step-indicator span{width:34px;height:34px;background:#e9ecef;color:#adb5bd;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:4px;transition:all .25s ease}
-.wizard-step-indicator small{display:block;font-size:.7rem;color:#adb5bd}
-.wizard-step-indicator.active span{background:#7033ff;color:#fff}
-.wizard-step-indicator.active small{color:#7033ff}
-.wizard-step-indicator.completed span{background:#7033ff;color:#fff}
-.wizard-step-indicator.completed span::after{content:"✓";font-size:.8rem}
+    :root {
+        --bh-primary: #3c1e0a;
+        --bh-success: #1f7a33;
+        --bh-border: #eeeeee;
+        --bh-text-muted: #888888;
+        --bh-bg-light: #f8f9fa;
+    }
+
+    /* --- Cards e Opções Gerais --- */
+    .card-option {
+        background: #fff;
+        border: 1px solid var(--bh-border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+        .card-option:hover {
+            background: var(--bh-bg-light);
+        }
+
+    .custom-radio {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ddd;
+        border-radius: 50%;
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .btn-check:checked + .card-option {
+        border-color: var(--bh-primary);
+        box-shadow: 0 4px 12px rgba(60, 30, 10, 0.08);
+    }
+
+        .btn-check:checked + .card-option .custom-radio::after {
+            content: "";
+            width: 10px;
+            height: 10px;
+            background: var(--bh-primary);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+    /* --- Wizard Progress --- */
+    .wizard-progress {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .wizard-line {
+        position: absolute;
+        top: 16px;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: var(--bh-border);
+        z-index: 0;
+    }
+
+    .wizard-step-indicator {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        flex: 1;
+    }
+
+        .wizard-step-indicator span {
+            width: 32px;
+            height: 32px;
+            background: #eee;
+            color: var(--bh-text-muted);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+        }
+
+        .wizard-step-indicator small {
+            display: block;
+            font-size: .7rem;
+            color: var(--bh-text-muted);
+            font-weight: 600;
+        }
+
+        .wizard-step-indicator.active span {
+            background: var(--bh-primary);
+            color: #fff;
+        }
+
+        .wizard-step-indicator.active small {
+            color: var(--bh-primary);
+        }
+
+    /* --- Calendário (Datas) - Estilo Original --- */
+    .cal-nav-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-left: 44px;
+        padding-right: 44px;
+    }
+
+    #calendarioBlocos {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        padding: 10px 5px;
+        max-width: 100%;
+        position: relative;
+        z-index: 1;
+    }
+
+        #calendarioBlocos::-webkit-scrollbar {
+            display: none;
+        }
+
+    .nav-cal {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        background: #fff !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        cursor: pointer;
+    }
+
+        .nav-cal:hover {
+            background: var(--bh-primary) !important;
+            color: #fff !important;
+        }
+
+    .nav-cal-left {
+        left: 8px;
+    }
+
+    .nav-cal-right {
+        right: 8px;
+    }
+
+    /* Mantendo comportamento padrão para o check das datas */
+    .btn-check-dia:checked + .btn-outline-primary {
+        background-color: var(--bh-primary) !important;
+        border-color: var(--bh-primary) !important;
+        color: #fff !important;
+        transform: none;
+    }
+
+    /* --- Grade de Horários - Estilo Ativo --- */
+    .horarios-container {
+        position: relative;
+        z-index: 3;
+    }
+
+    /* .grade-horarios label {
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        color: #333;
+        transition: all .2s ease;
+        cursor: pointer;
+    }
+
+        .grade-horarios label:hover {
+            background-color: var(--bh-bg-light);
+            border-color: var(--bh-primary);
+            color: var(--bh-primary);
+            transform: translateY(-1px);
+        } */
+
+    /* Estado Normal */
+    .grade-horarios label {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background-color: #fff;
+        border-color: var(--bh-border);
+        color: var(--bh-primary);
+        border-radius: 28px !important;
+    }
+
+        /* Hover (Passar o mouse) */
+        .grade-horarios label:hover {
+            background-color: var(--bh-bg-light);
+            border-color: var(--bh-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+        }
+
+    /* Selecionado (Quando o rádio está marcado) */
+    .grade-horarios .btn-check:checked + label {
+        background-color: var(--bh-primary) !important;
+        /* border-color: var(--bh-primary) !important; */
+        color: #ffffff !important;
+        /* box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--bh-primary) !important; */
+    }
+
+    .dia-item label:hover {
+        border-color: var(--bh-primary);
+        background-color: rgba(60, 30, 10, 0.05);
+    }
+
+    /* Dia Selecionado (Ajuste de foco) */
+    .btn-check-dia:checked + label {
+        background-color: var(--bh-primary) !important;
+        color: white !important;
+        border-color: var(--bh-primary) !important;
+        box-shadow: 0 4px 10px rgba(60, 30, 10, 0.2) !important;
+    }
+
+    /* Estilo de seleção exclusivo para os Horários */
+    input[name="horarioFinal"]:checked + label {
+        background-color: var(--bh-primary) !important;
+        border-color: var(--bh-primary) !important;
+        color: #ffffff !important;
+        box-shadow: 0 6px 14px rgba(60, 30, 10, 0.25);
+        transform: translateY(-1px);
+    }
+
+    input[name="horarioFinal"]:focus-visible + label {
+        outline: 2px solid var(--bh-primary);
+        outline-offset: 2px;
+    }
+
+    /* Esconde o check-icon por padrão */
+    .payment-card .check-icon {
+        display: none;
+        font-size: 1.2rem;
+    }
+
+    /* Estilo base do card */
+    .payment-card {
+        cursor: pointer;
+        background-color: #fff;
+        border: 2px solid #eee !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .payment-card:hover {
+            border-color: var(--bh-primary) !important;
+            background-color: #fdfbf9;
+        }
+
+    /* Quando o input está checado */
+    .btn-check:checked + .payment-card {
+        border-color: var(--bh-primary) !important;
+        background-color: rgba(var(--bh-primary-rgb), 0.05); /* Um fundo bem leve da sua cor principal */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    }
+
+        .btn-check:checked + .payment-card .check-icon {
+            display: block;
+        }
+
+        .btn-check:checked + .payment-card {
+            background-color: #fff !important;
+            box-shadow: inset 0 0 0 1px var(--bh-primary);
+        }
+
+    .icon-box {
+        width: 45px;
+        height: 45px;
+        transition: all 0.3s ease;
+    }
+
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+
+    .btn-lg:hover {
+        filter: brightness(1.1);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+
+    .line-height-1 {
+        line-height: 1;
+    }
 </style>
 
-<!-- Barra superior -->
-<div class="wizard-progress px-4 pt-2">
-  <div class="d-flex justify-content-between position-relative">
-    <div class="wizard-line"></div>
-
-    <div class="wizard-step-indicator active" data-step="1">
-      <span>1</span><small>Entrega</small>
+<div class="wizard-progress px-0 pt-0">
+    <div class="d-flex justify-content-between position-relative">
+        <div class="wizard-line"></div>
+        <div class="wizard-step-indicator active" data-step="1"><span>1</span><small>RETIRADA</small></div>
+        <div class="wizard-step-indicator" data-step="2"><span>2</span><small>CONFIRMAÇÃO</small></div>
+        <div class="wizard-step-indicator" data-step="3"><span>3</span><small>PAGAMENTO</small></div>
     </div>
-    <div class="wizard-step-indicator" data-step="2">
-      <span>2</span><small>Confirmação</small>
-    </div>
-    <div class="wizard-step-indicator" data-step="3">
-      <span>3</span><small>Pagamento</small>
-    </div>
-  </div>
 </div>
 
-<!-- STEP 1 -->
 <section class="wizard-step" data-step="1">
-  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm">
-    <div>
-      <small class="text-muted d-block">Este pedido será entregue a:</small>
-      <strong class="d-block">@Model.ClienteNome</strong>
-      <span class="text-primary small">@Model.ClienteTelefone</span>
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm border">
+        <div>
+            <small class="text-muted d-block" style="font-size: 0.65rem; text-transform: uppercase; font-weight: 800;">Cliente</small>
+            <strong class="d-block" style="color: var(--bh-primary)">@Model.ClienteNome</strong>
+            <span class="small text-muted">@Model.ClienteTelefone</span>
+        </div>
     </div>
-  </div>
 
-  <h6 class="fw-bold mb-3" style="font-size: 0.95rem;">Escolha como receber o pedido</h6>
+    <h6 class="fw-bold mb-3" style="font-size: 0.9rem; color: var(--bh-primary);">Como deseja receber?</h6>
 
-  <div class="delivery-methods mb-4">
+    <div class="delivery-methods mb-4">
+        <input type="radio" class="btn-check" name="metodoEntrega" id="retirarLoja" checked>
+        <label class="card-option p-3 mb-2 d-flex align-items-start" for="retirarLoja">
+            <div class="custom-radio me-3 mt-1"></div>
+            <div class="w-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="fw-bold d-block">Retirar na unidade</span>
+                    </div>
+                    <i class="fa-solid fa-store opacity-25"></i>
+                </div>
 
-  <!-- Retirar -->
-  <input type="radio" class="btn-check" name="metodoEntrega" id="retirarLoja" autocomplete="off" checked>
-  <label class="card-option p-3 mb-2 d-flex align-items-center" for="retirarLoja">
-    <div class="custom-radio me-3"></div>
-    <div>
-      <span class="fw-bold d-block">Retirar na loja</span>
-      <small class="text-muted">Endereço da loja (configure aqui)</small>
+                <div class="pt-2 border-top border-light">
+                    <span class="d-block fw-bold text-dark small">Rua Nilson Sabino Pinho, 222</span>
+                    <span class="text-muted d-block extra-small">Jardim Atlântico, Olinda - PE</span>
+
+                    <a href="https://www.google.com/maps/search/?api=1&query=Rua+Nilson+Sabino+Pinho,+222+Jardim+Atlantico+Olinda"
+                       target="_blank"
+                       class="d-inline-flex align-items-center mt-2 text-decoration-none fw-bold extra-small bc-card-action p-2"
+                       style="color: var(--bh-primary); cursor: pointer;">
+                        Ver no Google Maps
+                        <i class="fa-solid fa-arrow-up-right-from-square ms-1" style="font-size: 0.6rem;"></i>
+                    </a>
+                </div>
+            </div>
+        </label>
+
+        <div id="retiradaHorarioBox" class="mt-3">
+            <label class="fw-bold small mb-2 d-block" style="color: var(--bh-primary);">
+                <i class="fa-regular fa-calendar me-1"></i> Selecione o Dia
+            </label>
+
+            <div class="position-relative d-flex align-items-center mb-3">
+                <button type="button" class="btn btn-sm btn-light border shadow-sm position-absolute start-0 z-3 rounded-circle nav-cal" onclick="scrollCal(-100)" style="transform: translateX(-50%);">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <div id="calendarioBlocos">
+                    @foreach (var grupo in Model.HorariosRetirada.GroupBy(h => h.DataHora.Date))
+                    {
+                        var eHoje = grupo.Key == DateTime.Today;
+                        <div class="dia-item flex-shrink-0">
+                            <input type="radio" class="btn-check btn-check-dia" name="diaSelecionado"
+                                   id="dia_@grupo.Key.ToString("yyyyMMdd")"
+                                   value="container-@grupo.Key.ToString("yyyyMMdd")"
+                                   @(eHoje ? "checked" : "") autocomplete="off">
+                            <label class="btn p-2 d-flex flex-column align-items-center shadow-sm rounded-4"
+                                   for="dia_@grupo.Key.ToString("yyyyMMdd")" style="min-width: 60px;">
+                                <span class="small" style="font-size: 0.65rem; text-transform: uppercase;">
+                                    @(eHoje ? "Hoje" : grupo.Key.ToString("ddd", pt))
+                                </span>
+                                <span class="fs-5 fw-bold">@grupo.Key.Day</span>
+                                <span class="small" style="font-size: 0.65rem;">@grupo.Key.ToString("MMM", pt)</span>
+                            </label>
+                        </div>
+                    }
+                </div>
+
+                <button type="button" class="btn btn-sm btn-light border shadow-sm position-absolute end-0 z-3 rounded-circle nav-cal" onclick="scrollCal(100)" style="transform: translateX(50%);">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <label class="fw-bold small mb-2 d-block" style="color: var(--bh-primary);">
+                <i class="fa-regular fa-clock me-1"></i> Horários disponíveis
+            </label>
+
+            <div class="horarios-container border rounded-4 bg-light p-3 position-relative">
+                @foreach (var grupo in Model.HorariosRetirada.GroupBy(h => h.DataHora.Date))
+                {
+                    var eHoje = grupo.Key == DateTime.Today;
+                    <div class="grade-horarios @(eHoje ? "" : "d-none")" id="container-@grupo.Key.ToString("yyyyMMdd")">
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var h in grupo)
+                            {
+                                <input type="radio" class="btn-check" name="horarioFinal" id="hora_@h.DataHora.Ticks" value="@h.DataHora.ToString("o")">
+                                <label class="btn btn-white border shadow-sm btn-sm px-3 py-2 fw-bold" for="hora_@h.DataHora.Ticks">
+                                    @h.DataHora.ToString("HH:mm")
+                                </label>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div id="msg-selecione-data" class="text-center py-1 @(Model.HorariosRetirada.Any(h => h.DataHora.Date == DateTime.Today) ? "d-none" : "")">
+                    <i class="fa-regular fa-calendar-pointer d-block text-muted fs-4"></i>
+                    <span class="text-muted small">Por favor, selecione uma data acima para ver os horários disponíveis.</span>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="inputHorarioFinal" name="horarioRetirada" required />
     </div>
-  </label>
 
-  <!-- Endereços existentes -->
-  @foreach (var end in Model.Enderecos.OrderByDescending(e => e.EhPrincipal))
-  {
-      var inputId = $"end_{end.Id}";
-      var checkedAttr = (Model.EnderecoSelecionadoId.HasValue && Model.EnderecoSelecionadoId.Value == end.Id)
-                        || (!Model.EnderecoSelecionadoId.HasValue && end.EhPrincipal);
+        <input type="hidden" id="inputHorarioFinal" name="horarioRetirada" required />
+    </div>
 
-      <input type="radio"
-             class="btn-check"
-             name="metodoEntrega"
-             id="@inputId"
-             value="@end.Id"
-             data-tipo="delivery"
-             autocomplete="off"
-             @(checkedAttr ? "checked" : null) />
+    <h6 class="fw-bold mb-2" style="font-size: 0.9rem; color: var(--bh-primary);">Observações</h6>
+    <textarea id="obsPedido" class="form-control border shadow-sm rounded-3 mb-4" rows="2" placeholder="Ex: Sem cebola..."></textarea>
+</section>
 
-      <label class="card-option p-3 mb-2 d-flex align-items-center justify-content-between" for="@inputId">
-        <div class="d-flex align-items-center">
-          <div class="custom-radio me-3"></div>
-          <div>
-            <span class="fw-bold d-block">Entrega</span>
-            <small class="text-muted">@end.Texto</small>
-          </div>
+<section class="wizard-step d-none" data-step="2">
+    <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Resumo da Retirada</h6>
+
+    <div class="bg-white p-3 rounded-4 border mb-3 shadow-sm">
+        <div class="d-flex align-items-center mb-2">
+            <i class="fa-regular fa-calendar-check me-2" style="color: var(--bh-primary)"></i>
+            <div>
+                <small class="text-muted d-block" style="font-size: 0.65rem; text-transform: uppercase;">Data e Horário</small>
+                <strong id="resumoDataHora" style="color: var(--bh-primary)">-</strong>
+            </div>
+        </div>
+        <div class="d-flex align-items-center mb-2">
+            <i class="fa-regular fa-comment-dots me-2" style="color: var(--bh-primary)"></i>
+            <div>
+                <small class="text-muted d-block" style="font-size: 0.65rem; text-transform: uppercase;">Observações</small>
+                <span id="resumoObs" class="small text-muted">Nenhuma observação</span>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Itens do Pedido</h6>
+    <div class="bg-white p-3 rounded-4 border mb-3">
+        @foreach (var item in Model.Carrinho.Itens)
+        {
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fw-bold small">@item.Quantidade x @item.ProdutoNome</div>
+                    @if (item.Acompanhamentos?.Any() == true)
+                    {
+                        <small class="text-muted d-block" style="font-size: 0.7rem;">@string.Join(", ", item.Acompanhamentos)</small>
+                    }
+                </div>
+                <div class="fw-bold small">@item.TotalLinha.ToString("C", pt)</div>
+            </div>
+        }
+
+        <hr class="my-2 opacity-25">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Total da encomenda</span>
+            <span class="text-muted small fw-bold">@Model.Carrinho.Total.ToString("C", pt)</span>
         </div>
 
-        <button type="button"
-                class="btn btn-sm btn-outline-danger rounded-pill px-3 btn-remover-endereco"
-                data-endereco-id="@end.Id">
-        Remover
-        </button>
-
-      </label>
-  }
-
-  <!-- SEMPRE exibir cadastrar novo -->
-  <input type="radio" class="btn-check" name="metodoEntrega" id="entregaNovo" autocomplete="off">
-  <label class="card-option p-3 mb-2 d-flex align-items-center" for="entregaNovo">
-    <div class="custom-radio me-3"></div>
-    <div>
-      <span class="fw-bold d-block">+ Cadastrar novo endereço</span>
-      <small class="text-muted">Entrega via Delivery</small>
     </div>
-  </label>
+    <hr />
+    
+    <div id="pix-warning-resumo" class="alert border-0 rounded-4 p-3 mb-4" style="background-color: #f0f7ff; border-left: 4px solid #007bff !important;">
+        <div class="d-flex align-items-start">
+            <i class="fa-solid fa-shield-check text-primary me-3 mt-1" style="font-size: 1.1rem;"></i>
+            <div>
+                <p class="mb-1 fw-bold" style="color: #004a99; font-size: 0.85rem;">Confirmação de Reserva</p>
+                <p class="mb-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;">
+                    Para garantir sua encomenda, clique em <b>"Confirmar pedido"</b>. Você visualizará o QR Code para o pagamento do sinal de <b>50%</b>.
+                </p>
+                <div class="d-flex align-items-center" style="font-size: 0.75rem; color: #bc8d05;">
+                    <i class="fa-regular fa-clock me-1"></i>
+                    <span>
+                        O PIX expira em 30 min. <b>Caso não seja pago, o pedido será cancelado automaticamente.</b>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <!-- Host do formulário (sempre presente) -->
-  <div id="novoEnderecoHost" class="d-none mt-3"></div>
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-end mb-3 px-1">
+            <div>
+                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 0.5px;">Pagar agora (Sinal 50%)</small>
+                <div class="fs-2 fw-bold lh-1" style="color: #198754; letter-spacing: -1px;" id="resumoAdiantamento">
+                    R$ 4,50
+                </div>
+            </div>
+            <div class="text-end">
+                <small class="text-muted d-block" style="font-size: 0.7rem;">Total do pedido</small>
+                <span class="fw-semibold text-dark" style="font-size: 0.9rem;">@Model.Carrinho.Total.ToString("C", pt)</span>
+            </div>
+        </div>
 
-</div>
+        <div class="progress mb-3" style="height: 4px; background-color: #e9ecef;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: 50%"></div>
+        </div>
 
-
-  <h6 class="fw-bold mb-2" style="font-size: 0.95rem;">Alguma observação para o seu pedido?</h6>
-  <textarea id="obsPedido"
-            class="form-control border-0 bg-white shadow-sm rounded-4 mb-4"
-            rows="3"
-            placeholder="Informe uma observação (Opcional)"></textarea>
-        
+        <div class="p-3 rounded-4 mb-4 text-center" style="background-color: #f8f9fa; border: 1px dashed #ddd;">
+            <span class="text-muted small">O restante (<b>R$ 4,50</b>) será pago no momento da retirada.</span>
+        </div>
+    </div>
     
 </section>
 
-<!-- STEP 2 -->
-<section class="wizard-step d-none" data-step="2">
-  <h6 class="fw-bold mb-3">Confirmação do pedido</h6>
-
-  <!-- Itens do carrinho -->
-  <div class="bg-white p-3 rounded-4 shadow-sm mb-3">
-    @foreach (var item in Model.Carrinho.Itens)
-    {
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <div>
-            <div class="fw-bold">@item.Quantidade x @item.ProdutoNome</div>
-
-            @if (item.Acompanhamentos?.Any() == true)
-            {
-                <small class="text-muted d-block">
-                  @string.Join(", ", item.Acompanhamentos)
-                </small>
-            }
-          </div>
-
-          <div class="fw-bold">
-            @item.TotalLinha.ToString("C", pt)
-          </div>
-        </div>
-
-        <hr class="my-2" />
-    }
-  </div>
-
-  <!-- Totais -->
-  <div class="border-top pt-3 mb-4">
-    <div class="d-flex justify-content-between mb-1">
-      <span class="text-muted">Subtotal</span>
-      <span id="confSubtotal">@Model.Carrinho.Subtotal.ToString("C", pt)</span>
-    </div>
-
-    <div class="d-flex justify-content-between mb-1">
-      <span class="text-muted">Taxa de Entrega</span>
-      <span id="confTaxa">@Model.Carrinho.TaxaEntrega.ToString("C", pt)</span>
-    </div>
-
-    <div class="d-flex justify-content-between fw-bold fs-5 mt-2">
-      <span>Total</span>
-      <span id="confTotal" style="color:#7033ff;">@Model.Carrinho.Total.ToString("C", pt)</span>
-    </div>
-  </div>
-
-  <div class="alert alert-light border rounded-4">
-    <strong>Entrega:</strong> <span id="confEntrega">—</span><br />
-    <strong>Observação:</strong> <span id="confObs" class="text-muted">(Nenhuma)</span>
-  </div>
-</section>
-
-<!-- STEP 3 -->
 <section class="wizard-step d-none" data-step="3">
-  <h6 class="fw-bold mb-3">Pagamento</h6>
+    <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Forma de Pagamento</h6>
+    
+    <div class="payment-options">
+        <div id="pix-warning" class="mt-2 mx-1">
+            <div class="alert alert-info border-0 rounded-4 p-3 shadow-sm mb-0" style="background-color: #e7f3ff;">
+                <div class="d-flex align-items-start">
+                    <div class="bg-white rounded-circle p-1 me-2 shadow-sm">
+                        <i class="fa-solid fa-shield-halved text-info" style="font-size: 0.8rem;"></i>
+                    </div>
+                    <div style="font-size: 0.8rem; color: #084298; line-height: 1.4;">
+                        <strong>Atenção:</strong> O código PIX será gerado após a finalização.<br>
+                        Para encomendas, é necessário o adiantamento de <b>50% do valor</b>.
+                        O preparo do seu pedido iniciará <u>após a confirmação</u> do pagamento.
+                    </div>
+                </div>
 
-  <div class="mb-3">
-    <input type="radio" class="btn-check" name="pagamento" id="pix" autocomplete="off" checked>
-    <label class="card-option p-3 mb-2 d-flex align-items-center" for="pix">
-      <div class="custom-radio me-3"></div>
-      <div>
-        <span class="fw-bold d-block">PIX</span>
-        <small class="text-muted">Aprovação imediata</small>
-      </div>
-    </label>
+                <hr class="my-2" style="opacity: 0.1; border-color: #084298;">
 
-    <input type="radio" class="btn-check" name="pagamento" id="cartao" autocomplete="off">
-    <label class="card-option p-3 mb-2 d-flex align-items-center" for="cartao">
-      <div class="custom-radio me-3"></div>
-      <div>
-        <span class="fw-bold d-block">Cartão</span>
-        <small class="text-muted">Crédito/Débito</small>
-      </div>
-    </label>
-  </div>
-
-  <div class="alert alert-warning rounded-4 mb-0">
-    Ao confirmar, o pedido será enviado para processamento.
-  </div>
+                <div class="d-flex align-items-center">
+                    <i class="fa-regular fa-clock me-2 text-danger animate-pulse" style="font-size: 0.85rem;"></i>
+                    <div style="font-size: 0.75rem; color: #856404;">
+                        O código PIX <strong>expira em 30 minutos</strong>. Após esse prazo, o pedido será cancelado automaticamente.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <input type="radio" class="btn-check" name="pagamento" id="pix" checked autocomplete="off">
+            <label class="payment-card p-3 d-flex align-items-center rounded-4 border shadow-sm transition-all" for="pix">
+                <div class="icon-box me-3 rounded-circle d-flex align-items-center justify-content-center bg-light">
+                    <i class="fa-brands fa-pix text-info fs-4"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold mb-0">PIX</div>
+                    <small class="text-muted" style="font-size: 0.7rem;">Aprovação imediata</small>
+                </div>
+                <i class="fa-solid fa-circle-check check-icon text-success"></i>
+            </label> 
+        </div>
+    </div>
 </section>
-
-
-        @* <script>
-(() => {
-  
-</script> *@
 
 <script>
-(function () {
-
-  // 1) Quando o usuário selecionar o radio "entregaNovo", carrega o formulário
-    $(document).on('change', 'input[name="metodoEntrega"]', function () {
-    const id = this.id;
-
-    if (id === 'entregaNovo') {
-      const $host = $('#novoEnderecoHost');
-
-      // se já carregou antes, só exibe
-      if ($host.data('loaded') === true) {
-        $host.removeClass('d-none');
-        return;
-      }
-
-      $.ajax({
-        url: '/Endereco/NovoPartial',
-        method: 'GET',
-        success: function (html) {
-          $host.html(html);
-          $host.data('loaded', true);
-          $host.removeClass('d-none');
-        },
-        error: function (xhr) {
-          alert(xhr.responseText || 'Erro ao carregar formulário de endereço.');
-        }
-      });
-
-    } else {
-      // selecionou retirarLoja ou um endereço existente
-      $('#novoEnderecoHost').addClass('d-none');
+    function scrollCal(amount) {
+        document.getElementById('calendarioBlocos')
+            .scrollBy({ left: amount, behavior: 'smooth' });
     }
-  });
 
-  // 2) Cancelar cadastro
-    $(document).on('click', '#btnCancelarNovoEndereco', function () {
-    $('#novoEnderecoHost').addClass('d-none');
+    $(document).ready(function () {
 
-    // volta a seleção para "retirarLoja" ou para o primeiro endereço existente
-    const $first = $('input[name="metodoEntrega"]').not('#entregaNovo').first();
-    if ($first.length) $first.prop('checked', true).trigger('change');
-  });
+        $(document).on('change', '.btn-check-dia', function () {
 
-  // 3) Salvar endereço (POST) e depois recarregar o modal de finalização
-    $(document).on('click', '#btnSalvarNovoEndereco', function () {
-    const payload = {
-      cep: $('#endCep').val(),
-      logradouro: $('#endLogradouro').val(),
-      numero: $('#endNumero').val(),
-      complemento: $('#endComplemento').val(),
-      bairro: $('#endBairro').val(),
-      cidade: $('#endCidade').val(),
-      estado: $('#endEstado').val()
-    };
-
-    $.ajax({
-      url: '/Endereco/Criar',
-      method: 'POST',
-      contentType: 'application/json; charset=utf-8',
-      data: JSON.stringify(payload),
-      success: function () {
-
-        // Recarrega o HTML do modal de finalização para aparecer o novo endereço na lista
-        $.ajax({
-          url: '/Pedido/ModalProduto', // ou /Pedido/ModalFinalizacao (GET)
-          method: 'GET',
-          success: function (html) {
-            $('#modalFinalizarPedidoBody').html(html);
-            if (window.wizardInitFinalizarPedido) window.wizardInitFinalizarPedido();
-          }
-        });
-
-      },
-      error: function (xhr) {
-        alert(xhr.responseText || 'Erro ao salvar endereço.');
-      }
-    });
-  });
-
-    // Remover endereço
-    $(document).on('click', '.btn-remover-endereco', function () {
-        const enderecoId = $(this).data('endereco-id');
-
-        if (!confirm('Deseja remover este endereço?')) return;
-
-        $.ajax({
-            url: '/Endereco/Remover',
-            method: 'POST',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify({ enderecoId }),
-            success: function () {
-            // Recarrega o modal para atualizar a lista de endereços
-            $.ajax({
-                url: '/Pedido/ModalProduto',
-                method: 'GET',
-                success: function (html) {
-                $('#modalFinalizarPedidoBody').html(html);
-                if (window.wizardInitFinalizarPedido) window.wizardInitFinalizarPedido();
-                }
-            });
-            },
-            error: function (xhr) {
-            alert(xhr.responseText || 'Erro ao remover endereço.');
+            if (this.focus) {
+                try { this.focus({ preventScroll: true }); } catch (e) { this.focus(); }
             }
-        });
-    });
 
-    $(document).on('click', '#btnConfirmarPedido', function (e) {
-        e.preventDefault();
-        confirmarPedido();
-    });
+            const target = $(this).val();
 
-    function getEntregaSelecionada() {
-        const $selected = $('input[name="metodoEntrega"]:checked');
-        if (!$selected.length) return { tipo: null, enderecoId: null, label: null };
+            $('.grade-horarios').addClass('d-none');
+            const $containerAlvo = $(`#${target}`);
 
-        if ($selected.attr('id') === 'retirarLoja') {
-            return { tipo: 'retirar', enderecoId: null, label: 'Retirar na loja' };
-        }
-
-        if ($selected.attr('id') === 'entregaNovo') {
-            return { tipo: 'novo', enderecoId: null, label: 'Cadastrar novo endereço' };
-        }
-
-        // delivery existente
-        return {
-            tipo: 'delivery',
-            enderecoId: $selected.val() || null,
-            label: $(`label[for="${$selected.attr('id')}"]`).text().trim()
-        };
-        }
-
-    function getPagamentoSelecionado() {
-        const $p = $('input[name="pagamento"]:checked');
-        return $p.length ? $p.attr('id') : null; // "pix" | "cartao"
-        }
-
-    function confirmarPedido() {
-        const entrega = getEntregaSelecionada();
-        const pagamento = getPagamentoSelecionado();
-        const observacao = ($('#obsPedido').val() || '').trim();
-
-        // validações mínimas
-        if (!entrega.tipo) {
-            alert('Selecione um método de entrega.');
-            return;
-        }
-        if (entrega.tipo === 'novo') {
-            alert('Cadastre o endereço antes de confirmar.');
-            return;
-        }
-        if (!pagamento) {
-            alert('Selecione um método de pagamento.');
-            return;
-        }
-
-        const payload = {
-            metodoEntrega: entrega.tipo,        // "retirar" | "delivery"
-            enderecoId: entrega.enderecoId,     // Guid ou null
-            pagamento: pagamento,               // "pix" | "cartao"
-            observacao: observacao
-        };
-
-        $.ajax({
-            url: '/Pedido/Confirmar',
-            method: 'POST',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify(payload),
-            success: function (res) {
-            // Fechar modal
-            const el = document.getElementById('modalFinalizarPedido');
-            bootstrap.Modal.getInstance(el)?.hide();
-
-            // Redirecionar (ou exibir tela de sucesso)
-            // Ex.: res.pedidoId
-            window.location.href = '/?cart=1';
-            },
-            error: function (xhr) {
-            alert(xhr.responseText || 'Erro ao confirmar pedido.');
+            if ($containerAlvo.length > 0) {
+                $containerAlvo.removeClass('d-none');
+                $('#msg-selecione-data').addClass('d-none');
+            } else {
+                $('#msg-selecione-data').removeClass('d-none'); 
             }
+
+            $('input[name="horarioFinal"]').prop('checked', false);
+            $('#inputHorarioFinal').val('');
         });
-    }
-})();
+
+        $(document).on('change', 'input[name="horarioFinal"]', function () {
+            $('#inputHorarioFinal').val($(this).val());
+        });
+
+    });
 </script>
-

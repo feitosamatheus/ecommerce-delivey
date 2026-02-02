@@ -1,3 +1,4 @@
+using Ecommerce.MVC.Models.Pedidos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace Ecommerce.MVC.Models
         public decimal TaxaEntrega { get; set; }
         public decimal Total { get; set; }
 
-        public string? EnderecoTexto { get; set; }
+        public string EnderecoTexto { get; set; }
 
         public List<AcompanhamentoPedidoProdutoVm> Itens { get; set; } = new();
     }

@@ -9,6 +9,7 @@ using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Helpers;
 using Ecommerce.MVC.Interfaces;
 using Ecommerce.MVC.Models;
+using Ecommerce.MVC.Models.Pedidos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -85,7 +86,7 @@ public class PedidoController : Controller
 
         return PartialView("_AcompanhamentoCliente", vm);
     }
-    
+
     public async Task<IActionResult> Confirmar([FromBody] ConfirmarPedidoRequest req, CancellationToken ct)
     {
         if (req == null) return BadRequest("Requisição inválida.");
@@ -106,32 +107,6 @@ public class PedidoController : Controller
         if (carrinho == null || carrinho.Itens.Count == 0)
             return BadRequest("Carrinho vazio.");
 
-        // 2) Validar entrega
-        var metodo = (req.MetodoEntrega ?? "").Trim().ToLowerInvariant();
-        if (metodo != "retirar" && metodo != "delivery")
-            return BadRequest("Método de entrega inválido.");
-
-        Endereco endereco = null;
-
-        if (metodo == "delivery")
-        {
-            if (!req.EnderecoId.HasValue || req.EnderecoId.Value == Guid.Empty)
-                return BadRequest("Selecione um endereço para entrega.");
-
-            endereco = await _db.Set<Endereco>()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Id == req.EnderecoId.Value && e.ClienteId == clienteId, ct);
-
-            if (endereco == null)
-                return BadRequest("Endereço inválido.");
-        }
-
-        // 3) Validar pagamento
-        var pagamento = (req.Pagamento ?? "").Trim().ToLowerInvariant();
-        if (pagamento != "pix" && pagamento != "cartao")
-            return BadRequest("Método de pagamento inválido.");
-
-        // 4) Totalizar a partir dos snapshots do carrinho
         decimal subtotal = 0m;
 
         foreach (var item in carrinho.Itens)
@@ -140,35 +115,28 @@ public class PedidoController : Controller
             subtotal += (item.PrecoBaseSnapshot + somaAcomp) * item.Quantidade;
         }
 
-        var taxaEntrega = (metodo == "delivery") ? 0m : 0m;
-        var total = subtotal + taxaEntrega;
+        var total = subtotal;
+
+        var horarioUtc = DateTime.SpecifyKind(
+            req.HorarioRetirada,
+            DateTimeKind.Utc
+        );
 
         // 5) Criar Pedido + Itens (snapshot)
         var pedido = new Pedido
         {
             ClienteId = clienteId,
-            MetodoEntrega = metodo,
-            Pagamento = pagamento,
+            MetodoEntrega = "Retirada",
+            Pagamento = "Pix",
             Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim(),
             Subtotal = subtotal,
-            TaxaEntrega = taxaEntrega,
+            TaxaEntrega = 0m,
             Total = total,
-            CriadoEmUtc = DateTime.UtcNow
+            CriadoEmUtc = DateTime.UtcNow,
+            Status = Enums.EPedidoStatus.AguardandoPagamento,
+            HorarioRetirada = horarioUtc
         };
 
-        if (endereco != null)
-        {
-            pedido.Endereco = new PedidoEndereco
-            {
-                Cep = endereco.Cep,
-                Logradouro = endereco.Logradouro,
-                Numero = endereco.Numero,
-                Complemento = endereco.Complemento,
-                Bairro = endereco.Bairro,
-                Cidade = endereco.Cidade,
-                Estado = endereco.Estado
-            };
-        }
 
         foreach (var ci in carrinho.Itens)
         {
@@ -232,4 +200,43 @@ public class PedidoController : Controller
         return Ok(new { ok = true, pedidoId = pedido.Id });
     }
 
+
+    private static List<DateTime> GerarHorariosRetirada(int tempoPreparoMinutos)
+    {
+        var resultado = new List<DateTime>();
+
+        var agora = DateTime.Now;
+        var horarioMinimo = agora.AddMinutes(tempoPreparoMinutos);
+
+        var horarioInicial = AjustarParaHorarioFuncionamento(horarioMinimo);
+
+        for (int dia = 0; dia < 3; dia++)
+        {
+            var data = horarioInicial.Date.AddDays(dia);
+
+            var abertura = data.AddHours(8);
+            var fechamento = data.AddHours(22);
+
+            var inicio = dia == 0 ? horarioInicial : abertura;
+
+            for (var h = inicio; h <= fechamento; h = h.AddMinutes(30))
+                resultado.Add(h);
+        }
+
+        return resultado;
+    }
+
+    private static DateTime AjustarParaHorarioFuncionamento(DateTime dataHora)
+    {
+        var abertura = dataHora.Date.AddHours(8);
+        var fechamento = dataHora.Date.AddHours(22);
+
+        if (dataHora < abertura)
+            return abertura;
+
+        if (dataHora > fechamento)
+            return dataHora.Date.AddDays(1).AddHours(8);
+
+        return dataHora;
+    }
 }

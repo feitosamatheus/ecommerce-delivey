@@ -1,3 +1,4 @@
+using Ecommerce.MVC.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,14 @@ namespace Ecommerce.MVC.Entities
         public string MetodoEntrega { get; set; } // "retirar" | "delivery"
         public string Pagamento { get; set; }     // "pix" | "cartao"
         public string Observacao { get; set; }
+        public DateTime HorarioRetirada { get; set; }
 
         public decimal Subtotal { get; set; }
         public decimal TaxaEntrega { get; set; }
         public decimal Total { get; set; }
+
+        public EPedidoStatus Status { get; set; }
+
 
         // Snapshot do endereço (se delivery)
         public PedidoEndereco Endereco { get; set; }

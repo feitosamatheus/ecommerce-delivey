@@ -19,7 +19,7 @@ public class CarrinhoViewComponent : ViewComponent
         var vm = new CarrinhoViewModel
         {
             CarrinhoId = carrinho.Id,
-            Entrega = 0 // depois você calcula
+            Entrega = 0 
         };
 
         foreach (var item in carrinho.Itens)

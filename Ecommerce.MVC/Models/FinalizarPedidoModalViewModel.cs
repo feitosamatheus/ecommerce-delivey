@@ -1,8 +1,9 @@
+using Ecommerce.MVC.Models.Pedidos;
+using Ecommerce.MVC.Models.Produtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ecommerce.MVC.Models.Produtos;
 
 namespace Ecommerce.MVC.Models
 {
@@ -16,5 +17,7 @@ namespace Ecommerce.MVC.Models
         public Guid? EnderecoSelecionadoId { get; set; } // opcional (principal)
 
         public CarrinhoResumoVm Carrinho { get; set; } = new();
+
+        public List<RetiradaHorarioVm> HorariosRetirada { get; set; } = new();
     }
 }

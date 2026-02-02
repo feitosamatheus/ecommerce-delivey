@@ -24,11 +24,12 @@ public class Produto
     [Column(TypeName = "varchar(255)")]
     public string ImagemUrl { get; set; }
 
-    // Chave estrangeira
+    [Required]
+    public int TempoPreparoMinutos { get; set; } = 0;
+
     [Required]
     public Guid CategoriaId { get; set; }
 
-    // Navegação
     [ForeignKey("CategoriaId")]
     public Categoria Categoria { get; set; }
 
