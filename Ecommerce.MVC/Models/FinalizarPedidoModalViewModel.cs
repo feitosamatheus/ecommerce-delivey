@@ -13,9 +13,6 @@ namespace Ecommerce.MVC.Models
         public string ClienteNome { get; set; }
         public string ClienteTelefone { get; set; }
 
-        public List<EnderecoResumoVm> Enderecos { get; set; } = new();
-        public Guid? EnderecoSelecionadoId { get; set; } // opcional (principal)
-
         public CarrinhoResumoVm Carrinho { get; set; } = new();
 
         public List<RetiradaHorarioVm> HorariosRetirada { get; set; } = new();

@@ -15,6 +15,6 @@ namespace Ecommerce.MVC.Models.Produtos
         public decimal PrecoAcompanhamentos { get; set; }
         public decimal TotalLinha { get; set; }
 
-        public List<string> Acompanhamentos { get; set; } = new();
+        public List<AcompanhamentoDetalheVm> Acompanhamentos { get; set; } = new();
     }
 }

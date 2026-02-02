@@ -55,7 +55,6 @@ public class PedidoController : Controller
             .OrderByDescending(p => p.CriadoEmUtc)
             .Include(p => p.Itens)
                 .ThenInclude(i => i.Acompanhamentos)
-            .Include(p => p.Endereco) // se você tiver snapshot
             .ToListAsync(ct);
 
         var vm = new AcompanhamentoPedidosViewModel
@@ -69,11 +68,6 @@ public class PedidoController : Controller
                 Total = p.Total,
                 TaxaEntrega = p.TaxaEntrega,
                 Subtotal = p.Subtotal,
-
-                EnderecoTexto = p.Endereco == null
-                    ? null
-                    : $"{p.Endereco.Logradouro}, {p.Endereco.Numero} - {p.Endereco.Bairro} - {p.Endereco.Cidade}/{p.Endereco.Estado} - {p.Endereco.Cep}",
-
                 Itens = p.Itens.Select(i => new AcompanhamentoPedidoProdutoVm
                 {
                     ProdutoNome = i.ProdutoNomeSnapshot,
@@ -96,7 +90,6 @@ public class PedidoController : Controller
 
         var clienteId = Guid.Parse(clienteIdRaw);
 
-        // 1) Carregar carrinho por token
         var token = CartTokenHelper.GetOrCreateToken(HttpContext);
 
         var carrinho = await _db.Carrinhos
@@ -199,7 +192,6 @@ public class PedidoController : Controller
 
         return Ok(new { ok = true, pedidoId = pedido.Id });
     }
-
 
     private static List<DateTime> GerarHorariosRetirada(int tempoPreparoMinutos)
     {

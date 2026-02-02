@@ -128,7 +128,6 @@ public class ProdutoService : IProdutoService
     // 1) Cliente + Endereços
     var cliente = await _db.Set<Cliente>()
         .AsNoTracking()
-        .Include(c => c.Enderecos)
         .FirstOrDefaultAsync(c => c.Id == clienteId, ct);
 
     if (cliente == null)
@@ -166,9 +165,13 @@ public class ProdutoService : IProdutoService
             PrecoAcompanhamentos = somaAcomp,
             TotalLinha = totalLinha,
             Acompanhamentos = item.Acompanhamentos?
-                .Select(a => a.NomeSnapshot)
-                .ToList() ?? new List<string>()
-        });
+            .Select(a => new AcompanhamentoDetalheVm // Certifique-se de ter essa classe ou use uma similar
+            {
+                Nome = a.NomeSnapshot,
+                Preco = a.PrecoSnapshot
+            })
+            .ToList() ?? new List<AcompanhamentoDetalheVm>()
+            });
     }
 
     // 4) 🔥 MAIOR TEMPO DE PREPARO DO CARRINHO
@@ -183,36 +186,12 @@ public class ProdutoService : IProdutoService
     var taxaEntrega = 0m;
     var total = subtotal + taxaEntrega;
 
-    // 7) Endereços
-    var enderecos = cliente.Enderecos
-        .OrderByDescending(e => e.EhPrincipal)
-        .ThenByDescending(e => e.CriadoEm)
-        .Select(e => new EnderecoResumoVm
-        {
-            Id = e.Id,
-            Cep = e.Cep,
-            Logradouro = e.Logradouro,
-            Numero = e.Numero,
-            Complemento = e.Complemento,
-            Bairro = e.Bairro,
-            Cidade = e.Cidade,
-            Estado = e.Estado,
-            EhPrincipal = e.EhPrincipal
-        })
-        .ToList();
-
-    var enderecoPrincipal = enderecos
-        .FirstOrDefault(e => e.EhPrincipal)?.Id;
-
     // 8) ViewModel final
     return new FinalizarPedidoModalViewModel
     {
         ClienteId = cliente.Id,
         ClienteNome = cliente.Nome,
         ClienteTelefone = cliente.Telefone,
-
-        Enderecos = enderecos,
-        EnderecoSelecionadoId = enderecoPrincipal,
 
         Carrinho = new CarrinhoResumoVm
         {

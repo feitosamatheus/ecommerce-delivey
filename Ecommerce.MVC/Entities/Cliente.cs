@@ -38,5 +38,4 @@ public class Cliente
 
     public bool RecebeMarketing { get; set; }
 
-    public ICollection<Endereco> Enderecos { get; set; } = new List<Endereco>();
 }

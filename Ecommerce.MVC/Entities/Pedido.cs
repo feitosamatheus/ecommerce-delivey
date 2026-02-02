@@ -25,9 +25,6 @@ namespace Ecommerce.MVC.Entities
         public EPedidoStatus Status { get; set; }
 
 
-        // Snapshot do endereço (se delivery)
-        public PedidoEndereco Endereco { get; set; }
-
         public DateTime CriadoEmUtc { get; set; } = DateTime.UtcNow;
 
         public List<PedidoItem> Itens { get; set; } = new();

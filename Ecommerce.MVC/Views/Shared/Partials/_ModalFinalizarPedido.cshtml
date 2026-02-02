@@ -217,6 +217,8 @@
     // -----------------------------
     // Step 2: Confirmar pedido (AJAX) – SOMENTE quando data-action="confirmar"
     // -----------------------------
+    window._pedidoConfirmado = false;
+
     $(document).on('click', '#btnWizardNext[data-action="confirmar"]', function (e) {
       e.preventDefault();
       e.stopImmediatePropagation(); // ✅ impede que o wizard trate esse clique também
@@ -252,13 +254,20 @@
           // $('#pixCopiaCola').val(res.pixCopiaCola);
 
           // Vai pro Step 3
-          if (typeof window._wizardShowStepFinalizarPedido === 'function') {
-            window._wizardShowStepFinalizarPedido(3);
-          }
+            if (typeof window._wizardShowStepFinalizarPedido === 'function') {
+              window._wizardShowStepFinalizarPedido(3);
+            }
 
-          // O setButtons(3) já coloca "Fechar"
-          $btn.prop('disabled', false).text('Fechar');
-          removeLoading();
+            // Trava o wizard e limpa steps anteriores
+            lockWizardAfterConfirm();
+
+            // Alerta de sucesso
+            showSuccessToast('Pedido confirmado com sucesso! Agora finalize o pagamento via PIX.');
+
+            // Atualiza botão principal
+            $btn.prop('disabled', false).text('Fechar');
+
+            removeLoading();
         },
         error: function (xhr) {
           $btn.prop('disabled', false).text('Confirmar pedido');
@@ -267,6 +276,36 @@
         }
       });
     });
+
+    function showSuccessToast(message) {
+      // Bootstrap 5 toast (fallback para alert se não tiver toast)
+      const $toast = $('#toastPedidoSucesso');
+      if ($toast.length) {
+        $toast.find('.toast-body').text(message);
+        bootstrap.Toast.getOrCreateInstance($toast[0], { delay: 3500 }).show();
+      } else {
+        alert(message);
+      }
+    }
+
+    function lockWizardAfterConfirm() {
+      window._pedidoConfirmado = true;
+
+      // 1) Bloqueia botão voltar
+      $('#btnWizardPrev').prop('disabled', true).addClass('disabled');
+
+      // 2) Bloqueia clique nos indicadores (se o usuário tentar clicar neles)
+      $('#modalFinalizarPedido .wizard-step-indicator').css('pointer-events', 'none').addClass('opacity-100');
+
+      // 3) Limpa steps anteriores para não haver como “voltar”
+      const $modal = $('#modalFinalizarPedido');
+      $modal.find('.wizard-step[data-step="1"]').html('');
+      $modal.find('.wizard-step[data-step="2"]').html('');
+
+      // 4) Garante que step 3 seja o único visível
+      $modal.find('.wizard-step').addClass('d-none');
+      $modal.find('.wizard-step[data-step="3"]').removeClass('d-none');
+    }
 </script>
 
 
