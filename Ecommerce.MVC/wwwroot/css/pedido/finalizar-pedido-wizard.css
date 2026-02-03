@@ -1,0 +1,187 @@
+﻿#modalFinalizarPedidoBody {
+    --wiz-primary: #3c1e0a;
+    --wiz-success: #1f7a33;
+    --wiz-border: #eeeeee;
+    --wiz-text-muted: #888888;
+    --wiz-bg-light: #f8f9fa;
+}
+
+/* =========================
+   BOTÕES DO MODAL
+========================= */
+.wizard-btn-next {
+    width: 100%;
+}
+
+@media (min-width: 992px) {
+    .wizard-btn-next {
+        width: 25%;
+    }
+}
+
+/* =========================
+   CARDS / RADIO
+========================= */
+.card-option {
+    background: #fff;
+    border: 1px solid var(--bh-border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+    .card-option:hover {
+        background: var(--bh-bg-light);
+    }
+
+.custom-radio {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.btn-check:checked + .card-option {
+    border-color: var(--bh-primary);
+    box-shadow: 0 4px 12px rgba(60, 30, 10, 0.08);
+}
+
+    .btn-check:checked + .card-option .custom-radio::after {
+        content: "";
+        width: 10px;
+        height: 10px;
+        background: var(--bh-primary);
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+/* =========================
+   WIZARD PROGRESS
+========================= */
+.wizard-progress {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.wizard-line {
+    position: absolute;
+    top: 16px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: var(--bh-border);
+    z-index: 0;
+}
+
+.wizard-step-indicator {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    flex: 1;
+}
+
+    .wizard-step-indicator span {
+        width: 32px;
+        height: 32px;
+        background: #eee;
+        color: var(--bh-text-muted);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-bottom: 4px;
+        font-size: 0.85rem;
+    }
+
+    .wizard-step-indicator small {
+        display: block;
+        font-size: .7rem;
+        color: var(--bh-text-muted);
+        font-weight: 600;
+    }
+
+    .wizard-step-indicator.active span {
+        background: var(--bh-primary);
+        color: #fff;
+    }
+
+    .wizard-step-indicator.active small {
+        color: var(--bh-primary);
+    }
+
+/* =========================
+   CALENDÁRIO
+========================= */
+#calendarioBlocos {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding: 10px 5px;
+}
+
+    #calendarioBlocos::-webkit-scrollbar {
+        display: none;
+    }
+
+.nav-cal {
+    width: 32px;
+    height: 32px;
+    background: #fff !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+    .nav-cal:hover {
+        background: var(--bh-primary) !important;
+        color: #fff !important;
+    }
+
+/* =========================
+   HORÁRIOS
+========================= */
+.grade-horarios label {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #fff;
+    border-color: var(--bh-border);
+    color: var(--bh-primary);
+    border-radius: 28px !important;
+}
+
+    .grade-horarios label:hover {
+        background-color: var(--bh-bg-light);
+        border-color: var(--bh-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+input[name="horarioFinal"]:checked + label {
+    background-color: var(--bh-primary) !important;
+    border-color: var(--bh-primary) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 14px rgba(60, 30, 10, 0.25);
+}
+
+/* =========================
+   PIX
+========================= */
+#pixQrImg {
+    max-width: 240px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 16px;
+}
+
+#pixStatusBox .alert {
+    font-size: 0.85rem;
+}

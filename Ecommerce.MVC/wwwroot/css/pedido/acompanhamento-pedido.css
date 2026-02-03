@@ -1,0 +1,169 @@
+﻿/* Namespace do componente: Pedidos em andamento */
+.bh-pedidos-em-andamento {
+    --bh-primary: #3c1e0a;
+    --bh-success: #1f7a33;
+    --bh-border: #eeeeee;
+    --bh-text-muted: #888888;
+}
+
+    /* Utilitários do componente */
+    .bh-pedidos-em-andamento .shadow-sm-hover:hover {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+        transform: translateY(-2px);
+    }
+
+    .bh-pedidos-em-andamento .transition-all {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .bh-pedidos-em-andamento .extra-small {
+        font-size: 0.75rem;
+    }
+
+    /* Base */
+    .bh-pedidos-em-andamento .bh-history {
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Card */
+    .bh-pedidos-em-andamento .order-wrapper {
+        background: #fff;
+        border: 1px solid var(--bh-border);
+        border-radius: 16px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+
+    /* Grid */
+    .bh-pedidos-em-andamento .order-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 20px;
+        align-items: center;
+        cursor: pointer;
+    }
+
+@media (min-width: 992px) {
+    .bh-pedidos-em-andamento .order-grid {
+        grid-template-columns: 1.2fr 1.2fr 1fr 1fr 40px;
+    }
+}
+
+/* Botão mobile */
+@media (max-width: 991px) {
+    .bh-pedidos-em-andamento .col-btn {
+        grid-column: span 2;
+        text-align: center;
+        background: #0f0f0fa8;
+        border-radius: 20px;
+        margin-top: 5px;
+        width: 25%;
+        position: relative;
+        left: 77%;
+    }
+
+        .bh-pedidos-em-andamento .col-btn .fa-solid {
+            color: white !important;
+        }
+}
+
+/* Labels */
+.bh-pedidos-em-andamento .label-mobile {
+    font-size: 0.65rem;
+    color: var(--bh-text-muted);
+    text-transform: uppercase;
+    font-weight: 800;
+    display: block;
+}
+
+@media (min-width: 992px) {
+    .bh-pedidos-em-andamento .label-mobile {
+        /*display: none;*/
+    }
+
+    .bh-pedidos-em-andamento .label-mobile-start {
+        text-align:start;
+    }
+    .bh-pedidos-em-andamento .label-mobile-end {
+        text-align: end;
+    }
+}
+
+/* Stepper */
+.bh-pedidos-em-andamento .order-stepper {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background: #fff;
+    border-bottom: 1px solid var(--bh-border);
+}
+
+.bh-pedidos-em-andamento .step {
+    flex: 1;
+    text-align: center;
+    font-size: 0.6rem;
+    color: var(--bh-text-muted);
+    position: relative;
+}
+
+    .bh-pedidos-em-andamento .step::after {
+        content: '';
+        position: absolute;
+        top: 10px;
+        right: -50%;
+        width: 100%;
+        height: 2px;
+        background: var(--bh-border);
+        z-index: 1;
+    }
+
+    .bh-pedidos-em-andamento .step:last-child::after {
+        display: none;
+    }
+
+.bh-pedidos-em-andamento .step-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #eee;
+    margin: 0 auto 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    position: relative;
+}
+
+.bh-pedidos-em-andamento .step.done {
+    color: var(--bh-success);
+}
+
+    .bh-pedidos-em-andamento .step.done .step-circle {
+        background: var(--bh-success);
+        color: #fff;
+    }
+
+    .bh-pedidos-em-andamento .step.done::after {
+        background: var(--bh-success);
+    }
+
+.bh-pedidos-em-andamento .step.active {
+    color: var(--bh-primary);
+    font-weight: 700;
+}
+
+    .bh-pedidos-em-andamento .step.active .step-circle {
+        background: var(--bh-primary);
+        color: #fff;
+        box-shadow: 0 0 0 3px rgba(60, 30, 10, 0.1);
+    }
+
+.bh-pedidos-em-andamento .btn-toggle-detalhes {
+    background: none;
+    border: none;
+    padding: 8px;
+    transition: 0.3s;
+}

@@ -1,6 +1,6 @@
 ﻿namespace Ecommerce.MVC.Models.Pedidos;
 
-public class RetiradaHorarioVm
+public class PedidoRetiradaHorarioViewModel
 {
     public DateTime DataHora { get; set; }
 

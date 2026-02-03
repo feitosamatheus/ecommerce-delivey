@@ -10,6 +10,5 @@ namespace Ecommerce.MVC.Interfaces;
 public interface IProdutoService
 {
     Task<IEnumerable<Produto>> BuscarProdutoAsync();
-    Task<FinalizarPedidoModalViewModel> MontarModalAsync(HttpContext http, Guid clienteId, CancellationToken ct);
     Task<Produto> ObterPorIdAsync(Guid produtoId);
 }

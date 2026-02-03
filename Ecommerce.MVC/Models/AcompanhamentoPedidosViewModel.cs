@@ -9,7 +9,7 @@ namespace Ecommerce.MVC.Models
     public class AcompanhamentoPedidosViewModel
     {
         public List<AcompanhamentoPedidoItemVm> Pedidos { get; set; } = new();
-        public List<RetiradaHorarioVm> HorariosRetirada { get; set; }
+        public List<PedidoRetiradaHorarioViewModel> HorariosRetirada { get; set; }
 
     }
 }

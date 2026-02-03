@@ -305,14 +305,13 @@
 
         setTimeout(() => {
             $.ajax({
-                url: '/Pedido/AcompanhamentoCliente',
+                  url: '/Pedido/BuscarModalPedidosEmAndamento',
                 method: 'GET',
                 success: function (html) {
-                    $('#modalAcompanhamentoClienteBody').empty();
-                    $('#modalContaClienteBody').empty();
-                    $('#modalAcompanhamentoClienteBody').html(html);
+                    $('#conteudo-modal').empty();
+                    $('#conteudo-modal').html(html);
 
-                    const el = document.getElementById('modalAcompanhamentoCliente');
+                    const el = document.getElementById('modalPedidosEmAndamento');
                     bootstrap.Modal.getOrCreateInstance(el).show();
 
                     removeLoading();
