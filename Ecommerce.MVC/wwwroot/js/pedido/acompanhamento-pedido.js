@@ -1,4 +1,16 @@
-﻿$(function () {
+﻿function copyToClipboard(elementId) {
+    var copyText = document.getElementById(elementId);
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // Para dispositivos móveis
+
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        alert("Código PIX copiado com sucesso!");
+    }).catch(err => {
+        console.error('Erro ao copiar: ', err);
+    });
+}
+
+$(function () {
     $('.toggle-detalhes').each(function () {
         const $btn = $(this);
         const targetId = $btn.data('target');
@@ -20,4 +32,5 @@
             }
         });
     });
+
 });

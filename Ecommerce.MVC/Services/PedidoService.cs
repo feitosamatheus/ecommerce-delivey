@@ -25,25 +25,55 @@ public class PedidoService : IPedidoService
     #region Listar pedidos em andamento
     public async Task<IReadOnlyList<PedidosEmAndamentoViewModel>> ListarEmAndamentoAsync(Guid clienteId, CancellationToken ct)
     {
-        var pedidos = await _db.Pedidos
-        .AsNoTracking()
-        .Where(p => p.ClienteId == clienteId
-                    && p.Status != EPedidoStatus.Rascunho
-                    && p.Status != EPedidoStatus.Concluido
-                    && p.Status != EPedidoStatus.Cancelado)
-        .OrderByDescending(p => p.CriadoEmUtc)
-        .ToListAsync(ct);
+        return await _db.Pedidos
+            .AsNoTracking()
+            .Where(p => p.ClienteId == clienteId
+                        && p.Status != EPedidoStatus.Rascunho
+                        && p.Status != EPedidoStatus.Concluido
+                        && p.Status != EPedidoStatus.Cancelado)
+            .OrderByDescending(p => p.CriadoEmUtc)
+            .Select(p => new PedidosEmAndamentoViewModel
+            {
+                Codigo = p.Codigo,
+                CriadoEmUtc = p.CriadoEmUtc,
+                Status = p.Status,
+                StatusTexto = MapStatusTexto(p.Status),
+                Step = MapStatusToStep(p.Status),
+                MetodoEntrega = "Retirar na unidade",
+                HorarioRetirada = p.HorarioRetirada,
+                Observacao = p.Observacao,
 
-        return pedidos.Select(p => new PedidosEmAndamentoViewModel
-        {
-            Codigo = p.Codigo,
-            CriadoEmUtc = p.CriadoEmUtc,
-            Status = p.Status,
-            StatusTexto = MapStatusTexto(p.Status),
-            MetodoEntrega = p.MetodoEntrega,
-            Total = p.Total,
-            Step = MapStatusToStep(p.Status)
-        }).ToList();
+                // --- INFORMAÇÕES FINANCEIRAS ---
+                Subtotal = p.Subtotal,
+                Total = p.Total,
+                ValorSinal = Math.Round(p.Total * 0.50m, 2),
+                ValorRestanteRetirada = p.Total - Math.Round(p.Total * 0.50m, 2),
+
+                // --- INFORMAÇÕES DE PAGAMENTO FICTÍCIAS ---
+                // Aqui simulamos que se o pedido for muito recente, está "Pendente"
+                StatusPagamento = "Aguardando Sinal",
+                PixIdentificador = "a9b90c50-3128-4ad0-92f2-64167a511bb7",
+                PixBeneficiario = "Barriga Cheia Ltda.",
+                PixCopiaCola = "00020126330014BR.GOV.BCB.PIX0111+55999999999952040000530398654054.505802BR5920BROWNIE HOUSE DEMO6009OLINDA-PE62170513PEDIDO-...",
+                PixQrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ExemploPixFicticio",
+                PixExpiraEm = p.CriadoEmUtc.AddHours(24).ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
+
+                Itens = p.Itens
+                    .Select(i => new PedidosEmAndamentoItemViewModel
+                    {
+                        ProdutoNome = i.ProdutoNomeSnapshot,
+                        Quantidade = i.Quantidade,
+                        PrecoBase = i.PrecoBaseSnapshot,
+                        TotalLinha = i.TotalLinha,
+                        Acompanhamentos = i.Acompanhamentos
+                            .Select(a => new PedidosEmAndamentoItemAcompanhamentoViewModel
+                            {
+                                Nome = a.NomeSnapshot,
+                                Preco = a.PrecoSnapshot
+                            }).ToList()
+                    }).ToList()
+            })
+            .ToListAsync(ct);
     }
 
     private static int MapStatusToStep(EPedidoStatus status) => status switch
@@ -338,7 +368,7 @@ public class PedidoService : IPedidoService
         var valorSinal = Math.Round(pedido.Total * 0.50m, 2, MidpointRounding.AwayFromZero);
 
         // PIX fake
-        var expiraEmUtc = DateTime.UtcNow.AddMinutes(30);
+        var expiraEmUtc = DateTime.UtcNow.AddMinutes(1440);
         var pixChave = "pix-demo@browniehouse.com";
         var pixCopiaCola = BuildPixCopiaColaFake(pedido.Id, valorSinal);
         var qrBase64 = GenerateQrPngBase64(pixCopiaCola);
@@ -397,5 +427,18 @@ public class PedidoService : IPedidoService
         return $"BC-{ano}-{seq.UltimoNumero:D6}";
     }
 
+    #endregion
+
+    #region Obter quantidade de Pedidos em andamento
+    public async Task<int> ObterQuantidadeEmAndamentoAsync(Guid clienteId, CancellationToken ct)
+    {
+        // Consideramos "em aberto" os mesmos status que você usa na listagem
+        return await _db.Pedidos
+            .AsNoTracking()
+            .CountAsync(p => p.ClienteId == clienteId
+                             && p.Status != EPedidoStatus.Rascunho
+                             && p.Status != EPedidoStatus.Concluido
+                             && p.Status != EPedidoStatus.Cancelado, ct);
+    }
     #endregion
 }

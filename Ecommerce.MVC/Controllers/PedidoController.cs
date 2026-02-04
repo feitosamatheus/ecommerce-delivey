@@ -51,6 +51,10 @@ public class PedidoController : Controller
             User.FindFirstValue(ClaimTypes.NameIdentifier)!
         );
 
+        int totalPedidosAndamento = 0;
+        totalPedidosAndamento = await _pedidoService.ObterQuantidadeEmAndamentoAsync(clienteId, HttpContext.RequestAborted);
+        ViewBag.TotalPedidos = totalPedidosAndamento;
+
         var pedidos = await _pedidoService.ListarEmAndamentoAsync(clienteId, ct);
 
         return PartialView("_ModalPedidosEmAndamento", pedidos);

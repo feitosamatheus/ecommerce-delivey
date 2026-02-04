@@ -15,7 +15,8 @@
         padding: 7px 0 16px 0;
         position: relative;
         color: #fff;
-        box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 2px;
+        /*box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 2px;*/
+        box-shadow: 0px -56px 15px rgba(0, 0, 0, 0.3);
         border-top: 4px solid #edcd9a;
     }
 
@@ -123,9 +124,9 @@
 
     .bc-nav-btn {
         border-radius: 50px !important; /* Estilo pílula igual ao dropdown */
-        padding: 5px 18px !important;
+        padding: 6px 18px !important;
         font-weight: 600 !important;
-        font-size: 0.85rem !important;
+        font-size: 0.9rem !important;
         border: none !important;
         transition: all 0.3s ease !important;
         display: flex;
@@ -163,4 +164,40 @@
         background-color: #fff9f0; /* creme clarinho */
         color: #4b2c20;
     }
+
+    /* Botão Acompanhar Pedido - Tom de Destaque */
+    .btn-acompanhar-pedido {
+        background-color: #edcd9a !important; /* Bege/Dourado da borda */
+        color: #4a2a15 !important; /* Marrom escuro para leitura */
+        border: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+        .btn-acompanhar-pedido:hover {
+            background-color: #e0c9a6 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Botão Minha Conta (Dropdown) */
+    #btn-conta-dropdown-mobile {
+        background-color: #ffffff; /* Fundo branco para destacar do marrom */
+        color: #4a2a15 !important;
+        transition: all 0.3s ease;
+    }
+
+        #btn-conta-dropdown-mobile:hover {
+            background-color: #f8f9fa;
+        }
+
+    /* Badge de Notificação */
+    .btn-acompanhar-pedido .badge {
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .btn-acompanhar-pedido-nav {
+        background-color: white !important;
+    }
 }
+

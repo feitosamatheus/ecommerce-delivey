@@ -62,6 +62,62 @@
     .step.active .step-circle { background: var(--bh-primary); color: #fff; box-shadow: 0 0 0 3px rgba(60, 30, 10, 0.1); }
 
     .btn-toggle-detalhes { background: none; border: none; padding: 8px; transition: 0.3s; }
+
+    /* 1. Suavização da abertura (Collapse) */
+    .bh-history .collapse {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bh-history .collapsing {
+        transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 2. Ajuste de Overflow para sombras e animações */
+    .bh-history .order-wrapper {
+        background: #fff;
+        border: 1px solid var(--bh-border);
+        border-radius: 16px;
+        margin-bottom: 12px;
+        overflow: visible !important; /* Permitir que sombras e efeitos apareçam */
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .bh-history .order-wrapper:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+    /* 3. Rotação suave do ícone */
+    .btn-toggle-detalhes i {
+        transition: transform 0.3s ease;
+    }
+
+    .order-grid[aria-expanded="true"] .btn-toggle-detalhes i {
+        transform: rotate(180deg);
+    }
+
+    /* 4. Estilos de Status Customizados */
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .status-finalizado {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .status-preparo {
+        background-color: #fff3e0;
+        color: #ef6c00;
+    }
+
+    .status-aguardando {
+        background-color: #e3f2fd;
+        color: #1565c0;
+    }
 </style>
 
 <div class="bh-history">

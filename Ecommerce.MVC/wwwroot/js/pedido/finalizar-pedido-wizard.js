@@ -64,7 +64,7 @@
 
         const end = new Date(expiraEmUtcIso);
         if (isNaN(end.getTime())) {
-            $("#pixExpiraEm").text("--:--");
+            $("#pixExpiraEm").text("--:--:--");
             return;
         }
 
@@ -75,19 +75,22 @@
 
             if (diffSec <= 0) {
                 stopPixTimer();
-                $("#pixExpiraEm").text("00:00");
+                $("#pixExpiraEm").text("00:00:00");
                 $("#pixStatusBox").removeClass("d-none").html(`
-          <div class="alert alert-danger border-0 rounded-4 mb-0">
-            <i class="fa-solid fa-triangle-exclamation me-1"></i>
-            PIX expirado. Gere um novo código.
-          </div>
-        `);
+                <div class="alert alert-danger border-0 rounded-4 mb-0">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                    PIX expirado. Gere um novo código.
+                </div>
+            `);
                 return;
             }
 
-            const m = String(Math.floor(diffSec / 60)).padStart(2, "0");
+            // Cálculo para 24 horas (Horas, Minutos e Segundos)
+            const h = String(Math.floor(diffSec / 3600)).padStart(2, "0");
+            const m = String(Math.floor((diffSec % 3600) / 60)).padStart(2, "0");
             const s = String(diffSec % 60).padStart(2, "0");
-            $("#pixExpiraEm").text(`${m}:${s}`);
+
+            $("#pixExpiraEm").text(`${h}:${m}:${s}`);
         }, 1000);
     }
 

@@ -1,147 +1,227 @@
 <style>
     :root {
         --bh-primary: #3c1e0a;
+        --bh-primary-light: #f4ece6;
         --bh-success: #1f7a33;
-        --bh-border: #eeeeee;
-        --bh-text-muted: #888888;
-        --bh-bg-light: #f8f9fa;
+        --bh-border: #f0f0f0;
+        --bh-text-main: #2d2d2d;
+        --bh-text-muted: #717171;
+        --bh-bg-light: #fafafa;
+        --bh-radius: 20px;
     }
 
-    /* Reset e Fontes */
-    .bc-modal-container { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .bc-modal-container {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
 
-    /* Modal Customizado */
-    .bc-modal { border-radius: 16px; border: none; }
-    
-    /* Botão de Fechar */
+    /* Modal - Estilo Card Elevado */
+    .bc-modal {
+        border-radius: var(--bh-radius);
+        border: none;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    /* Botão Fechar Minimalista */
     .btn-close-custom {
-        background: none; border: none; font-size: 1.8rem;
-        color: var(--bh-text-muted); line-height: 1; transition: 0.2s;
-    }
-    .btn-close-custom:hover { color: var(--bh-primary); transform: scale(1.1); }
-
-    /* Tabs (Mesmo estilo do Histórico) */
-    .bc-modal .nav-tabs { border-bottom: 2px solid var(--bh-border); }
-    .bc-modal .nav-link { 
-        border: none; color: var(--bh-text-muted); font-weight: 600; 
-        padding: 12px 20px; font-size: 0.9rem; transition: 0.3s;
-    }
-    .bc-modal .nav-link.active { 
-        color: var(--bh-primary); background: none; 
-        border-bottom: 3px solid var(--bh-primary); 
+        background: #f5f5f5;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bh-text-muted);
+        transition: 0.3s;
+        font-size: 1.2rem;
     }
 
-    /* Seções Internas */
-    .bc-section-title { 
-        font-size: 0.75rem; font-weight: 800; text-transform: uppercase; 
-        color: var(--bh-text-muted); letter-spacing: 0.5px; margin-bottom: 8px; 
-        display: flex; align-items: center; gap: 8px;
+        .btn-close-custom:hover {
+            background: var(--bh-primary-light);
+            color: var(--bh-primary);
+            transform: rotate(90deg);
+        }
+
+    /* Tabs Estilo "Pill" */
+    .bc-modal .nav-tabs {
+        border: none;
+        background: #f0f0f0;
+        padding: 4px;
+        border-radius: 12px;
+        display: inline-flex;
+        margin-bottom: 25px;
     }
 
-    /* Cards de Endereço e Pagamento */
+    .bc-modal .nav-item {
+        margin: 0;
+    }
+
+    .bc-modal .nav-link {
+        border: none !important;
+        color: var(--bh-text-muted);
+        font-weight: 600;
+        padding: 8px 24px;
+        font-size: 0.85rem;
+        border-radius: 8px !important;
+        transition: 0.2s ease;
+    }
+
+        .bc-modal .nav-link.active {
+            color: var(--bh-primary) !important;
+            background: #fff !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+    /* Títulos de Seção */
+    .bc-section-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--bh-primary);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Cards de Ação (Endereço/Pagamento) */
     .bc-card-action {
-        background: #fff; border: 1px solid var(--bh-border); border-radius: 12px;
-        padding: 15px; text-decoration: none; transition: all 0.2s ease-in-out;
-    }
-    .bc-card-action:hover {
-        background-color: var(--bh-bg-light); border-color: #dee2e6;
-        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); transform: translateY(-2px);
+        background: #fff;
+        border: 1px solid var(--bh-border);
+        border-radius: 14px;
+        padding: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: block;
+        text-decoration: none;
     }
 
-    /* Utilitários */
-    .extra-small { font-size: 0.7rem; }
-    .bc-link { color: var(--bh-primary); font-weight: 700; text-decoration: none; font-size: 0.85rem; }
-    .bc-link:hover { text-decoration: underline; }
-    .bc-footnote { font-size: 0.7rem; color: var(--bh-text-muted); }
+        .bc-card-action:hover {
+            border-color: var(--bh-primary-light);
+            background-color: #fff;
+            box-shadow: 0 10px 20px rgba(60, 30, 10, 0.05);
+            transform: translateY(-3px);
+        }
+
+    /* Horários */
+    .schedule-box {
+        background: linear-gradient(145deg, #ffffff, #f9f9f9);
+        border: 1px solid var(--bh-border);
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .bc-link {
+        color: var(--bh-primary);
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 0.85rem;
+        padding-bottom: 2px;
+        border-bottom: 2px solid transparent;
+        transition: 0.2s;
+    }
+
+        .bc-link:hover {
+            border-bottom-color: var(--bh-primary);
+        }
 </style>
 
 <div class="modal fade bc-modal-container" id="modalVerMais" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bc-modal shadow-lg">
-            
-            <div style="position: absolute; right: 15px; top: 10px; z-index: 10;">
+
+            <div style="position: absolute; right: 20px; top: 20px; z-index: 10;">
                 <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">×</button>
             </div>
 
-            <div class="modal-body p-4">
-                <ul class="nav nav-tabs mb-4" id="bcTabs" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pane-sobre" type="button">Sobre</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pane-horario" type="button">Horário</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pane-pagamento" type="button">Pagamento</button>
-                    </li>
-                </ul>
+            <div class="modal-body p-4 p-md-5">
+                <div class="text-center">
+                    <ul class="nav nav-tabs" id="bcTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pane-sobre" type="button">Sobre</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pane-horario" type="button">Horário</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pane-pagamento" type="button">Pagamento</button>
+                        </li>
+                    </ul>
+                </div>
 
                 <div class="tab-content mt-2">
                     <div class="tab-pane fade show active" id="pane-sobre">
-                        <div class="mb-4">
-                            <div class="bc-section-title">Nossa História</div>
-                            <p class="text-muted small">
-                                Sopas e caldos artesanais, salgados e bolos. Feito pelo chef com ingredientes selecionados. Aceitamos encomendas para eventos.
-                            </p>
-                            <a href="/" class="bc-link">Ver cardápio completo</a>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <div class="bc-section-title">Onde Estamos</div>
-                            <a href="https://maps.google.com" target="_blank" class="d-flex align-items-center bc-card-action">
-                                <div class="text-start">
-                                    <span class="d-block fw-bold text-dark small">Rua Nilson Sabino Pinho, 222</span>
-                                    <span class="text-muted extra-small">Jardim Atlântico, Olinda - PE</span>
-                                    <div class="mt-1 extra-small fw-bold" style="color: var(--bh-primary);">
-                                        Ver no Google Maps <i class="fa-solid fa-arrow-up-right-from-square ms-1" style="font-size: 0.6rem;"></i>
+                        <div class="row g-4">
+                            <div class="col-md-7">
+                                <div class="bc-section-title text-uppercase">Nossa História</div>
+                                <p class="text-muted" style="font-size: 0.95rem; line-height: 1.6;">
+                                    Sopas e caldos artesanais, salgados e bolos. Feito pelo chef com ingredientes selecionados.
+                                    Aceitamos encomendas para eventos com um toque de carinho e sabor caseiro.
+                                </p>
+                                <a href="/" class="bc-link">Explorar cardápio <i class="fa-solid fa-arrow-right ms-1"></i></a>
+                            </div>
+
+                            <div class="col-md-5">
+                                <div class="bc-section-title text-uppercase">Onde Estamos</div>
+                                <a href="https://maps.google.com" target="_blank" class="bc-card-action">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fa-solid fa-location-dot text-danger"></i>
+                                        </div>
+                                        <div>
+                                            <span class="d-block fw-bold text-dark small">Rua Nilson Sabino Pinho, 222</span>
+                                            <span class="text-muted extra-small">Jardim Atlântico, Olinda - PE</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
+                                    <div class="mt-3 extra-small fw-bold text-uppercase pt-2 border-top" style="color: var(--bh-primary); font-size: 0.65rem;">
+                                        Abrir no Maps <i class="fa-solid fa-external-link ms-1"></i>
+                                    </div>
+                                </a>
+                            </div>
                         </div>
 
-                        <div class="mb-2">
-                            <div class="bc-section-title">Informações Legais</div>
-                            <div class="text-muted small fw-bold">CNPJ: 00.000.000/0001-00</div>
+                        <div class="mt-4 pt-4 border-top">
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                <strong>CNPJ:</strong> 00.000.000/0001-00
+                            </div>
                         </div>
                     </div>
 
                     <div class="tab-pane fade" id="pane-horario">
-                        <div class="p-4 rounded-3" style="background-color: var(--bh-bg-light); border: 1px solid var(--bh-border);">
-                            <div class="bc-section-title"><i class="fa-solid fa-clock"></i> Horários de Funcionamento</div>
-                            <div class="row mt-3">
-                                <div class="col-sm-6 mb-2">
-                                    <span class="small d-block text-muted">Segunda a Sexta</span>
-                                    <span class="fw-bold">11:00 às 22:00</span>
+                        <div class="schedule-box">
+                            <div class="bc-section-title mb-4"><i class="fa-solid fa-clock"></i> Horários de Funcionamento</div>
+                            <div class="row g-4">
+                                <div class="col-sm-4">
+                                    <span class="small d-block text-muted mb-1">Segunda a Sexta</span>
+                                    <span class="fw-bold" style="color: var(--bh-primary);">11:00 — 22:00</span>
                                 </div>
-                                <div class="col-sm-6 mb-2">
-                                    <span class="small d-block text-muted">Sábado</span>
-                                    <span class="fw-bold">11:00 às 23:00</span>
+                                <div class="col-sm-4">
+                                    <span class="small d-block text-muted mb-1">Sábado</span>
+                                    <span class="fw-bold" style="color: var(--bh-primary);">11:00 — 23:00</span>
                                 </div>
-                                <div class="col-sm-6">
-                                    <span class="small d-block text-muted">Domingo</span>
-                                    <span class="fw-bold">16:00 às 22:00</span>
+                                <div class="col-sm-4">
+                                    <span class="small d-block text-muted mb-1">Domingo</span>
+                                    <span class="fw-bold" style="color: var(--bh-primary);">16:00 — 22:00</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="tab-pane fade" id="pane-pagamento">
-                        <div class="bc-section-title mb-3">Formas de Pagamento</div>
+                        <div class="bc-section-title mb-3 text-uppercase">Formas de Pagamento</div>
                         <div class="row g-3">
                             @{
                                 var pagamentos = new[] {
-                                    new { Icon = "fa-pix", Label = "Pix", Color = "#32BCAD" },
-                                    new { Icon = "fa-credit-card", Label = "Crédito", Color = "#D4A017" },
-                                    new { Icon = "fa-money-check-dollar", Label = "Débito", Color = "var(--bh-primary)" },
-                                    new { Icon = "fa-money-bill-1-wave", Label = "Dinheiro", Color = "#1f7a33" }
-                                };
+                                                        new { Icon = "fa-pix", Label = "Pix", Color = "#32BCAD" },
+                                                        new { Icon = "fa-credit-card", Label = "Cartão de Crédito", Color = "#D4A017" },
+                                                        new { Icon = "fa-money-check-dollar", Label = "Cartão de Débito", Color = "#3c1e0a" },
+                                                        new { Icon = "fa-money-bill-1-wave", Label = "Dinheiro", Color = "#1f7a33" }
+                                                        };
                             }
-                            @foreach (var p in pagamentos) {
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center bc-card-action">
-                                        <div class="me-3">
-                                            <i class="fa-solid @p.Icon fa-lg" style="color: @p.Color;"></i>
-                                        </div>
+                            @foreach (var p in pagamentos)
+                            {
+                                <div class="col-6 col-md-3">
+                                    <div class="text-center p-3 bc-card-action h-100 d-flex flex-column align-items-center justify-content-center">
+                                        <i class="fa-solid @p.Icon fa-2xl mb-3" style="color: @p.Color;"></i>
                                         <span class="fw-bold text-dark small">@p.Label</span>
                                     </div>
                                 </div>
@@ -150,7 +230,7 @@
                     </div>
                 </div>
 
-                <div class="bc-footnote text-center mt-5 mb-2">
+                <div class="bc-footnote text-center mt-5 pt-3 border-top">
                     * Os preços apresentados no cardápio são definidos pela própria loja.
                 </div>
             </div>

@@ -30,9 +30,9 @@
     /* Card */
     .bh-pedidos-em-andamento .order-wrapper {
         background: #fff;
-        border: 1px solid var(--bh-border);
-        border-radius: 16px;
-        margin-bottom: 12px;
+        /*border: 1px solid var(--bh-border);*/
+        /*border-radius: 16px;*/
+        /*margin-bottom: 12px;*/
         overflow: hidden;
     }
 
@@ -57,17 +57,29 @@
     .bh-pedidos-em-andamento .col-btn {
         grid-column: span 2;
         text-align: center;
-        background: #0f0f0fa8;
+        background: #3c1e0a;
         border-radius: 20px;
         margin-top: 5px;
-        width: 25%;
+        width: 12%;
         position: relative;
-        left: 77%;
+        left: 89%;
     }
 
         .bh-pedidos-em-andamento .col-btn .fa-solid {
             color: white !important;
         }
+
+    .bh-pedidos-em-andamento .label-mobile {
+        /*display: none;*/
+    }
+
+    .bh-pedidos-em-andamento .label-mobile-start {
+        text-align: start;
+    }
+
+    .bh-pedidos-em-andamento .label-mobile-end {
+        text-align: end;
+    }
 }
 
 /* Labels */
@@ -75,28 +87,19 @@
     font-size: 0.65rem;
     color: var(--bh-text-muted);
     text-transform: uppercase;
-    font-weight: 800;
+    font-weight: 500;
     display: block;
 }
 
 @media (min-width: 992px) {
-    .bh-pedidos-em-andamento .label-mobile {
-        /*display: none;*/
-    }
-
-    .bh-pedidos-em-andamento .label-mobile-start {
-        text-align:start;
-    }
-    .bh-pedidos-em-andamento .label-mobile-end {
-        text-align: end;
-    }
+    
 }
 
 /* Stepper */
 .bh-pedidos-em-andamento .order-stepper {
     display: flex;
     justify-content: space-between;
-    padding: 20px;
+    padding: 20px 0px;
     background: #fff;
     border-bottom: 1px solid var(--bh-border);
 }
@@ -104,7 +107,7 @@
 .bh-pedidos-em-andamento .step {
     flex: 1;
     text-align: center;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--bh-text-muted);
     position: relative;
 }
@@ -125,8 +128,8 @@
     }
 
 .bh-pedidos-em-andamento .step-circle {
-    width: 22px;
-    height: 22px;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     background: #eee;
     margin: 0 auto 6px;
@@ -164,6 +167,67 @@
 .bh-pedidos-em-andamento .btn-toggle-detalhes {
     background: none;
     border: none;
-    padding: 8px;
+    /*padding: 8px;*/
     transition: 0.3s;
+}
+
+/* Melhorias de tipografia e espaçamento */
+.bh-pedidos-em-andamento .tracking-wider {
+    letter-spacing: 0.05em;
+}
+
+.bh-pedidos-em-andamento .rounded-4 {
+    border-radius: 1rem !important;
+}
+
+.bh-pedidos-em-andamento .bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.bh-pedidos-em-andamento .text-primary {
+    color: var(--bh-primary) !important;
+}
+
+/* Estilização para parecer um cupom na área de itens */
+.bh-pedidos-em-andamento .order-wrapper {
+    /*border: 1px solid #eef0f2;*/
+    /*box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;*/
+}
+
+/* Badge de quantidade minimalista */
+.bh-pedidos-em-andamento .badge.bg-white {
+    color: var(--bh-primary);
+    font-weight: 700;
+}
+
+.order-wrapper-hover {
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+
+.text-warning-custom {
+    color: rgb(153 115 0) !important;
+}
+
+.bh-pedidos-em-andamento .step.done i{
+    margin-top:2px;
+}
+
+/* Seleciona o elemento que está colapsando dentro do seu namespace */
+.bh-pedidos-em-andamento .collapse {
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bh-pedidos-em-andamento .collapsing {
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Opcional: Suaviza a entrada do conteúdo (fade) enquanto abre */
+.bh-pedidos-em-andamento .collapse:not(.show) {
+    display: none;
+}
+
+.bh-pedidos-em-andamento .order-stepper {
+    /* Adicione uma transição de opacidade para o conteúdo interno */
+    transition: opacity 0.3s ease-in-out;
 }
