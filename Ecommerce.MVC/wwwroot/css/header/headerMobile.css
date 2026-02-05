@@ -140,7 +140,6 @@
     .bc-nav-btn:hover {
         background-color: #ffffff !important;
         color: #4b2c20 !important;
-        transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
@@ -149,10 +148,10 @@
         transition: all 0.2s ease-in-out !important;
     }
 
-    .btn-lift:hover {
-        transform: translateY(-3px) !important; /* Sobe 3 pixels */
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important; /* Sombra fica mais forte ao subir */
-    }
+    /*.btn-lift:hover {
+        transform: translateY(-3px) !important;*/ /* Sobe 3 pixels */
+        /*box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;*/ /* Sombra fica mais forte ao subir */
+    /*}*/
 
     .btn-lift:active {
         transform: translateY(-1px) !important; /* Abaixa levemente ao clicar */
@@ -198,6 +197,11 @@
 
     .btn-acompanhar-pedido-nav {
         background-color: white !important;
+    }
+
+    .btn-voltar-recuperar {
+        display: inline-flex !important;
+        position: absolute !important;
     }
 }
 

@@ -51,7 +51,7 @@
     font-size: 1.4rem;
     line-height: 1;
     color: #3c1e0a; 
-    font-weight: bold;
+    font-weight: 300;
     cursor: pointer;
     z-index: 1050; 
     transition: transform 0.2s ease;

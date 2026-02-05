@@ -2,128 +2,202 @@
 @using Ecommerce.MVC.Models.Carrinhos
 @model CarrinhoViewModel
 
-<div class="col-12 col-lg-3">
-    <div class="bc-panel p-3 bc-cart bc-cart--sticky">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-            <h5 class="mb-0 fw-bold bc-cart__title">Carrinho</h5>
-        </div>
+<style>
+    .bc-cart-container {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        background: #fff;
+        overflow: hidden;
+    }
 
-        <hr />
+    .bc-cart__header {
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 1rem;
+    }
+
+    .bc-cart__items-wrapper {
+        min-height: 280px;
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: #e9e9e9 #f8f9fa;
+    }
+
+        .bc-cart__items-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .bc-cart__items-wrapper::-webkit-scrollbar-button {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        .bc-cart__items-wrapper::-webkit-scrollbar-track {
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .bc-cart__items-wrapper::-webkit-scrollbar-thumb {
+            background: #e6a23c;
+            border-radius: 10px;
+            border: 1px solid #f8f9fa;
+        }
+
+            .bc-cart__items-wrapper::-webkit-scrollbar-thumb:hover {
+                background: #d39130;
+            }
+
+    .bc-cart__item {
+        padding: 12px 0;
+        border-bottom: 1px dashed #eee;
+    }
+
+        .bc-cart__item:last-child {
+            border-bottom: none;
+        }
+
+    .bc-cart__item-name {
+        font-size: 0.95rem;
+        color: #2d3436;
+        line-height: 1.2;
+    }
+
+    .bc-cart__item-price {
+        font-size: 0.9rem;
+        color: #2d3436;
+    }
+
+    .bc-cart__acc-list {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-top: 6px;
+    }
+
+    .bc-cart__acc-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: #636e72;
+        padding: 2px 0;
+    }
+
+    .bc-cart__summary {
+        background: #fdfdfd;
+        border-radius: 12px;
+    }
+
+    .bc-cart__total-row {
+        font-size: 1.15rem;
+        color: #2d3436;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .btn-checkout {
+        border-radius: 50px;
+        padding: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-login-cart {
+        gap: 8px;
+        color: #4b2c20 !important;
+    }
+
+        .btn-login-cart:hover {
+            background: #f8f9fa !important;
+            transform: translateY(-2px);
+        }
+</style>
+
+<div class="col-12 col-lg-3">
+    <div class="bc-panel p-4 bc-cart-container bc-cart--sticky">
+        <div class="bc-cart__header d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-bag-shopping me-2" style="color: #e6a23c;"></i>Meu Carrinho
+            </h5>
+            <span class="badge bg-light text-dark rounded-pill">@Model.Itens.Count</span>
+        </div>
 
         @if (Model.EstaVazio)
         {
-            <div class="bc-cart__empty py-4 text-center">
-                <div class="bc-cart__illustration mb-3"></div>
-                <div class="text-muted">Seu carrinho está vazio</div>
+            <div class="bc-cart__items-wrapper d-flex flex-column align-items-center justify-content-center">
+                <i class="fa-solid fa-cart-plus mb-3 opacity-25" style="font-size: 3rem;"></i>
+                <div class="text-muted fw-medium">Sua sacola está vazia</div>
             </div>
         }
         else
         {
-            <ul class="list-unstyled mb-3">
+            <div class="bc-cart__items-wrapper mb-4">
                 @foreach (var item in Model.Itens)
                 {
-                    <li class="mb-2">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <div class="fw-bold">@item.Nome</div>
-                                <small class="text-muted">Qtd: @item.Quantidade</small>
+                    <div class="bc-cart__item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="pe-2">
+                                <div class="fw-bold bc-cart__item-name">@item.Nome</div>
+                                <small class="text-secondary fw-medium">@item.Quantidade x</small>
                             </div>
-                            <div class="fw-bold">
-                                @item.Total.ToString("C", new System.Globalization.CultureInfo("pt-BR"))
+                            <div class="fw-bold bc-cart__item-price">
+                                @item.Total.ToString("C", new CultureInfo("pt-BR"))
                             </div>
                         </div>
 
                         @if (item.Acompanhamentos.Any())
                         {
-                            <ul class="list-unstyled small text-muted ms-3 mt-1">
+                            <ul class="list-unstyled bc-cart__acc-list">
                                 @foreach (var a in item.Acompanhamentos)
                                 {
-                                    <li>
-                                        + @a.Nome
-                                        <span class="float-end">
-                                            @a.Preco.ToString("C", new System.Globalization.CultureInfo("pt-BR"))
-                                        </span>
+                                    <li class="bc-cart__acc-item">
+                                        <span><i class="fa-solid fa-plus small me-1 opacity-50"></i>@a.Nome</span>
+                                        <span>@a.Preco.ToString("C", new CultureInfo("pt-BR"))</span>
                                     </li>
                                 }
                             </ul>
                         }
-                    </li>
+                    </div>
                 }
-            </ul>
+            </div>
         }
 
-        <hr />
-
-        <div class="mb-3">
-            <div class="fw-bold mb-2">Totais</div>
-
-            <div class="d-flex justify-content-between text-muted">
+        <div class="bc-cart__summary mb-4">
+            <div class="d-flex justify-content-between text-muted small mb-1">
                 <span>Subtotal</span>
-                <span>@Model.Subtotal.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
+                <span>@Model.Subtotal.ToString("C", new CultureInfo("pt-BR"))</span>
             </div>
-
-            <div class="d-flex justify-content-between text-muted">
-                <span>Entrega</span>
-                <span>@Model.Entrega.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
-            </div>
-
-            <div class="d-flex justify-content-between fw-bold bc-cart__total">
+            <div class="d-flex justify-content-between fw-bold bc-cart__total-row">
                 <span>Total</span>
-                <span>@Model.Total.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
+                <span class="text-dark">@Model.Total.ToString("C", new CultureInfo("pt-BR"))</span>
             </div>
         </div>
 
-        @if (true) // Aqui você manteria sua lógica de Estabelecimento Aberto
+        @if (true)
         {
             if (User.Identity.IsAuthenticated)
             {
-                <button class="btn w-100 btn-primary" @(Model.EstaVazio ? "disabled" : "") data-carrinho-id="@Model.CarrinhoId" id="btnConfirmarAddProduto">
+                <button class="btn w-100 btn-primary btn-checkout shadow-sm"
+                        @(Model.EstaVazio ? "disabled" : "")
+                        data-carrinho-id="@Model.CarrinhoId"
+                        id="btnConfirmarAddProduto">
                     FINALIZAR PEDIDO
                 </button>
             }
             else
             {
                 <button type="button"
-                            class="btn btn-light d-none d-md-flex align-items-center fw-bold shadow-sm btn-lift"
-                            id="btn-abrir-login"
-                            style="color: #4b2c20; border-radius: 50px; padding: 6px 18px; white-space: nowrap; font-size: 0.9rem;"
-                            title="Entrar">
-
-                        <i class="fa-solid fa-circle-user fs-5 me-2" style="color: #4a2a15;"></i>
-                        <span class="text-truncate" style="max-width: 100px;">                    FAÇA LOGIN PARA FINALIZAR
-</span>
-                        <i class="fa-solid fa-chevron-down ms-2 small opacity-50 seta-menu"></i>
-                    </button>
+                        class="btn w-100 d-flex align-items-center justify-content-center fw-bold btn-login-cart btn-checkout"
+                        id="btn-abrir-login">
+                    <i class="fa-solid fa-circle-user fs-5 me-2"></i>
+                    ENTRAR PARA FINALIZAR
+                </button>
             }
         }
     </div>
 </div>
-
-<script>
-    $(document).on('click', '#btnConfirmarAddProduto', function () {
-        addLoading("Carregando...");
-
-        $.ajax({
-            url: '/Pedido/BuscarModalFinalizarPedido',
-            method: 'GET',
-            success: function (html) {
-                $('#conteudo-modal').empty();
-                $('#conteudo-modal').html(html);
-
-                const el = document.getElementById('modalFinalizarPedido');
-                const modal = bootstrap.Modal.getOrCreateInstance(el);
-                modal.show();
-
-                if (window.wizardInitFinalizarPedido)
-                    window.wizardInitFinalizarPedido();
-
-                removeLoading();
-            },
-            error: function (xhr) {
-                alert(xhr.responseText || 'Erro ao carregar o modal.');
-                removeLoading();
-            }
-        });
-    });
-</script>
-

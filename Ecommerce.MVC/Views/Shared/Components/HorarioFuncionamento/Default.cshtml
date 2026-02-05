@@ -1,0 +1,108 @@
+﻿@using Ecommerce.MVC.Models.Horarios
+@model HorarioStatusViewModel
+
+<style>
+    .status-open {
+        background-color: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+        padding: 10px 20px;
+        border-radius: 30px;
+        display: inline-block;
+    }
+
+    .status-closed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        padding: 10px 20px;
+        border-radius: 30px;
+        display: inline-block;
+    }
+
+    .time-card {
+        background: #f9fafb;
+        border: 2px solid #f3f4f6;
+        padding: 15px;
+        border-radius: 12px;
+        position: relative;
+        transition: 0.3s;
+    }
+
+    .highlight-today {
+        border-color: #4A2A15; /* Cor do Pix ou sua cor primária */
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .today-tag {
+        position: absolute;
+        top: -10px;
+        right: 10px;
+        background: #4A2A15;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.65rem;
+        font-weight: bold;
+    }
+
+    .day-label {
+        display: block;
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .hour-value {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #111827;
+    }
+</style>
+
+<div class="text-center">
+    <div class="status-indicator @Model.ClasseCss">
+        <i class="fa-solid @(Model.EstaAberto ? "fa-circle-check" : "fa-circle-xmark") me-2"></i>
+        <strong>@Model.MensagemStatus</strong>
+    </div>
+</div>
+
+<div class="schedule-container p-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="time-card @(Model.DiaAtual >= DayOfWeek.Monday && Model.DiaAtual <= DayOfWeek.Friday ? "highlight-today" : "")">
+                <span class="day-label">Segunda a Sexta</span>
+                <span class="hour-value">11:00 às 22:00</span>
+                @if (Model.DiaAtual >= DayOfWeek.Monday && Model.DiaAtual <= DayOfWeek.Friday)
+                {
+                    <small class="today-tag">Hoje</small>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="time-card @(Model.DiaAtual == DayOfWeek.Saturday ? "highlight-today" : "")">
+                <span class="day-label">Sábado</span>
+                <span class="hour-value">11:00 às 23:00</span>
+                @if (Model.DiaAtual == DayOfWeek.Saturday)
+                {
+                    <small class="today-tag">Hoje</small>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="time-card @(Model.DiaAtual == DayOfWeek.Sunday ? "highlight-today" : "")">
+                <span class="day-label">Domingo</span>
+                <span class="hour-value">16:00 às 22:00</span>
+                @if (Model.DiaAtual == DayOfWeek.Sunday)
+                {
+                    <small class="today-tag">Hoje</small>
+                }
+            </div>
+        </div>
+    </div>
+</div>

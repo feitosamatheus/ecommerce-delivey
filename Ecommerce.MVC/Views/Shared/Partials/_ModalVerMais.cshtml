@@ -10,97 +10,84 @@
         --bh-radius: 20px;
     }
 
-    .bc-modal-container {
-        font-family: 'Inter', 'Segoe UI', sans-serif;
-    }
+    .bc-modal-container { font-family: 'Inter', 'Segoe UI', sans-serif; }
 
     /* Modal - Estilo Card Elevado */
-    .bc-modal {
-        border-radius: var(--bh-radius);
-        border: none;
+    .bc-modal { 
+        border-radius: var(--bh-radius); 
+        border: none; 
         overflow: hidden;
         background: #ffffff;
     }
 
     /* Botão Fechar Minimalista */
     .btn-close-custom {
-        background: #f5f5f5;
-        border: none;
-        width: 32px;
-        height: 32px;
+        background: #f5f5f5; 
+        border: none; 
+        width: 32px; 
+        height: 32px; 
         border-radius: 50%;
-        display: flex;
-        align-items: center;
+        display: flex; 
+        align-items: center; 
         justify-content: center;
-        color: var(--bh-text-muted);
+        color: var(--bh-text-muted); 
         transition: 0.3s;
         font-size: 1.2rem;
     }
-
-        .btn-close-custom:hover {
-            background: var(--bh-primary-light);
-            color: var(--bh-primary);
-            transform: rotate(90deg);
-        }
+    .btn-close-custom:hover { color: var(--bh-primary); }
 
     /* Tabs Estilo "Pill" */
-    .bc-modal .nav-tabs {
-        border: none;
-        background: #f0f0f0;
-        padding: 4px;
+    .bc-modal .nav-tabs { 
+        border: none; 
+        background: #f0f0f0; 
+        padding: 4px; 
         border-radius: 12px;
         display: inline-flex;
-        margin-bottom: 25px;
+        margin-bottom: 8px;
     }
-
-    .bc-modal .nav-item {
-        margin: 0;
-    }
-
-    .bc-modal .nav-link {
-        border: none !important;
-        color: var(--bh-text-muted);
-        font-weight: 600;
-        padding: 8px 24px;
-        font-size: 0.85rem;
+    .bc-modal .nav-item { margin: 0; }
+    .bc-modal .nav-link { 
+        border: none !important; 
+        color: var(--bh-text-muted); 
+        font-weight: 600; 
+        padding: 8px 24px; 
+        font-size: 0.85rem; 
         border-radius: 8px !important;
         transition: 0.2s ease;
     }
-
-        .bc-modal .nav-link.active {
-            color: var(--bh-primary) !important;
-            background: #fff !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
+    .bc-modal .nav-link.active { 
+        color: var(--bh-primary) !important; 
+        background: #fff !important; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
 
     /* Títulos de Seção */
-    .bc-section-title {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: var(--bh-primary);
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
+    .bc-section-title { 
+        font-size: 0.8rem; 
+        font-weight: 700; 
+        color: var(--bh-primary); 
+        margin-bottom: 12px; 
+        display: flex; 
+        align-items: center; 
         gap: 6px;
     }
 
     /* Cards de Ação (Endereço/Pagamento) */
     .bc-card-action {
-        background: #fff;
-        border: 1px solid var(--bh-border);
+        background: #fff; 
+        border: 1px solid var(--bh-border); 
         border-radius: 14px;
-        padding: 16px;
+        padding: 16px; 
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: block;
         text-decoration: none;
     }
-
-        .bc-card-action:hover {
-            border-color: var(--bh-primary-light);
-            background-color: #fff;
-            box-shadow: 0 10px 20px rgba(60, 30, 10, 0.05);
-            transform: translateY(-3px);
-        }
+    .bc-card-action:hover {
+        border-color: var(--bh-primary-light);
+        background-color: #fff;
+        box-shadow: 0 10px 20px rgba(60, 30, 10, 0.05);
+        transform: translateY(-3px);
+    }
 
     /* Horários */
     .schedule-box {
@@ -110,27 +97,166 @@
         padding: 20px;
     }
 
-    .bc-link {
-        color: var(--bh-primary);
-        font-weight: 700;
-        text-decoration: none;
+    .bc-link { 
+        color: var(--bh-primary); 
+        font-weight: 700; 
+        text-decoration: none; 
         font-size: 0.85rem;
         padding-bottom: 2px;
         border-bottom: 2px solid transparent;
         transition: 0.2s;
     }
+    .bc-link:hover { border-bottom-color: var(--bh-primary); }
 
-        .bc-link:hover {
-            border-bottom-color: var(--bh-primary);
+    /* Estilo do Card de Destaque do PIX */
+    .pix-container {
+        background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
+        border: 2px solid #32BCAD;
+        border-radius: 16px;
+        padding: 20px;
+        position: relative;
+        transition: transform 0.2s;
+    }
+
+        .pix-container:hover {
+            transform: scale(1.01);
         }
+
+    .pix-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: #32BCAD;
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pix-icon-box {
+        width: 54px;
+        height: 54px;
+        background: #32BCAD;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 12px rgba(50, 188, 173, 0.25);
+    }
+
+    /* Estilo dos demais métodos */
+    .other-methods-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .method-item {
+        background: #fff;
+        border: 1px solid var(--bh-border);
+        border-radius: 12px;
+        padding: 12px 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: 0.2s;
+    }
+
+        .method-item:hover {
+            border-color: #ddd;
+            background: var(--bh-bg-light);
+        }
+
+    .method-icon {
+        font-size: 1.2rem;
+        width: 30px;
+        text-align: center;
+    }
+
+    /* Container principal com profundidade */
+    .schedule-container {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid var(--bh-border);
+        overflow: hidden;
+    }
+
+    /* Badge de Status Dinâmico */
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+    }
+
+    .status-open {
+        background: #e8f5e9;
+        color: #1f7a33;
+        border: 1px solid #c8e6c9;
+    }
+
+    /* Grid de horários estilo Timeline */
+    .time-card {
+        padding: 15px;
+        border-radius: 14px;
+        background: var(--bh-bg-light);
+        border: 1px solid transparent;
+        transition: 0.3s ease;
+        height: 100%;
+    }
+
+        .time-card:hover {
+            background: #fff;
+            border-color: var(--bh-primary-light);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.04);
+        }
+
+    .day-label {
+        color: var(--bh-text-muted);
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .hour-value {
+        color: var(--bh-primary);
+        font-weight: 800;
+        font-size: 1.1rem;
+        display: block;
+    }
+
+    .day-icon {
+        width: 32px;
+        height: 32px;
+        background: #fff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        color: var(--bh-primary);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
 </style>
 
 <div class="modal fade bc-modal-container" id="modalVerMais" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bc-modal shadow-lg">
-
+            
             <div style="position: absolute; right: 20px; top: 20px; z-index: 10;">
-                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">×</button>
+                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar" style="font-size: 1.5rem;">×</button>
             </div>
 
             <div class="modal-body p-4 p-md-5">
@@ -150,16 +276,16 @@
 
                 <div class="tab-content mt-2">
                     <div class="tab-pane fade show active" id="pane-sobre">
-                        <div class="row g-4">
+                        <div class="row g-4 mt-2">
                             <div class="col-md-7">
                                 <div class="bc-section-title text-uppercase">Nossa História</div>
                                 <p class="text-muted" style="font-size: 0.95rem; line-height: 1.6;">
-                                    Sopas e caldos artesanais, salgados e bolos. Feito pelo chef com ingredientes selecionados.
+                                    Sopas e caldos artesanais, salgados e bolos. Feito pelo chef com ingredientes selecionados. 
                                     Aceitamos encomendas para eventos com um toque de carinho e sabor caseiro.
                                 </p>
                                 <a href="/" class="bc-link">Explorar cardápio <i class="fa-solid fa-arrow-right ms-1"></i></a>
                             </div>
-
+                            
                             <div class="col-md-5">
                                 <div class="bc-section-title text-uppercase">Onde Estamos</div>
                                 <a href="https://maps.google.com" target="_blank" class="bc-card-action">
@@ -187,45 +313,55 @@
                     </div>
 
                     <div class="tab-pane fade" id="pane-horario">
-                        <div class="schedule-box">
-                            <div class="bc-section-title mb-4"><i class="fa-solid fa-clock"></i> Horários de Funcionamento</div>
-                            <div class="row g-4">
-                                <div class="col-sm-4">
-                                    <span class="small d-block text-muted mb-1">Segunda a Sexta</span>
-                                    <span class="fw-bold" style="color: var(--bh-primary);">11:00 — 22:00</span>
+                        @await Component.InvokeAsync("HorarioFuncionamento")
+                    </div>
+
+                    <div class="tab-pane fade mt-4" id="pane-pagamento">
+                        <div class="bc-section-title text-uppercase">Formas de Pagamento</div>
+
+                        <div class="pix-container mb-4 shadow-sm">
+                            <div class="pix-badge"><i class="fa-solid fa-bolt me-1"></i> Instantâneo</div>
+                            <div class="d-flex align-items-center">
+                                <div class="pix-icon-box me-3">
+                                    <i class="fa-brands fa-pix fa-2x"></i>
                                 </div>
-                                <div class="col-sm-4">
-                                    <span class="small d-block text-muted mb-1">Sábado</span>
-                                    <span class="fw-bold" style="color: var(--bh-primary);">11:00 — 23:00</span>
-                                </div>
-                                <div class="col-sm-4">
-                                    <span class="small d-block text-muted mb-1">Domingo</span>
-                                    <span class="fw-bold" style="color: var(--bh-primary);">16:00 — 22:00</span>
+                                <div>
+                                    <h5 class="fw-bold mb-1" style="color: #1a7a6f;">Pix</h5>
+                                    <p class="text-muted small mb-0">Pague com QR Code ou chave Copia e Cola. <br>Aprovação na hora!</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="tab-pane fade" id="pane-pagamento">
-                        <div class="bc-section-title mb-3 text-uppercase">Formas de Pagamento</div>
-                        <div class="row g-3">
-                            @{
-                                var pagamentos = new[] {
-                                                        new { Icon = "fa-pix", Label = "Pix", Color = "#32BCAD" },
-                                                        new { Icon = "fa-credit-card", Label = "Cartão de Crédito", Color = "#D4A017" },
-                                                        new { Icon = "fa-money-check-dollar", Label = "Cartão de Débito", Color = "#3c1e0a" },
-                                                        new { Icon = "fa-money-bill-1-wave", Label = "Dinheiro", Color = "#1f7a33" }
-                                                        };
-                            }
-                            @foreach (var p in pagamentos)
-                            {
-                                <div class="col-6 col-md-3">
-                                    <div class="text-center p-3 bc-card-action h-100 d-flex flex-column align-items-center justify-content-center">
-                                        <i class="fa-solid @p.Icon fa-2xl mb-3" style="color: @p.Color;"></i>
-                                        <span class="fw-bold text-dark small">@p.Label</span>
-                                    </div>
+                        <div class="other-methods-grid">
+                            <div class="method-item">
+                                <div class="method-icon"><i class="fa-solid fa-credit-card" style="color: #D4A017;"></i></div>
+                                <div>
+                                    <span class="d-block fw-bold small">Crédito</span>
+                                    <span class="text-muted extra-small">Visa, Master...</span>
                                 </div>
-                            }
+                            </div>
+
+                            <div class="method-item">
+                                <div class="method-icon"><i class="fa-solid fa-money-check-dollar" style="color: var(--bh-primary);"></i></div>
+                                <div>
+                                    <span class="d-block fw-bold small">Débito</span>
+                                    <span class="text-muted extra-small">Maquininha</span>
+                                </div>
+                            </div>
+
+                            <div class="method-item">
+                                <div class="method-icon"><i class="fa-solid fa-money-bill-1-wave" style="color: #1f7a33;"></i></div>
+                                <div>
+                                    <span class="d-block fw-bold small">Dinheiro</span>
+                                    <span class="text-muted extra-small">Espécie</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-light mt-4 border-0 rounded-3 p-2" style="background-color: #f8f9fa;">
+                            <div class="d-flex align-items-center justify-content-center text-muted" style="font-size: 0.75rem;">
+                                <i class="fa-solid fa-shield-halved me-2"></i> Pagamento 100% seguro via plataforma
+                            </div>
                         </div>
                     </div>
                 </div>

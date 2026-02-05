@@ -2,9 +2,11 @@
     #auth-container {
         position: relative; 
     }
+
+    
 </style>
 <div class="row g-0" id="auth-container">
-    <div class="d-flex align-items-center  mb-2">
+    <div class="d-flex align-items-center" style="position:absolute;">
         <button type="button"
                 id="btnVoltar"
                 onclick="voltarModal()"
@@ -14,7 +16,7 @@
             <i class="fa fa-arrow-left" style="font-size: 1.2rem;"></i>
         </button>
 
-        <button type="button"
+        <button type="button" style="font-size: 1.5rem;"
                 onclick="fecharModal()"
                 class="btn-close-custom ms-auto"
                 aria-label="Close">
@@ -22,10 +24,10 @@
         </button>
     </div>
 
-    <div class="col-md-5 d-none d-md-block mb-4" id="img-banner" style="background: url('../../img/banner_lorem_login.png') center/cover; min-height: 480px;">
+    <div class="col-lg-5 d-none d-lg-block mb-2" id="img-banner" style="background: url('../../img/banner_lorem_login.png') center/cover; min-height: 480px;">
         <div class="h-100 w-100" style="background: rgba(60, 30, 10, 0.4);"></div>
     </div>
-    <div class="col-md-7 px-2 px-md-5 py-3" id="login-form">
+    <div class="col-lg-7 px-2 px-lg-5 py-3" id="login-form">
         <div class="text-center mb-2">
             <img src="~/img/logo4.png" alt="Logo" style="width: 80px;">
         </div>
@@ -44,7 +46,7 @@
 
                 <div class="mb-3 text-start">
                     <label class="form-label fw-bold">Senha</label>
-                    <input type="password" id="loginSenha" class="form-control shadow-sm" placeholder="******" required>
+                    <input type="password" id="loginSenha" class="form-control shadow-sm" placeholder="******" onclick="togglePasswordVisibility('loginSenha')" required>
                     <div class="text-end mt-1">
                         <small>
                             <a href="javascript:void(0)" onclick="showForgot()" style="color: #d4a017; font-size: 0.75rem;">
@@ -69,7 +71,7 @@
             </form>
         </div>
     </div>
-    <div class="col-12 px-2 px-md-5 py-3 pt-0" id="register-form" style="display: none;">
+    <div class="col-12 px-2 px-lg-5 py-3 pt-0" id="register-form" style="display: none;">
         <div class="text-center mb-2" >
             <img src="~/img/logo4.png" alt="Logo" style="width: 80px;">
         </div>
@@ -146,7 +148,7 @@
             </form>
         </div>
     </div>
-    <div class="col-md-7 px-2 px-md-5 py-3" id="forgot-password-form" style="display: none;">
+    <div class="col-lg-7 px-2 px-lg-5 py-3" id="forgot-password-form" style="display: none;">
         <div class="text-center mb-2 mt-4">
             <img src="~/img/logo4.png" alt="Logo" style="width: 80px;">
         </div>
@@ -170,6 +172,18 @@
 </div>
 
 <script>
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = event.currentTarget.querySelector('i');
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = "password";
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
     function toggleAuth() {
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
@@ -182,7 +196,7 @@
             loginForm.style.display = 'none';
             forgotForm.style.display = 'none';
             registerForm.style.display = 'block';
-            imgBanner.classList.replace('d-md-block', 'd-md-none');
+            imgBanner.classList.replace('d-lg-block', 'd-lg-none');
 
             document.getElementById('btnVoltar').style.display = 'inline-flex';
         }
@@ -194,6 +208,7 @@
         document.getElementById('forgot-password-form').style.display = 'block';
 
         document.getElementById('btnVoltar').style.display = 'inline-flex';
+        $('#btnVoltar').addClass('btn-voltar-recuperar').removeClass('btn-hidden');
     }
 
     function showLogin() {
@@ -204,8 +219,9 @@
         document.getElementById('btnVoltar').style.display = 'none';
 
         const imgBanner = document.getElementById('img-banner');
-        imgBanner.classList.remove('d-md-none');
-        imgBanner.classList.add('d-md-block');
+        imgBanner.classList.remove('d-lg-none');
+        imgBanner.classList.add('d-lg-block');
+        $('#btnVoltar').addClass('btn-hidden').removeClass('btn-voltar-recuperar');
     }
 
 
@@ -225,6 +241,10 @@
 
     document.querySelector('#register-form form').addEventListener('submit', async function (e) {
         e.preventDefault();
+
+        const btnSubmit = this.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        addLoading("Processando...")
 
         // Captura os dados baseados no atributo "name" do HTML
         const formData = new FormData(this);
@@ -252,14 +272,21 @@
                 location.reload();
             } else {
                 alert(result.message + "\n" + (result.errors ? result.errors.join("\n") : "Erro desconhecido"));
+                btnSubmit.disabled = false;
+                removeLoading()
             }
         } catch (error) {
             console.error('Erro:', error);
+            btnSubmit.disabled = false;
+            removeLoading()
         }
     });
 
     document.querySelector('#login-form form').addEventListener('submit', async function (e) {
         e.preventDefault();
+        const btnSubmit = this.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        addLoading("Processando...")
 
         const email = document.querySelector('#loginEmail').value.trim();
         const senha = document.querySelector('#loginSenha').value;
@@ -287,10 +314,15 @@
             } else {
                 alert(result.message || 'Erro ao realizar login');
                 console.error(result.errors);
+                btnSubmit.disabled = false;
+                removeLoading()
             }
+
         } catch (err) {
             console.error(err);
             alert('Erro inesperado ao comunicar com o servidor.');
+            btnSubmit.disabled = false;
+            removeLoading()
         }
     });
 </script>

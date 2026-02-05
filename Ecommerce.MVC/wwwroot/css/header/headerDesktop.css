@@ -7,7 +7,7 @@
 
 .bc-hero {
   position: relative;
-  margin-bottom: 130px;
+  margin-bottom: 120px;
 }
 
 .bc-hero__banner {
@@ -37,7 +37,7 @@
    ========================================================= */
 
 .bc-hero__title {
-  font-size: clamp(1.5rem, 3vw, 1.7rem);
+  font-size: clamp(1.5rem, 3vw, 2.7rem);
   font-weight: 700;
   line-height: 1.2;
   color: #fff;
@@ -210,10 +210,10 @@
     transition: all 0.2s ease-in-out !important;
 }
 
-.btn-lift:hover {
-    transform: translateY(-3px) !important; /* Sobe 3 pixels */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important; /* Sombra fica mais forte ao subir */
-}
+/*.btn-lift:hover {
+    transform: translateY(-3px) !important;*/ /* Sobe 3 pixels */
+    /*box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;*/ /* Sombra fica mais forte ao subir */
+/*}*/
 
 .btn-lift:active {
     transform: translateY(-1px) !important; /* Abaixa levemente ao clicar */
@@ -267,3 +267,10 @@
 .show > .bc-nav-btn i.fa-chevron-down {
     transform: rotate(180deg);
 }
+
+.btn-voltar-recuperar {
+    display: inline-flex !important;
+    position: absolute !important;
+    left: 43% !important;
+}
+

@@ -30,19 +30,23 @@
             </div>
 
             <div class="col-12 col-lg-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
-                <button type="button" class="btn bc-nav-btn shadow-sm btn-acompanhar-pedido position-relative">
+                <button type="button" class="btn bc-nav-btn shadow-sm position-relative @(ViewBag.Autenticado ? "btn-acompanhar-pedido" : "btn-acompanhar-pedido-login")">
                     <i class="fa-solid fa-location-dot me-2"></i>
-                    <span style="position: relative; top: -1px;">
+                    <span>
                         Acompanhar pedido
-                        @if (ViewBag.Autenticado)
+                        @if (ViewBag.Autenticado && ViewBag.TotalPedidos > 0)
                         {
-                            <span class="badge rounded-pill shadow bg-danger"
-                                  style="font-size: 0.75rem; z-index: 1; top: 0px;">
+                            <span class="badge rounded-pill shadow bg-danger position-absolute"
+                                  style="font-size: 0.7rem; top: -5px; right: -5px;">
                                 @ViewBag.TotalPedidos
                                 <span class="visually-hidden">pedidos em andamento</span>
                             </span>
                         }
                     </span>
+                </button>
+
+                <button type="button" class="btn bc-nav-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerMais">
+                    <span style="position: relative; top: -1px;">Ver mais</span>
                 </button>
                
                 @if (ViewBag.Autenticado)
@@ -77,14 +81,14 @@
 
                             <li><hr class="dropdown-divider my-2 opacity-50"></li>
 
-                            <li>
+                            @* <li>
                                 <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-meus-pedidos">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
                                         <i class="fa-solid fa-basket-shopping text-secondary" style="font-size: 0.85rem;"></i>
                                     </div>
                                     <span class="fw-semibold">Meus Pedidos</span>
                                 </button>
-                            </li>
+                            </li> *@
 
                             <li>
                                 <button class="dropdown-item btn-acompanhar-pedido py-2 d-flex align-items-center rounded-3 btn-acompanhar-pedido-nav" type="button">
@@ -127,14 +131,8 @@
 
                         <i class="fa-solid fa-circle-user fs-5 me-2" style="color: #4a2a15;"></i>
                         <span class="text-truncate" style="max-width: 100px;">Entrar</span>
-                        <i class="fa-solid fa-chevron-down ms-2 small opacity-50 seta-menu"></i>
                     </button>
                 }
-
-
-                <button type="button" class="btn bc-nav-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerMais">
-                    <span style="position: relative; top: -1px;">Ver mais</span>
-                </button>
             </div>
         </div>
     </header>
@@ -168,14 +166,14 @@
                 </div>
             </div>
             <div class="d-flex justify-content-start mt-md-2 align-items-end mt-3 mt-md-0 gap-3" style="position: absolute; top: -57px; right: 7px;">
-                <button type="button" class="btn bc-nav-btn shadow-sm btn-acompanhar-pedido position-relative">
+                <button type="button" class="btn bc-nav-btn shadow-sm position-relative @(ViewBag.Autenticado ? "btn-acompanhar-pedido" : "btn-acompanhar-pedido-login")">
                     <i class="fa-solid fa-location-dot me-2"></i>
                     <span>
                         Acompanhar pedido
-                        @if (ViewBag.Autenticado)
+                        @if (ViewBag.Autenticado && ViewBag.TotalPedidos > 0)
                         {
-                            <span class="badge rounded-pill shadow bg-danger"
-                                  style="font-size: 0.75rem; z-index: 1; top: 0px;">
+                            <span class="badge rounded-pill shadow bg-danger position-absolute"
+                                  style="font-size: 0.7rem; top: -5px; right: -5px;">
                                 @ViewBag.TotalPedidos
                                 <span class="visually-hidden">pedidos em andamento</span>
                             </span>
@@ -215,14 +213,14 @@
 
                             <li><hr class="dropdown-divider my-2 opacity-50"></li>
 
-                            <li>
+                            @* <li>
                                 <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" id="btn-meus-pedidos">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
                                         <i class="fa-solid fa-basket-shopping text-secondary" style="font-size: 0.85rem;"></i>
                                     </div>
                                     <span class="fw-semibold">Meus Pedidos</span>
                                 </button>
-                            </li>
+                            </li> *@
 
                             <li>
                                 <button class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-acompanhar-pedido btn-acompanhar-pedido-nav" type="button">
@@ -267,7 +265,6 @@
 
                         <i class="fa-solid fa-circle-user fs-5 me-2" style="color: #4a2a15;"></i>
                         <span class="text-truncate" style="max-width: 100px;">Entrar</span>
-                        <i class="fa-solid fa-chevron-down ms-2 small opacity-50 seta-menu"></i>
                     </button>
                 }
             </div>
@@ -321,6 +318,8 @@
 
     $(document).on('click', '#btn-meus-pedidos', abrirModalConta);
 
+    $(document).on('click', '.btn-acompanhar-pedido-login', abrirModalConta);
+
     $(document).on('click', '.btn-acompanhar-pedido', function () {
 
         addLoading("Carregando...");
@@ -343,20 +342,27 @@
                     removeLoading();
                 }
             });
-        }, 800); // ⏱ 800ms de delay
+        }, 800); 
     });
 
 
     document.addEventListener('click', async function (e) {
         if (!e.target.closest('#btn-sair')) return;
+        addLoading("Saindo...")
 
         const response = await fetch('/Cliente/Logout', {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
 
-        if (response.ok) window.location.reload();
-        else alert('Não foi possível sair. Tente novamente.');
+        if (response.ok) {
+            window.location.reload();
+        }
+        else 
+        {
+            removeLoading();
+            alert('Não foi possível sair. Tente novamente.');
+        }
     });
 
     const btn = document.getElementById('btn-conta-dropdown');
