@@ -102,9 +102,14 @@
     .btn-checkout {
         border-radius: 50px;
         padding: 12px;
-        font-weight: 700;
+        /* font-weight: 700; */
         letter-spacing: 0.5px;
         transition: all 0.3s ease;
+    }
+
+    .btn-checkout:hover {
+        background: rgb(217, 140, 26) !important;
+        color:#fff !important;
     }
 
     .btn-login-cart {
@@ -118,11 +123,12 @@
         }
 </style>
 
-<div class="col-12 col-lg-3">
+<div class="col-12 col-lg-4 col-xl-4">
     <div class="bc-panel p-4 bc-cart-container bc-cart--sticky">
         <div class="bc-cart__header d-flex align-items-center justify-content-between mb-3">
             <h5 class="mb-0">
-                <i class="fa-solid fa-bag-shopping me-2" style="color: #e6a23c;"></i>Meu Carrinho
+                <i class="fa-solid fa-bag-shopping me-2" style="color: #edcd9a;"></i>
+                <span class="text-dark">Meu Carrinho</span>
             </h5>
             <span class="badge bg-light text-dark rounded-pill">@Model.Itens.Count</span>
         </div>
@@ -182,7 +188,7 @@
         {
             if (User.Identity.IsAuthenticated)
             {
-                <button class="btn w-100 btn-primary btn-checkout shadow-sm"
+                <button class="btn w-100 btn-checkout shadow-sm" style="background: #edcd9a; color: black;"
                         @(Model.EstaVazio ? "disabled" : "")
                         data-carrinho-id="@Model.CarrinhoId"
                         id="btnConfirmarAddProduto">
@@ -201,3 +207,33 @@
         }
     </div>
 </div>
+
+<script>
+
+    $(document).on('click', '#btnConfirmarAddProduto', function () {
+        addLoading("Carregando...");
+
+        $.ajax({
+            url: '/Pedido/BuscarModalFinalizarPedido',
+            method: 'GET',
+            success: function (html) {
+                $('#conteudo-modal').empty();
+                $('#conteudo-modal').html(html);
+
+                const el = document.getElementById('modalFinalizarPedido');
+                const modal = bootstrap.Modal.getOrCreateInstance(el);
+
+                modal.show();
+
+                if (window.wizardInitFinalizarPedido)
+                    window.wizardInitFinalizarPedido();
+                removeLoading();
+            },
+            error: function (xhr) {
+                alert(xhr.responseText || 'Erro ao carregar o modal.');
+                removeLoading();
+            }
+        });
+    });
+
+</script>

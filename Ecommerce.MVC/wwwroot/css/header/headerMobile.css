@@ -1,6 +1,12 @@
-@media (max-width: 1200px) {
-    .bc-hero { display: none; }
-    .bc-mb-hero { display: block; background-color: #fff; }
+@media (max-width: 1199px) {
+    .bc-hero {
+        display: none;
+    }
+
+    .bc-mb-hero {
+        display: block;
+        background-color: #fff;
+    }
 
     .bc-mb-hero__banner {
         height: 100px;
@@ -22,7 +28,7 @@
 
     .bc-mb-header__top-actions {
         position: absolute;
-        top: 13px; 
+        top: 13px;
         right: 20px;
         z-index: 10;
     }
@@ -40,9 +46,9 @@
         font-size: 1.2rem;
     }
 
-    .bc-mb-icon-btn:hover {
-        background-color: rgba(255, 255, 255, 0.267);
-    }
+        .bc-mb-icon-btn:hover {
+            background-color: rgba(255, 255, 255, 0.267);
+        }
 
     .bc-mb-logo-wrapper {
         margin-top: 0px;
@@ -136,26 +142,26 @@
         white-space: nowrap;
     }
 
-    /* Efeito Hover: Ficar igual ao botão 'teste' da imagem */
-    .bc-nav-btn:hover {
-        background-color: #ffffff !important;
-        color: #4b2c20 !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
+        /* Efeito Hover: Ficar igual ao botão 'teste' da imagem */
+        .bc-nav-btn:hover {
+            background-color: #ffffff !important;
+            color: #4b2c20 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
 
     /* Classe para o efeito de subir */
     .btn-lift {
         transition: all 0.2s ease-in-out !important;
     }
 
-    /*.btn-lift:hover {
+        /*.btn-lift:hover {
         transform: translateY(-3px) !important;*/ /* Sobe 3 pixels */
         /*box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;*/ /* Sombra fica mais forte ao subir */
-    /*}*/
+        /*}*/
 
-    .btn-lift:active {
-        transform: translateY(-1px) !important; /* Abaixa levemente ao clicar */
-    }
+        .btn-lift:active {
+            transform: translateY(-1px) !important; /* Abaixa levemente ao clicar */
+        }
 
     .dropdown-item:hover,
     .dropdown-item:focus,
@@ -204,4 +210,3 @@
         position: absolute !important;
     }
 }
-

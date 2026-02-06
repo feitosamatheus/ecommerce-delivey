@@ -90,7 +90,7 @@
     width: clamp(28px, 6vw, 36px);
     height: clamp(28px, 6vw, 36px);
     border-radius: 50%;
-    background-color: #E6A23C;
+    background-color: #edcd9a;
     border: none;
     display: inline-flex;
     align-items: center;
@@ -224,22 +224,22 @@
 }
 
 .bc-product__add {
-            position: absolute;
-        bottom: 12px;
-        right: 12px;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background-color: #4a2a15;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #FFFFFF;
-        font-size: 14px;
-        box-shadow: 0 6px 14px rgba(74, 42, 21, 0.35);
-        cursor: pointer;
-        transition: background-color .2s ease, transform .15s ease, box-shadow .2s ease;
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #edcd9a;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #212529;
+    font-size: 14px;
+    box-shadow: 0 6px 14px rgba(74, 42, 21, 0.35);
+    cursor: pointer;
+    transition: background-color .2s ease, transform .15s ease, box-shadow .2s ease;
 }
 
 .bc-product__add:active {
@@ -248,11 +248,12 @@
     transition: none !important;
 }
 
-.bc-product__add:hover {
-  background-color: #D98C1A; 
-  transform: scale(1.05);
-  box-shadow: 0 8px 18px rgba(74, 42, 21, 0.45);
-}
+    .bc-product__add:hover {
+        background-color: #D98C1A;
+        transform: scale(1.05);
+        box-shadow: 0 8px 18px rgba(74, 42, 21, 0.45);
+        color: #fff;
+    }
 
 @media (max-width: 576px) {
     .bc-product__add {

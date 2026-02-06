@@ -2,46 +2,142 @@
 @using Ecommerce.MVC.Entities
 @model Produto
 
+@{
+    var pt = new CultureInfo("pt-BR");
+    var precoBase = Model.Preco;
+
+    // Ajuste conforme seu Model:
+    int? tempoMin = Model.TempoPreparoMinutos; // ex.: 20
+    var tempoTexto = tempoMin.HasValue ? $"{tempoMin.Value}–{tempoMin.Value + 10} min" : null; // faixa opcional
+    // se já tiver texto pronto:
+    // var tempoTexto = Model.TempoPreparoTexto;
+}
+
+<style>
+    /* Realce visual do item selecionado */
+    #modalAddProduto .acomp-item.is-selected {
+        background: rgba(60, 30, 10, 0.06);
+        border-left: 4px solid rgba(60, 30, 10, 0.65);
+    }
+
+    /* Melhor feedback no checkbox/radio */
+    #modalAddProduto .acomp-input {
+        transform: scale(1.05);
+    }
+
+    /* Suaviza cards */
+    #modalAddProduto .card.shadow-sm {
+        box-shadow: 0 .35rem 1rem rgba(0,0,0,.08) !important;
+    }
+
+    @@media (min-width: 768px) {
+        #modalAddProduto .details-scroll {
+            height: 100%;
+            /* overflow-y: auto; */
+            -webkit-overflow-scrolling: touch;
+        }
+        /* opcional: evitar "pular" layout por scrollbar */
+        #modalAddProduto .details-scroll {
+            scrollbar-gutter: stable;
+        }
+    }
+
+    /* Mobile: como vira col-12, melhor deixar o body rolar (mais natural) */
+    @@media (max-width: 767.98px) {
+        #modalAddProduto .modal-body {
+            /* overflow-y: auto !important; */
+        }
+
+        #modalAddProduto .details-scroll {
+            overflow: visible !important;
+            height: auto !important;
+        }
+    }
+
+</style>
+
+
 <div class="modal fade bc-modal--animated" id="modalAddProduto" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0" style="border-radius: 12px; overflow: hidden; max-height: 90vh;">
+        <div class="modal-content border-0" style="border-radius: 20px;">
 
             <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
-                <button type="button" onclick="fecharModal()" class="btn-close-custom shadow-sm bg-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                    &times;
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Fechar"
+                        style="width: 32px; height: 32px; font-size: 1.6rem; position: relative; background: white; align-items: center; border-radius: 50%; border: none; display: flex; justify-content: center; top: -3px; right: -3px;">
+                    <span style="position: relative; top: -2px;">&times;</span>
                 </button>
             </div>
 
-            <div class="modal-body p-0" style="overflow-y: auto;">
+            <div class="modal-body p-0" style="overflow: hidden; border-radius: 20px;">
                 <div class="row g-0">
-                    <div class="col-12 col-md-6">
-                        <img src="@Model.ImagemUrl" alt="@Model.Nome" class="img-fluid w-100" style="height: 300px; object-fit: cover;">
+                    <!-- HERO (imagem + overlay mobile) -->
+                    <div class="col-12 col-lg-6 position-relative">
+                        <img src="@Model.ImagemUrl"
+                             alt="@Model.Nome"
+                             class="img-fluid w-100"
+                             style="height: 320px; object-fit: cover;">
+
+                        <div class="d-md-none position-absolute bottom-0 start-0 end-0 p-3"
+                             style="background: linear-gradient(0deg, rgba(0, 0, 0, 1.65), rgba(0, 0, 0, 0));">
+                            <div class="fw-bold text-white" style="font-size: 2.05rem; line-height: 1.2;">
+                                @Model.Nome
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.Descricao))
+                            {
+                                <div class="text-white-50 mt-1" style="line-height: 1.2;">
+                                    @Model.Descricao
+                                </div>
+                            }
+                        </div>
                     </div>
 
-                    <div class="col-12 col-md-6 p-4">
-                        <h4 class="fw-bold mb-1" style="color: #3c1e0a;">@Model.Nome</h4>
-                        <p class="text-muted small mb-3">@Model.Descricao</p>
+                    <!-- DETALHES -->
+                    <div class="col-12 col-lg-6 p-4 details-scroll">
+                        <!-- Título/descrição no desktop -->
+                        <div class="d-none d-md-block">
+                            <h4 class="fw-bold mb-1" style="color:#3c1e0a;">@Model.Nome</h4>
+                            @if (!string.IsNullOrWhiteSpace(Model.Descricao))
+                            {
+                                <p class="text-muted small mb-3">@Model.Descricao</p>
+                            }
+                            else
+                            {
+                                <div class="mb-3"></div>
+                            }
+                        </div>
 
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <span class="fw-bold fs-5" style="color: #3c1e0a;">
-                                @Model.Preco.ToString("C", new CultureInfo("pt-BR"))
-                            </span>
+                        <!-- Preço base em destaque -->
+                        <div class="d-flex align-items-end justify-content-between mb-3">
+                            <div>
+                                <div class="text-muted small">Preço base</div>
+                                <div class="fw-bold" style="color:#3c1e0a; font-size: 1.35rem;">
+                                    @precoBase.ToString("C", pt)
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(tempoTexto))
+                            {
+                                <span class="badge rounded-pill"
+                                      style="background:#f7f7f7; color:#3c1e0a; border: 1px solid rgba(60,30,10,.15);">
+                                    <i class="fa-regular fa-clock me-1"></i> @tempoTexto
+                                </span>
+                            }
                         </div>
 
                         <!-- hidden base -->
                         <input type="hidden" id="modalProdutoId" value="@Model.Id" />
-                        <input type="hidden" id="modalPrecoBase" value="@Model.Preco.ToString(CultureInfo.InvariantCulture)" />
+                        <input type="hidden" id="modalPrecoBase" value="@precoBase.ToString(CultureInfo.InvariantCulture)" />
 
-                        <!-- =========================
-                             CATEGORIAS DE ACOMPANHAMENTO (via entidade)
-                             Produto -> AcompanhamentoCategorias (join) -> Categoria -> Acompanhamentos
-                             ========================= -->
+                        <!-- CATEGORIAS -->
                         @if (Model.AcompanhamentoCategorias?.Any() == true)
                         {
                             <div class="mt-2">
                                 @foreach (var pc in Model.AcompanhamentoCategorias
-                                    .OrderBy(x => x.Categoria.Ordem)
-                                    .ThenBy(x => x.Categoria.Nome))
+                                                            .OrderBy(x => x.Categoria.Ordem)
+                                                            .ThenBy(x => x.Categoria.Nome))
                                 {
                                     var cat = pc.Categoria;
 
@@ -49,69 +145,75 @@
                                     var requiredLabel = cat.Obrigatorio ? "Obrigatório" : "Opcional";
                                     var inputName = $"acomp_{cat.Id:N}";
 
-                                    <div class="mb-3 p-3 rounded-3" style="background: #f7f7f7;">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="pe-3">
-                                                <div class="fw-bold" style="color:#3c1e0a;">@cat.Nome</div>
+                                    var itens = (cat.Acompanhamentos ?? new List<Acompanhamento>())
+                                    .Where(a => a.Ativo)
+                                    .OrderBy(a => a.Ordem)
+                                    .ThenBy(a => a.Nome)
+                                    .ToList();
 
-                                                <div class="text-muted small">
-                                                    @requiredLabel
-                                                    @if (cat.MinSelecionados > 0)
+                                    <div class="card border-0 shadow-sm mb-3" style="border-radius: 14px; overflow: hidden;">
+                                        <div class="card-body" style="background:#f7f7f7;">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="pe-3">
+                                                    <div class="fw-bold" style="color:#3c1e0a;">@cat.Nome</div>
+
+                                                    @* <div class="text-muted small">
+                                                        @requiredLabel
+                                                        @if (cat.MinSelecionados > 0)
+                                                        {
+                                                            <span> • Mín. @cat.MinSelecionados</span>
+                                                        }
+                                                        @if (cat.MaxSelecionados > 0)
+                                                        {
+                                                            <span> • Máx. @cat.MaxSelecionados</span>
+                                                        }
+                                                    </div> *@
+
+                                                    @if (!string.IsNullOrWhiteSpace(cat.Descricao))
                                                     {
-                                                        <span> • Mín. @cat.MinSelecionados</span>
-                                                    }
-                                                    @if (cat.MaxSelecionados > 0)
-                                                    {
-                                                        <span> • Máx. @cat.MaxSelecionados</span>
+                                                        <div class="text-muted small">@cat.Descricao</div>
                                                     }
                                                 </div>
 
-                                                @if (!string.IsNullOrWhiteSpace(cat.Descricao))
-                                                {
-                                                    <div class="text-muted small">@cat.Descricao</div>
-                                                }
+                                                <span class="badge rounded-pill"
+                                                      style="background:#3c1e0a; color:#fff;">
+                                                    @requiredLabel
+                                                </span>
                                             </div>
-
-                                            <span class="badge rounded-pill" style="background:#3c1e0a; color:#fff;">
-                                                @requiredLabel
-                                            </span>
                                         </div>
 
-                                        <div class="mt-3"
+                                        <div class="list-group list-group-flush"
                                              data-acomp-categoria
                                              data-categoria-id="@cat.Id"
                                              data-min="@cat.MinSelecionados"
                                              data-max="@cat.MaxSelecionados"
-                                             data-obrigatorio="@(cat.Obrigatorio ? "1" : "0")">
-
-                                            @{
-                                                var itens = (cat.Acompanhamentos ?? new List<Acompanhamento>())
-                                                    .Where(a => a.Ativo)
-                                                    .OrderBy(a => a.Ordem)
-                                                    .ThenBy(a => a.Nome)
-                                                    .ToList();
-                                            }
+                                             data-obrigatorio="@(cat.Obrigatorio ? "1" : "0")" style="overflow-y: scroll; max-height: 400px;">
 
                                             @if (itens.Any())
                                             {
                                                 @foreach (var item in itens)
                                                 {
-                                                    <label class="d-flex justify-content-between align-items-center py-2 border-bottom"
-                                                           style="border-color: rgba(0,0,0,.06) !important; cursor:pointer;">
-                                                        <div class="pe-3">
-                                                            <div class="fw-semibold">@item.Nome</div>
+                                                    var inputId = $"acomp_{cat.Id:N}_{item.Id:N}";
+                                                    var temAdicional = item.Preco > 0;
+
+                                                    <label class="list-group-item d-flex justify-content-between align-items-center py-3 acomp-item"
+                                                           for="@inputId"
+                                                           style="cursor:pointer;">
+                                                        <div class="d-flex flex-column">
+                                                            <span class="fw-semibold">@item.Nome</span>
                                                             @if (!string.IsNullOrWhiteSpace(item.Descricao))
                                                             {
-                                                                <div class="text-muted small">@item.Descricao</div>
+                                                                <span class="text-muted small">@item.Descricao</span>
                                                             }
                                                         </div>
 
                                                         <div class="d-flex align-items-center gap-3">
-                                                            <div class="fw-bold" style="color:#3c1e0a;">
-                                                                @item.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                                            <div class="fw-bold @(temAdicional ? "text-success" : "text-muted")">
+                                                                @(temAdicional ? $"+ {item.Preco.ToString("C", pt)}" : "Incluso")
                                                             </div>
 
-                                                            <input type="@tipoSelecao"
+                                                            <input id="@inputId"
+                                                                   type="@tipoSelecao"
                                                                    name="@inputName"
                                                                    class="form-check-input acomp-input"
                                                                    value="@item.Id"
@@ -121,14 +223,56 @@
                                                         </div>
                                                     </label>
                                                 }
+
+                                                @* @for (var repeat = 0; repeat < 5; repeat++)
+                                                {
+                                                    foreach (var item in itens)
+                                                    {
+                                                        var inputId = $"acomp_{cat.Id:N}_{item.Id:N}_{repeat}";
+                                                        var temAdicional = item.Preco > 0;
+
+                                                        <label class="list-group-item d-flex justify-content-between align-items-center py-3 acomp-item"
+                                                               for="@inputId"
+                                                               style="cursor:pointer;">
+                                                            <div class="d-flex flex-column">
+                                                                <span class="fw-semibold">@item.Nome</span>
+
+                                                                @if (!string.IsNullOrWhiteSpace(item.Descricao))
+                                                                {
+                                                                    <span class="text-muted small">@item.Descricao</span>
+                                                                }
+                                                            </div>
+
+                                                            <div class="d-flex align-items-center gap-3">
+                                                                <div class="fw-bold @(temAdicional ? "text-success" : "text-muted")">
+                                                                    @(temAdicional
+                                                                                                ? $"+ {item.Preco.ToString("C", pt)}"
+                                                                                                : "Incluso")
+                                                                </div>
+
+                                                                <input id="@inputId"
+                                                                       type="@tipoSelecao"
+                                                                       name="@inputName"
+                                                                       class="form-check-input acomp-input"
+                                                                       value="@item.Id"
+                                                                       data-preco="@item.Preco.ToString(CultureInfo.InvariantCulture)"
+                                                                       data-categoria-id="@cat.Id"
+                                                                       aria-label="Selecionar @item.Nome" />
+                                                            </div>
+                                                        </label>
+                                                    }
+                                                } *@
+
                                             }
                                             else
                                             {
-                                                <div class="text-muted small">Nenhum item disponível nesta categoria.</div>
+                                                <div class="p-3 text-muted small">
+                                                    Nenhum item disponível nesta categoria.
+                                                </div>
                                             }
                                         </div>
 
-                                        <div class="text-danger small mt-2 d-none" data-acomp-erro="@cat.Id">
+                                        <div class="text-danger small px-3 pb-3 d-none" data-acomp-erro="@cat.Id">
                                             Selecione no mínimo @cat.MinSelecionados item(ns).
                                         </div>
                                     </div>
@@ -163,11 +307,11 @@
                                 </button>
 
                                 <input id="modalProdutoQtd" type="number" value="1" min="1"
-                                    class="form-control border-0 text-center p-0 fw-bold"
-                                    style="width: 30px; background: transparent;" readonly>
+                                       class="form-control border-0 text-center p-0 fw-bold"
+                                       style="width: 30px; background: transparent;" readonly>
 
                                 <button type="button"
-                                        class="btn btn-link p-0 text-decoration-none btn-qtd merda"
+                                        class="btn btn-link p-0 text-decoration-none btn-qtd"
                                         data-delta="1"
                                         style="color: #d4a017; font-weight: bold; font-size: 1.2rem;">
                                     &plus;
@@ -176,13 +320,18 @@
                         </div>
 
                         <div class="col-7 col-md-8">
-                            <button type="button" id="btnConfirmarAddProduto"
+                            <button type="button" id="btnConfirmarInclusaoProduto"
                                     class="btn w-100 fw-bold text-white d-flex justify-content-between align-items-center px-3 py-2"
-                                    style="background-color: #3c1e0a; border-radius: 8px;">
+                                    style="background-color:#3c1e0a; border-radius: 10px;">
                                 <span>Adicionar</span>
-                                <span id="totalModal">@Model.Preco.ToString("C", new CultureInfo("pt-BR"))</span>
+
+                                <span class="badge bg-white text-dark fw-bold"
+                                      style="border-radius: 999px; padding: .75rem .75rem;">
+                                    <span id="totalModal" style="font-size: 0.9rem;">@precoBase.ToString("C", pt)</span>
+                                </span>
                             </button>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -190,5 +339,3 @@
         </div>
     </div>
 </div>
-
-

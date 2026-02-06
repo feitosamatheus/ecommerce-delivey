@@ -12,7 +12,8 @@
     top: 0;
     left: 0;
     /* background: #F2EDD8; */
-    background: #F7F7FE;
+    /*background: #F7F7FE;*/
+    background: linear-gradient(180deg, #f7efe4 0%, #f5f6f8 1200px, #f1f3f6 100%);
     overflow: hidden;
 }
 

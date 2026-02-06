@@ -27,7 +27,7 @@
 
 <div class="my-3 bc-container-home-desktop">
     <div class="row g-2">
-        <div class="col-12 col-lg-9">
+        <div class="col-12 col-lg-8 col-xl-8">
 
             <!-- FILTRO -->
             <div class="bc-filter bc-filter--sticky p-3 box-shadown-custom mb-2">
@@ -131,7 +131,7 @@
                                             @foreach (var p in slide)
                                             {
                                                 <div class="col-12 col-md-4 bc-carousel-col">
-                                                    <div class="bc-product bc-product--vertical bc-prod-col p-3" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                                                    <div class="bc-product bc-product--vertical bc-product-clickable bc-prod-col p-3" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
                                                         <div class="bc-product__thumb"
                                                             style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) 
                                                                     ? "" 
@@ -148,7 +148,7 @@
                                                             </div>
                                                         </div>
                                                         <!-- BOTÃO + -->
-                                                        <button type="button" class="bc-product__add" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                                        <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
                                                             <i class="fa-solid fa-plus"></i>
                                                         </button>
                                                     </div>
@@ -180,8 +180,8 @@
                     </div>
                 }
 
-            <!-- CATEGORIAS TIPO LISTA/BLOCO -->
-            @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Bloco))
+                <!-- CATEGORIAS TIPO LISTA/BLOCO -->
+                @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Bloco))
             {
                 var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
 
@@ -192,24 +192,32 @@
                         @foreach (var p in produtos)
                         {
                             <div class="col-12 col-md-6 bc-prod-col">
-                                <div class="bc-product p-3 bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                                <div class="bc-product p-3 bc-product-clickable bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
                                     <div class="d-flex gap-3">
-                                        <div class="flex-grow-1 bc-product__info">
-                                            <div class="fw-bold">@p.Nome</div>
-                                            @if (!string.IsNullOrWhiteSpace(p.Descricao))
-                                            {
-                                                <div class="text-muted small">
-                                                    @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
+                                        <div class="flex-grow-1 bc-product__info d-flex flex-column justify-content-between">
+                                            <div>
+                                                <div class="bc-product__title fw-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.2;">
+                                                    @p.Nome
                                                 </div>
-                                            }
-                                            <div class="mt-2 fw-bold bc-product__price">@p.Preco.ToString("C", new CultureInfo("pt-BR"))</div>
+
+                                                @if (!string.IsNullOrWhiteSpace(p.Descricao))
+                                                {
+                                                    <div class="text-muted small lh-sm" style="font-size: 0.85rem; color: #6c757d !important;">
+                                                        @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
+                                                    </div>
+                                                }
+                                            </div>
+
+                                            <div class="mt-2 fw-bold bc-product__price" style="font-size: 1.1rem; color: #D98C1A;">
+                                                @p.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                            </div>
                                         </div>
 
                                         <div class="bc-product__thumb"
                                                 style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
                                         </div>
                                     </div>
-                                    <button type="button" class="bc-product__add" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                    <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
                                         <i class="fa-solid fa-plus"></i>
                                     </button>
                                 </div>
@@ -256,7 +264,7 @@
                     </div>
 
                     <button class="btn bc-filter__btn" type="button" id="btnPesquisarMobile">
-                        <i class="fa-solid fa-keyboard" style="color: white !important;"></i>
+                        <i class="fa-solid fa-keyboard" style="color: #212529 !important;"></i>
                     </button>
 
                 </div>
@@ -333,7 +341,7 @@
                                                     </div>
                                                 </div>
                                                 <!-- BOTÃO + -->
-                                                <button type="button" class="bc-product__add" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                                <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
                                                     <i class="fa-solid fa-plus"></i>
                                                 </button>
                                             </div>
@@ -377,24 +385,32 @@
                     @foreach (var p in produtos)
                     {
                         <div class="col-12 col-md-6 bc-prod-col">
-                            <div class="bc-product p-3 bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                        <div class="bc-product p-3 bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
                                 <div class="d-flex gap-3">
-                                    <div class="flex-grow-1 bc-product__info">
-                                        <div class="fw-bold">@p.Nome</div>
+                                <div class="flex-grow-1 bc-product__info d-flex flex-column">
+                                    <div class="mb-auto">
+                                        <div class="fw-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.2;">
+                                            @p.Nome
+                                        </div>
+
                                         @if (!string.IsNullOrWhiteSpace(p.Descricao))
                                         {
-                                            <div class="text-muted small">
+                                            <div class="text-muted small lh-sm" style="font-size: 0.85rem;">
                                                 @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
                                             </div>
                                         }
-                                        <div class="mt-2 fw-bold bc-product__price">@p.Preco.ToString("C", new CultureInfo("pt-BR"))</div>
                                     </div>
+
+                                    <div class="mt-2 fw-bold bc-product__price" style="font-size: 1.1rem; color: #D98C1A;">
+                                        @p.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                    </div>
+                                </div>
 
                                     <div class="bc-product__thumb"
                                             style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
                                     </div>
                                 </div>
-                                <button type="button" class="bc-product__add" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
@@ -406,9 +422,11 @@
         }
     }  
 </div>
+
 <div id="modalHost"></div>
 <script>
-     
+    
+
 (function () {
 
     const spinner = document.getElementById('modalSpinner');
@@ -574,6 +592,7 @@
     const host = document.getElementById('modalHost');
 
     async function abrirModalProduto(produtoId) {
+
         if (!host) return;
 
         // Remove modal anterior
@@ -581,6 +600,8 @@
         if (old) old.remove();
 
         try {
+            addLoading("Carregando...");
+
             showSpinner();
 
             const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
@@ -606,16 +627,18 @@
 
             modal.show();
 
+
         } catch (err) {
             console.error('Erro ao carregar modal:', err);
             alert('Não foi possível carregar o produto. Tente novamente.');
+            removeLoading();
         } finally {
-            hideSpinner();
+            removeLoading();
         }
     }
 
     document.addEventListener('click', (e) => {
-        const btn = e.target.closest('.bc-product__add');
+        const btn = e.target.closest('.bc-product-clickable');
         if (!btn) return;
 
         e.preventDefault();
