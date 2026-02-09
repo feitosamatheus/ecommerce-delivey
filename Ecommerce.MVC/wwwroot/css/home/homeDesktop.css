@@ -50,16 +50,16 @@
     transition: background-color .2s ease, box-shadow .2s ease, transform .1s ease;
 }
 
-    .bc-filter__btn i {
+    /*.bc-filter__btn i {
         font-size: clamp(0.7rem, 1.8vw, 0.9rem);
         color: #212529;
     }
-
+*/
     .bc-filter__btn:hover {
         background-color: rgb(217, 140, 26);
         transform: scale(1.05);
         box-shadow: rgba(74, 42, 21, 0.45) 0px 8px 18px;
-        color: rgb(255, 255, 255) !important;
+        color: #fff !important;
     }
 
     .bc-filter__btn:focus,
@@ -248,12 +248,14 @@
 }
 
 .bc-product__thumb {
-  width: 150px;
-  height: 104px;
-  border-radius: 10px;
-  flex: 0 0 auto;
-  background-size: cover;
-  background-position: center;
+    /*width: 150px;
+  height: 104px;*/
+    width: 104px;
+    height: 70px;
+    border-radius: 10px;
+    flex: 0 0 auto;
+    background-size: cover;
+    background-position: center;
 }
 
 .carousel-control-prev,

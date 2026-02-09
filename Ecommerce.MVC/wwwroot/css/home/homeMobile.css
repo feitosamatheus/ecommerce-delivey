@@ -87,8 +87,10 @@
 .bc-select__options li.is-selected { background-color: #663E1A; color: #ffffff; }
 
 .bc-filter__btn {
-    width: clamp(28px, 6vw, 36px);
-    height: clamp(28px, 6vw, 36px);
+    /*width: clamp(28px, 6vw, 36px);
+    height: clamp(28px, 6vw, 36px);*/
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background-color: #edcd9a;
     border: none;
@@ -200,8 +202,10 @@
 }
 
 .bc-product__thumb {
-    width: 150px;
-    height: 104px;
+    /*width: 150px;
+    height: 104px;*/
+    width: 104px;
+    height: 70px;
     border-radius: 10px;
     flex: 0 0 auto;
     background-size: cover;
@@ -227,15 +231,17 @@
     position: absolute;
     bottom: 12px;
     right: 12px;
-    width: 36px;
-    height: 36px;
+    /*width: 36px;
+    height: 36px;*/
+    width: 31px;
+    height: 31px;
     border-radius: 50%;
-    background-color: #edcd9a;
+    background-color: #4a2a15;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #212529;
+    color: #fff;
     font-size: 14px;
     box-shadow: 0 6px 14px rgba(74, 42, 21, 0.35);
     cursor: pointer;
@@ -259,8 +265,8 @@
     .bc-product__add {
         bottom: 8px;
         right: 8px;
-        width: 36px;
-        height: 36px;
+        width: 31px;
+        height: 31px;
     }
 }
 

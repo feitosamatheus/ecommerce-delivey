@@ -26,7 +26,7 @@
 </head>
 <body class="container-fluid container-lg px-0">
     
-    @await Html.PartialAsync("Partials/_Animacao.cshtml")
+    @* @await Html.PartialAsync("Partials/_Animacao.cshtml") *@
     @await Html.PartialAsync("Partials/_LoadingSpinner.cshtml")
     @await Component.InvokeAsync("Header")
 
@@ -41,10 +41,12 @@
     @await Html.PartialAsync("Partials/_ModalVerMais.cshtml")
     @await Html.PartialAsync("Partials/_ModalContaCliente.cshtml")
     @await Html.PartialAsync("Partials/_ModalAlterarSenha.cshtml")
+    @await Component.InvokeAsync("Footer")
 
+    @await RenderSectionAsync("Scripts", required: false)
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

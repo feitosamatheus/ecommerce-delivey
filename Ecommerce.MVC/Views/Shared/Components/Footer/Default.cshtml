@@ -1,0 +1,245 @@
+﻿@model Ecommerce.MVC.Models.FooterViewModel
+
+<style>
+    .footer-mobile-tabs {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        background: #ffffff;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        border-top: 1px solid #eee;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+        z-index: 10000;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .tab-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #555 !important;
+        transition: all 0.2s ease;
+    }
+
+        /* Ícones */
+        .tab-item i {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        /* Texto abaixo dos ícones */
+        .tab-item span {
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: end;
+        }
+
+    /* Destaque para o Carrinho Central */
+    .cart-tab-main {
+        color: #27ae60; /* Verde para converter venda */
+    }
+
+    .cart-icon-wrapper {
+        position: relative;
+        /* background: rgba(39, 174, 96, 0.1); /* Fundo suave no ícone */ 
+        padding: 8px 8px 0px 8px;
+        border-radius: 12px;
+        margin-top: -5px;
+    }
+
+    .cart-badge {
+        position: absolute;
+        top: -4px;
+        right: -8px;
+        background-color: #e74c3c;
+        color: white;
+        font-size: 10px;
+        min-width: 23px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+        font-weight: bold;
+    }
+
+    /* Feedback de clique */
+    .tab-item:active {
+        transform: scale(0.9);
+        color: #000;
+    }
+
+    /* Garante que o conteúdo da página não fique escondido */
+    @@media (max-width: 1199px) {
+        body {
+            padding-bottom: 80px !important;
+        }
+    }
+
+    .footer-mobile-tabs {
+        z-index: 1000; /* Reduzi de 10000 para 1000 */
+    }
+
+    /* 2. O Modal (e o fundo escuro/backdrop) deve ser superior */
+    /* Se estiver usando Bootstrap, as classes padrões são estas: */
+    .modal {
+        z-index: 10050 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 10040 !important;
+    }
+
+    /* Caso o seu modal seja um elemento customizado (#conteudo-modal) */
+    #conteudo-modal {
+        position: relative;
+        z-index: 10060;
+    }
+
+    #modalCarrinhoMobile .modal-dialog {
+      /*position: fixed;
+        bottom: 0;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+        height: 85vh; 
+        transform: translateY(100%); */
+    }
+
+    #modalCarrinhoMobile.show .modal-dialog {
+        transform: translateY(0);
+        transition: transform .3s ease;
+    }
+
+    #modalCarrinhoMobile .modal-content {
+        /* height: 100%; */
+        border-radius: 20px ;
+    }
+
+    .modal-content{
+        border: none !important;
+    }
+</style>
+
+<footer class="footer-mobile-tabs d-xl-none">
+    <a href="/" class="tab-item">
+        <i class="fas fa-home"></i>
+        <span>Início</span>
+    </a>
+
+    @if (Model.Autenticado)
+    {
+        <a href="javascript:void(0)" class="tab-item js-acompanhar-pedidos">
+            @if (Model.TotalPedidosEmAndamento > 0)
+            {
+                <div class="cart-icon-wrapper">
+                    <i class="fas fa-receipt"></i>
+                    <span class="cart-badge">
+                        @Model.TotalPedidosEmAndamento
+                    </span>
+                </div>
+            }
+            <span>
+                Meus Pedidos
+            </span>
+        </a>
+    }
+    else
+    {
+        <a href="javascript:void(0)" class="tab-item js-acompanhar-pedidos-login">
+            <i class="fas fa-receipt"></i>
+
+            <span>
+                Meus Pedidos
+            </span>
+        </a>
+    }
+
+    <a href="javascript:void(0)"
+       class="tab-item js-abrir-carrinho-mobile">
+
+        <div class="cart-icon-wrapper">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-badge">3</span>
+        </div>
+        <span>Carrinho</span>
+    </a>
+</footer>
+
+<div id="carrinho-modal-source">
+    @await Component.InvokeAsync("CarrinhoMobile")
+</div>
+
+
+
+<script>
+    $(document).on('click', '.js-acompanhar-pedidos', function () {
+
+        addLoading("Carregando...");
+
+        setTimeout(() => {
+            $.ajax({
+                  url: '/Pedido/BuscarModalPedidosEmAndamento',
+                method: 'GET',
+                success: function (html) {
+                    $('#conteudo-modal').empty();
+                    $('#conteudo-modal').html(html);
+
+                    const el = document.getElementById('modalPedidosEmAndamento');
+                    bootstrap.Modal.getOrCreateInstance(el).show();
+
+                    removeLoading();
+                },
+                error: function (xhr) {
+                    alert(xhr.responseText || 'Erro ao carregar pedidos.');
+                    removeLoading();
+                }
+            });
+        }, 800);
+    });
+
+    $(document).on('click', '.js-acompanhar-pedidos-login', function () {
+        $('#modalAcompanhamentoClienteBody').empty();
+        addLoading("Carregando...");
+
+        const $body = $('#modalContaClienteBody');
+        const modalEl = document.getElementById('modalContaCliente');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+        $body.html('<div class="text-muted p-3">Carregando...</div>');
+
+        // ⏳ Delay de 3 segundos
+        setTimeout(function () {
+            $.get('/Cliente/ContaClienteModal')
+                .done(function (html) {
+                    $body.html(html);
+                    modal.show();
+                })
+                .fail(function () {
+                    $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+                    modal.show();
+                })
+                .always(function () {
+                    removeLoading();
+                });
+        }, 2000);
+    });
+
+    $(document).on('click', '.js-abrir-carrinho-mobile', function () {
+
+        const modal = bootstrap.Modal.getOrCreateInstance(
+            document.getElementById('modalCarrinhoMobile')
+        );
+
+        modal.show();
+    });
+</script>

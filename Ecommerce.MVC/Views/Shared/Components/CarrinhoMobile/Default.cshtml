@@ -1,0 +1,245 @@
+﻿@using System.Globalization
+@using Ecommerce.MVC.Models.Carrinhos
+@model CarrinhoViewModel
+
+<style>
+    /* ============================
+       CART MOBILE (ISOLADO)
+       ============================ */
+
+    .cart-mobile .bc-cart-container {
+        /* border-radius: 16px; */
+        box-shadow:none;
+        background: #fff;
+    }
+
+    .cart-mobile .bc-cart__items-wrapper {
+        max-height: 55vh;
+        overflow-y: auto;
+    }
+
+    .cart-mobile .bc-cart__item {
+        padding: 12px 0;
+        border-bottom: 1px dashed #eee;
+    }
+
+    .cart-mobile .bc-cart__item-name {
+        font-size: 0.95rem;
+    }
+
+    .cart-mobile .bc-cart__summary {
+        background: #fdfdfd;
+        border-radius: 12px;
+    }
+
+    .cart-mobile .bc-cart__total-row {
+        font-size: 1.1rem;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .cart-mobile .btn-checkout {
+        border-radius: 50px;
+        padding: 12px;
+        background: #edcd9a;
+        transition: 0.3s;
+    }
+
+        .cart-mobile .btn-checkout:hover {
+            background: #d39130;
+            color: #fff;
+        }
+
+    .modal.fade.modal-swap {
+        transition: opacity .25s ease, transform .25s ease;
+    }
+
+        .modal.fade.modal-swap.show {
+            transform: translateY(0);
+        }
+
+    .modal.fade.modal-swap {
+        transform: translateY(20px);
+    }
+</style>
+
+<div class="modal fade" id="modalCarrinhoMobile" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-0">
+                <!-- 🔥 WRAPPER EXCLUSIVO -->
+                <div class="cart-mobile">
+
+                    <div class="col-12">
+                        <div class="bc-cart-container p-4 pt-3">
+
+                            <div class="bc-cart__header d-flex align-items-center justify-content-between mb-3">
+                                <h5 class="mb-0">
+                                    <i class="fa-solid fa-bag-shopping me-2" style="color: #edcd9a;"></i>
+                                    <span style="color: #4A2A15;">Meu Carrinho</span>
+                                </h5>
+                                <span class="badge bg-light text-dark rounded-pill">@Model.Itens.Count</span>
+                            </div>
+
+                            @if (Model.EstaVazio)
+                            {
+                                <div class="bc-cart__items-wrapper d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fa-solid fa-cart-plus mb-3 opacity-25" style="font-size: 3rem;"></i>
+                                    <div class="text-muted fw-medium">Seu carrinho está vazio</div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="bc-cart__items-wrapper mb-4">
+                                    @foreach (var item in Model.Itens)
+                                    {
+                                        <div class="bc-cart__item">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="pe-2">
+                                                    <div class="fw-bold bc-cart__item-name">@item.Nome</div>
+                                                    <small class="text-secondary fw-medium">@item.Quantidade x</small>
+                                                </div>
+                                                <div class="fw-bold bc-cart__item-price">
+                                                    @item.Total.ToString("C", new CultureInfo("pt-BR"))
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <div class="bc-cart__summary mb-4">
+                                <div class="d-flex justify-content-between text-muted small mb-1">
+                                    <span>Subtotal</span>
+                                    <span>@Model.Subtotal.ToString("C", new CultureInfo("pt-BR"))</span>
+                                </div>
+                                <div class="d-flex justify-content-between fw-bold bc-cart__total-row">
+                                    <span>Total</span>
+                                    <span>@Model.Total.ToString("C", new CultureInfo("pt-BR"))</span>
+                                </div>
+                            </div>
+
+                            @if (!Model.EstaVazio)
+                            {
+                                if (User.Identity.IsAuthenticated)
+                                {
+                                    <button class="btn w-100 btn-checkout shadow-sm js-confirmar-add-produto" style="background: #edcd9a; color: black;"
+                                            @(Model.EstaVazio ? "disabled" : "")
+                                            data-carrinho-id="@Model.CarrinhoId">
+                                        FINALIZAR PEDIDO
+                                    </button>
+
+                                }
+                                else
+                                {
+                                    <button type="button"
+                                            class="btn w-100 d-flex align-items-center justify-content-center fw-bold btn-login-cart btn-checkout js-login-carrinho">
+                                        <i class="fa-solid fa-circle-user fs-5 me-2"></i>
+                                        ENTRAR PARA FINALIZAR
+                                    </button>
+                                }
+                            }
+
+                        </div>
+                    </div>
+
+                </div>
+                <!-- 🔥 FIM WRAPPER -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(document).on('click', '.js-confirmar-add-produto', function () {
+        addLoading("Carregando...");
+
+        $.ajax({
+            url: '/Pedido/BuscarModalFinalizarPedido',
+            method: 'GET',
+            success: function (html) {
+                $('#conteudo-modal').empty();
+                $('#conteudo-modal').html(html);
+
+                const el = document.getElementById('modalFinalizarPedido');
+                const modal = bootstrap.Modal.getOrCreateInstance(el);
+
+                modal.show();
+
+                if (window.wizardInitFinalizarPedido)
+                    window.wizardInitFinalizarPedido();
+                removeLoading();
+            },
+            error: function (xhr) {
+                alert(xhr.responseText || 'Erro ao carregar o modal.');
+                removeLoading();
+            }
+        });
+    });
+
+    $(document).on('click', '.js-login-carrinho', function () {
+
+        addLoading("Carregando...");
+
+        const modalCarrinhoEl = document.getElementById('modalCarrinhoMobile');
+        const modalLoginEl = document.getElementById('modalContaCliente');
+
+        const modalCarrinho = bootstrap.Modal.getInstance(modalCarrinhoEl);
+        const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
+
+        // 1️⃣ Fecha o modal do carrinho, se estiver aberto
+        if (modalCarrinho) {
+            modalCarrinho.hide();
+        }
+
+        // 2️⃣ Quando o carrinho terminar de fechar, abre o login
+        modalCarrinhoEl.addEventListener('hidden.bs.modal', function handler() {
+
+            modalCarrinhoEl.removeEventListener('hidden.bs.modal', handler);
+
+            const $body = $('#modalContaClienteBody');
+            $body.html('<div class="text-muted p-3">Carregando...</div>');
+
+            $.get('/Cliente/ContaClienteModal')
+                .done(function (html) {
+                    $body.html(html);
+                    modalLogin.show();
+                })
+                .fail(function () {
+                    $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+                    modalLogin.show();
+                })
+                .always(function () {
+                    removeLoading();
+                });
+
+        }, { once: true });
+    });
+
+    let resizeTimeout = null;
+
+    $(window).on('resize', function () {
+        clearTimeout(resizeTimeout);
+
+        resizeTimeout = setTimeout(() => {
+            fecharCarrinhoSeDesktop();
+        }, 150); // debounce leve
+    });
+
+    function fecharCarrinhoSeDesktop() {
+        if (window.innerWidth >= 1200) {
+            const modalEl = document.getElementById('modalCarrinhoMobile');
+            if (!modalEl) return;
+
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+    }
+
+</script>
