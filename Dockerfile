@@ -11,8 +11,8 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-ENV ASPNETCORE_URLS=http://+:${PORT}
+# 🔥 porta fixa
+ENV ASPNETCORE_URLS=http://+:8000
 
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "Ecommerce.MVC.dll"]
-
