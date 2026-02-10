@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using Ecommerce.MVC.Models.Clientes;
-using System.Linq;
 using Ecommerce.MVC.Interfaces;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Ecommerce.MVC.Models.Clientes;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Linq;
+using System.Security.Claims;
 
 public class ClienteController : Controller
 {
@@ -35,18 +36,43 @@ public class ClienteController : Controller
     [HttpPost]
     public async Task<IActionResult> Registrar([FromBody] RegistrarClienteViewModel model)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            var result = await _clienteService.RegistrarClienteAsync(model);
+            var erros = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage);
 
-            return Json(new { success = true, message = "Cadastro realizado com sucesso!" });
+            return Json(new
+            {
+                success = false,
+                message = "Erro na validação.",
+                errors = erros
+            });
         }
 
-        var erros = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-        return Json(new { success = false, message = "Erro na validação.", errors = erros });
+        var result = await _clienteService.RegistrarClienteAsync(model);
+
+        if (!result.Success)
+        {
+            return Json(new
+            {
+                success = false,
+                message = result.Message
+            });
+        }
+
+        var cliente = result.Data;
+        await SignInClienteAsync(cliente.Id, cliente.Nome, cliente.Email);
+
+        return Json(new
+        {
+            success = true,
+            message = result.Message
+        });
     }
 
     [HttpPost]
+    [EnableRateLimiting("LoginPolicy")]
     public async Task<IActionResult> Login([FromBody] LoginClienteViewModel model)
     {
         if (!ModelState.IsValid)
@@ -61,20 +87,34 @@ public class ClienteController : Controller
         var result = await _clienteService.LoginAsync(model);
 
         if (result is null)
-            return Json(new { success = false, message = "Credenciais  inválidas"});
+            return Json(new
+            {
+                success = false,
+                message = "Não foi possível autenticar. Verifique os dados e tente novamente."
+            });
 
+        await SignInClienteAsync(result.Id, result.Nome, result.Email);
+
+        return Json(new { success = true, message = "Login realizado com sucesso!" });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        return Ok();
+    }
+
+    private async Task SignInClienteAsync(Guid id, string nome, string email)
+    {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, result.Id.ToString()),
-            new Claim(ClaimTypes.Name, result.Nome),
-            new Claim(ClaimTypes.Email, result.Email)
+            new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+            new Claim(ClaimTypes.Name, nome),
+            new Claim(ClaimTypes.Email, email)
         };
 
-        var identity = new ClaimsIdentity(
-            claims,
-            CookieAuthenticationDefaults.AuthenticationScheme
-        );
-
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
 
         await HttpContext.SignInAsync(
@@ -85,14 +125,5 @@ public class ClienteController : Controller
                 IsPersistent = true,
                 ExpiresUtc = DateTimeOffset.UtcNow.AddHours(2)
             });
-
-        return Json(new { success = true, message = "Login realizado com sucesso!" });
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Logout()
-    {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return Ok();
     }
 }

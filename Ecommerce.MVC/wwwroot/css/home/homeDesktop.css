@@ -371,12 +371,12 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background-color: #edcd9a;
+    background-color: #4a2a15;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #212529;
+    color: #fff;
     font-size: 14px;
     box-shadow: 0 6px 14px rgba(74, 42, 21, 0.35);
     cursor: pointer;

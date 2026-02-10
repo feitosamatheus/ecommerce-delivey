@@ -8,7 +8,7 @@
 
 <link rel="stylesheet" href="~/css/pedido/finalizar-pedido-wizard.css" asp-append-version="true" />
 
-<div class="modal fade" id="modalFinalizarPedido" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalFinalizarPedido" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; background: #fcfcfc;">
             <div class="modal-header border-0 pb-0">
@@ -17,7 +17,7 @@
                 </div>
                 <div style="width: 24px;"></div>
             </div>
-            <div class="modal-body" id="modalFinalizarPedidoBody" style="transform: scale(0.9);">
+            <div class="modal-body" id="modalFinalizarPedidoBody" style="transform: scale(0.94);">
                 
                 <!-- PROGRESSO -->
                 <div class="wizard-progress px-0 pt-0">
@@ -145,252 +145,310 @@
 
                 <!-- STEP 2 -->
                 <section class="wizard-step d-none" data-step="2">
-                <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Resumo da Retirada</h6>
+                    <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Resumo da Retirada</h6>
 
-                <div class="bg-white p-3 rounded-4 border mb-3 shadow-sm">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fa-regular fa-calendar-check me-2" style="color: var(--bh-primary)"></i>
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.65rem; text-transform: uppercase;">Data e Horário</small>
-                            <strong id="resumoDataHora" style="color: var(--bh-primary)">-</strong>
+                    <div class="bg-white p-3 rounded-4 border mb-3 shadow-sm">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fa-regular fa-calendar-check me-2" style="color: var(--bh-primary)"></i>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.65rem; text-transform: uppercase;">Data e Horário</small>
+                                <strong id="resumoDataHora" style="color: var(--bh-primary)">-</strong>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fa-regular fa-comment-dots me-2" style="color: var(--bh-primary)"></i>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.65rem; text-transform: uppercase;">Observações</small>
+                                <span id="resumoObs" class="small text-muted">Nenhuma observação</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fa-regular fa-comment-dots me-2" style="color: var(--bh-primary)"></i>
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.65rem; text-transform: uppercase;">Observações</small>
-                            <span id="resumoObs" class="small text-muted">Nenhuma observação</span>
-                        </div>
-                    </div>
-                </div>
-                <hr />
-                <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Itens do Pedido</h6>
-                <div class="bg-white p-3 rounded-4 border mb-3">
-                    @foreach (var item in Model.Carrinho.Itens)
-                    {
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="fw-bold small text-dark">@item.Quantidade x @item.ProdutoNome</div>
+                    <hr />
+                    <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Itens do Pedido</h6>
+                    <div class="bg-white p-3 rounded-4 border mb-3">
+                        @foreach (var item in Model.Carrinho.Itens)
+                        {
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-bold small text-dark">@item.Quantidade x @item.ProdutoNome</div>
 
-                                    @if (item.Acompanhamentos?.Any() == true)
-                                    {
-                                        <div class="ps-2 mt-1 border-start" style="border-width: 2px !important; border-color: #eee !important;">
-                                            @foreach (var acc in item.Acompanhamentos)
-                                            {
-                                                <div class="d-flex justify-content-between align-items-center mb-1" style="min-width: 180px;">
-                                                    <small class="text-muted" style="font-size: 0.7rem;">
-                                                        + @acc.Nome
-                                                    </small>
-                                                    <small class="text-muted ps-3" style="font-size: 0.65rem;">
-                                                        @acc.Preco.ToString("C", pt)
-                                                    </small>
-                                                </div>
-                                            }
-                                        </div>
-                                    }
+                                        @if (item.Acompanhamentos?.Any() == true)
+                                        {
+                                            <div class="ps-2 mt-1 border-start" style="border-width: 2px !important; border-color: #eee !important;">
+                                                @foreach (var acc in item.Acompanhamentos)
+                                                {
+                                                    <div class="d-flex justify-content-between align-items-center mb-1" style="min-width: 180px;">
+                                                        <small class="text-muted" style="font-size: 0.7rem;">
+                                                            + @acc.Nome
+                                                        </small>
+                                                        <small class="text-muted ps-3" style="font-size: 0.65rem;">
+                                                            @acc.Preco.ToString("C", pt)
+                                                        </small>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="fw-bold small text-dark">@item.TotalLinha.ToString("C", pt)</div>
                                 </div>
-                                <div class="fw-bold small text-dark">@item.TotalLinha.ToString("C", pt)</div>
+                            </div>
+                        }
+
+                        <hr class="my-2 opacity-25">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Total da encomenda</span>
+                            <span class="text-muted small fw-bold">@Model.Carrinho.Total.ToString("C", pt)</span>
+                        </div>
+
+                    </div>
+                    <hr />
+
+                    <div class="mb-4">
+                        <label class="fw-bold mb-2 small" style="color: var(--bh-primary)">Forma de Pagamento do Sinal</label>
+                        <select id="selectPagamento" class="form-select border-0 shadow-sm rounded-3 p-3">
+                            <option value="pix" selected>PIX (Pagamento Agora)</option>
+                            <option value="cartao">Cartão de Crédito (Pagamento Agora)</option>
+                        </select>
+                    </div>
+
+                    @* <div id="pix-warning-resumo" class="alert border-0 rounded-4 p-3 mb-4" style="background-color: #f0f7ff; border-left: 4px solid #007bff !important;">
+                        <div class="d-flex align-items-start">
+                            <i class="fa-solid fa-shield-check text-primary me-3 mt-1" style="font-size: 1.1rem;"></i>
+                            <div>
+                                <p class="mb-1 fw-bold" style="color: #004a99; font-size: 0.85rem;">Confirmação de Reserva</p>
+                                <p class="mb-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;">
+                                    Para garantir sua encomenda, clique em <b>"Confirmar pedido"</b>. Você visualizará o QR Code para o pagamento do sinal de <b>50%</b>.
+                                </p>
+                                <div class="d-flex align-items-center" style="font-size: 0.75rem; color: #bc8d05;">
+                                    <i class="fa-regular fa-clock me-1"></i>
+                                    <span>
+                                        O PIX expira em 30 min. <b>Caso não seja pago, o pedido será cancelado automaticamente.</b>
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    }
+                    </div> *@
 
-                    <hr class="my-2 opacity-25">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted small">Total da encomenda</span>
-                        <span class="text-muted small fw-bold">@Model.Carrinho.Total.ToString("C", pt)</span>
-                    </div>
-
-                </div>
-                <hr />
-
-                <div id="pix-warning-resumo" class="alert border-0 rounded-4 p-3 mb-4" style="background-color: #f0f7ff; border-left: 4px solid #007bff !important;">
-                    <div class="d-flex align-items-start">
-                        <i class="fa-solid fa-shield-check text-primary me-3 mt-1" style="font-size: 1.1rem;"></i>
-                        <div>
-                            <p class="mb-1 fw-bold" style="color: #004a99; font-size: 0.85rem;">Confirmação de Reserva</p>
-                            <p class="mb-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;">
-                                Para garantir sua encomenda, clique em <b>"Confirmar pedido"</b>. Você visualizará o QR Code para o pagamento do sinal de <b>50%</b>.
-                            </p>
-                            <div class="d-flex align-items-center" style="font-size: 0.75rem; color: #bc8d05;">
-                                <i class="fa-regular fa-clock me-1"></i>
-                                <span>
-                                    O PIX expira em 30 min. <b>Caso não seja pago, o pedido será cancelado automaticamente.</b>
-                                </span>
+                    <div id="msg-pagamento-pix" class="alert border-0 rounded-4 p-3 mb-4" style="background-color: #f0f7ff; border-left: 4px solid #007bff !important;">
+                        <div class="d-flex align-items-start">
+                            <i class="fa-solid fa-qrcode text-primary me-3 mt-1" style="font-size: 1.1rem;"></i>
+                            <div>
+                                <p class="mb-1 fw-bold" style="color: #004a99; font-size: 0.85rem;">Confirmação via PIX</p>
+                                <p class="mb-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;">
+                                    Ao confirmar, você visualizará o <b>QR Code</b>. O sinal de 50% é necessário para validar sua reserva.
+                                </p>
+                                <div class="d-flex align-items-center" style="font-size: 0.75rem; color: #bc8d05;">
+                                    <i class="fa-regular fa-clock me-1"></i>
+                                    <span>Expira em 30 min. O pedido é cancelado se não houver pagamento.</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-end mb-3 px-1">
-                        <div>
-                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 0.5px;">Pagar agora (Sinal 50%)</small>
-                            <div class="fs-2 fw-bold lh-1" style="color: #198754; letter-spacing: -1px;" id="resumoAdiantamento">
-                                @Model.Carrinho.ValorSinal.ToString("C", pt)
+                    <div id="msg-pagamento-cartao" class="alert border-0 rounded-4 p-3 mb-4 d-none" style="background-color: #fcfaff; border-left: 4px solid #6f42c1 !important;">
+                        <div class="d-flex align-items-start">
+                            <i class="fa-solid fa-credit-card text-purple me-3 mt-1" style="font-size: 1.1rem; color: #6f42c1;"></i>
+                            <div>
+                                <p class="mb-1 fw-bold" style="color: #4b2394; font-size: 0.85rem;">Pagamento via Cartão</p>
+                                <p class="mb-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;">
+                                    Você será redirecionado para o nosso <b>ambiente seguro</b> de pagamentos para processar o sinal de 50%.
+                                </p>
+                                <div class="d-flex align-items-center" style="font-size: 0.75rem; color: #6f42c1;">
+                                    <i class="fa-solid fa-lock me-1"></i>
+                                    <span>Sua transação é criptografada e 100% segura.</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="text-end">
-                            <small class="text-muted d-block" style="font-size: 0.7rem;">Total do pedido</small>
-                            <span class="fw-semibold text-dark" style="font-size: 0.9rem;">@Model.Carrinho.Total.ToString("C", pt)</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-end mb-3 px-1">
+                            <div>
+                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 0.5px;">Pagar agora (Sinal 50%)</small>
+                                <div class="fs-2 fw-bold lh-1" style="color: #198754; letter-spacing: -1px;" id="resumoAdiantamento">
+                                    @Model.Carrinho.ValorSinal.ToString("C", pt)
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">Total do pedido</small>
+                                <span class="fw-semibold text-dark" style="font-size: 0.9rem;">@Model.Carrinho.Total.ToString("C", pt)</span>
+                            </div>
+                        </div>
+
+                        <div class="progress mb-3" style="height: 4px; background-color: #e9ecef;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 50%"></div>
+                        </div>
+
+                        <div class="p-3 rounded-4 mb-4 text-center" style="background-color: #f8f9fa; border: 1px dashed #ddd;">
+                            <span class="text-muted small">O restante (<b>@Model.Carrinho.ValorRestanteRetirada.ToString("C", pt)</b>) será pago no momento da retirada.</span>
                         </div>
                     </div>
 
-                    <div class="progress mb-3" style="height: 4px; background-color: #e9ecef;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 50%"></div>
-                    </div>
-
-                    <div class="p-3 rounded-4 mb-4 text-center" style="background-color: #f8f9fa; border: 1px dashed #ddd;">
-                        <span class="text-muted small">O restante (<b>@Model.Carrinho.ValorRestanteRetirada.ToString("C", pt)</b>) será pago no momento da retirada.</span>
-                    </div>
-                </div>
-
-            </section>
+                </section>
 
                 <!-- STEP 3 -->
                 <section class="wizard-step d-none" data-step="3">
-                    <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Pagamento do Sinal (PIX)</h6>
+                    <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Pagamento do Sinal (50%)</h6>
 
-                    <!-- INFO DE VALORES (SINAL / TOTAL) -->
                     <div class="bg-white p-3 rounded-4 border shadow-sm mb-3">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Pagar agora (Sinal 50%)</small>
-                                <div class="fs-3 fw-bold lh-1" style="color: var(--bh-success);" id="pixValorSinal">
+                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Valor a pagar agora</small>
+                                <div class="fs-3 fw-bold lh-1 text-success">
                                     @Model.Carrinho.ValorSinal.ToString("C", pt)
                                 </div>
                                 <small class="text-muted" style="font-size: 0.75rem;">
                                     Restante na retirada: <b>@Model.Carrinho.ValorRestanteRetirada.ToString("C", pt)</b>
                                 </small>
                             </div>
-
                             <div class="text-end">
                                 <small class="text-muted d-block" style="font-size: 0.7rem;">Total do pedido</small>
-                                <span class="fw-semibold text-dark" style="font-size: 0.95rem;">
-                                    @Model.Carrinho.Total.ToString("C", pt)
-                                </span>
+                                <span class="fw-semibold text-dark">@Model.Carrinho.Total.ToString("C", pt)</span>
                             </div>
-                        </div>
-
-                        <div class="progress mt-3" style="height: 4px; background-color: #e9ecef;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 50%"></div>
                         </div>
                     </div>
 
-                    <!-- BLOCO PRINCIPAL PIX -->
-                    <div class="row g-3 mb-5">
-                        <!-- QR -->
-                        <div class="col-12 col-lg-5">
-                            <div class="bg-white p-3 rounded-4 border shadow-sm h-100">
-                                <div class="d-flex align-items-start justify-content-between mb-2">
-                                    <div>
-                                        <div class="fw-bold" style="color: var(--bh-primary);">Escaneie o QR Code</div>
-                                        <small class="text-muted" style="font-size: 0.75rem;">
-                                            Abra o app do seu banco → PIX → QR Code
-                                        </small>
+                    <div id="step3-pix" class="row g-3 mb-5">
+                        <div class="row g-3 mb-0">
+                            <!-- QR -->
+                            <div class="col-12 col-lg-5">
+                                <div class="bg-white p-3 rounded-4 border shadow-sm h-100">
+                                    <div class="d-flex align-items-start justify-content-between mb-2">
+                                        <div>
+                                            <div class="fw-bold" style="color: var(--bh-primary);">Escaneie o QR Code</div>
+                                            <small class="text-muted" style="font-size: 0.75rem;">
+                                                Abra o app do seu banco → PIX → QR Code
+                                            </small>
+                                        </div>
+
+                                        <span class="badge rounded-pill text-bg-light border" style="font-size: 0.75rem; color: var(--bh-primary);">
+                                            <i class="fa-regular fa-clock me-1"></i>
+                                            Expira em <b id="pixExpiraEm">24:00:00</b>
+                                        </span>
                                     </div>
 
-                                    <span class="badge rounded-pill text-bg-light border" style="font-size: 0.75rem; color: var(--bh-primary);">
-                                        <i class="fa-regular fa-clock me-1"></i>
-                                        Expira em <b id="pixExpiraEm">24:00:00</b>
-                                    </span>
-                                </div>
+                                    <div class="d-flex justify-content-center my-3">
+                                        <!-- Imagem fictícia (placeholder). Depois você troca por src real (base64/URL) -->
+                                        <img id="pixQrImg"
+                                             src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=PIX-DEMO-123"
+                                             alt="QR Code PIX"
+                                             class="img-fluid rounded-4 border"
+                                             style="max-width: 240px; background: #fff; padding: 10px;" />
+                                    </div>
 
-                                <div class="d-flex justify-content-center my-3">
-                                    <!-- Imagem fictícia (placeholder). Depois você troca por src real (base64/URL) -->
-                                    <img id="pixQrImg"
-                                         src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=PIX-DEMO-123"
-                                         alt="QR Code PIX"
-                                         class="img-fluid rounded-4 border"
-                                         style="max-width: 240px; background: #fff; padding: 10px;" />
-                                </div>
-
-                                <div class="alert border-0 rounded-4 mb-0"
-                                        style="background-color: #f0f7ff; border-left: 4px solid #007bff !important;">
-                                    <div class="d-flex align-items-start">
-                                        <i class="fa-solid fa-shield-check text-primary me-2 mt-1"></i>
-                                        <div style="font-size: 0.8rem; line-height: 1.4;">
-                                            Após o pagamento, a confirmação pode levar alguns segundos.
-                                            Caso prefira, você pode fechar esta tela e acompanhar o status em
-                                            <strong>Acompanhar pedidos</strong>, onde também será possível
-                                            visualizar novamente o <strong>QR Code</strong> e o
-                                            <strong>código PIX (copia e cola)</strong>.
+                                    <div class="alert border-0 rounded-4 mb-0"
+                                         style="background-color: #f0f7ff; border-left: 4px solid #007bff !important;">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa-solid fa-shield-check text-primary me-2 mt-1"></i>
+                                            <div style="font-size: 0.8rem; line-height: 1.4;">
+                                                Após o pagamento, a confirmação pode levar alguns segundos.
+                                                Caso prefira, você pode fechar esta tela e acompanhar o status em
+                                                <strong>Acompanhar pedidos</strong>, onde também será possível
+                                                visualizar novamente o <strong>QR Code</strong> e o
+                                                <strong>código PIX (copia e cola)</strong>.
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- COPIA E COLA + CHAVE -->
-                        <div class="col-12 col-lg-7">
-                            <div class="bg-white p-3 rounded-4 border shadow-sm h-100">
+                            <!-- COPIA E COLA + CHAVE -->
+                            <div class="col-12 col-lg-7">
+                                <div class="bg-white p-3 rounded-4 border shadow-sm h-100">
 
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <div>
-                                        <div class="fw-bold" style="color: var(--bh-primary);">Ou copie o código PIX</div>
-                                        <small class="text-muted" style="font-size: 0.75rem;">
-                                            Cole no app do banco → PIX → Copia e Cola
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div>
+                                            <div class="fw-bold" style="color: var(--bh-primary);">Ou copie o código PIX</div>
+                                            <small class="text-muted" style="font-size: 0.75rem;">
+                                                Cole no app do banco → PIX → Copia e Cola
+                                            </small>
+                                        </div>
+                                        <i class="fa-brands fa-pix fs-3 opacity-25"></i>
+                                    </div>
+
+                                    <!-- COPIA E COLA -->
+                                    <div class="mb-3">
+                                        <label class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">PIX copia e cola</label>
+                                        <div class="input-group">
+                                            <textarea id="pixCopiaCola"
+                                                      class="form-control border rounded-3"
+                                                      rows="2"
+                                                      readonly
+                                                      style="font-size: 0.8rem; resize: none;">00020126330014BR.GOV.BCB.PIX0111+559999999999520400005303986540510.005802BR5920BROWNIE HOUSE DEMO6009OLINDA-PE62170513PEDIDO-DEMO1236304ABCD</textarea>
+                                            <button type="button"
+                                                    class="btn btn-outline-dark fw-bold"
+                                                    id="btnCopiarPix">
+                                                <i class="fa-regular fa-copy me-1"></i> Copiar
+                                            </button>
+                                        </div>
+                                        <small id="pixCopyMsg" class="text-success d-none" style="font-size: 0.75rem;">
+                                            <i class="fa-solid fa-check me-1"></i> Código copiado!
                                         </small>
                                     </div>
-                                    <i class="fa-brands fa-pix fs-3 opacity-25"></i>
-                                </div>
 
-                                <!-- COPIA E COLA -->
-                                <div class="mb-3">
-                                    <label class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">PIX copia e cola</label>
-                                    <div class="input-group">
-                                        <textarea id="pixCopiaCola"
-                                                  class="form-control border rounded-3"
-                                                  rows="2"
-                                                  readonly
-                                                  style="font-size: 0.8rem; resize: none;">00020126330014BR.GOV.BCB.PIX0111+559999999999520400005303986540510.005802BR5920BROWNIE HOUSE DEMO6009OLINDA-PE62170513PEDIDO-DEMO1236304ABCD</textarea>
+                                    <!-- DETALHES DO PAGAMENTO -->
+                                    <div class="p-3 rounded-4 mb-3" style="background:#f8f9fa; border: 1px dashed #ddd;">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-muted small">Identificador</span>
+                                            <span class="small fw-bold" id="pixTxid">PEDIDO-DEMO123</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-muted small">Beneficiário</span>
+                                            <span class="small fw-bold">Barriga Cheia Ltda.</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-muted small">Valor</span>
+                                            <span class="small fw-bold" id="pixValorFinal">
+                                                @Model.Carrinho.ValorSinal.ToString("C", pt)
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- AÇÕES -->
+                                    <div class="d-flex flex-column flex-md-row gap-2">
                                         <button type="button"
-                                                class="btn btn-outline-dark fw-bold"
-                                                id="btnCopiarPix">
-                                            <i class="fa-regular fa-copy me-1"></i> Copiar
+                                                class="btn btn-success fw-bold rounded-4 flex-fill"
+                                                id="btnJaPaguei">
+                                            <i class="fa-solid fa-circle-check me-1"></i> Já paguei
                                         </button>
                                     </div>
-                                    <small id="pixCopyMsg" class="text-success d-none" style="font-size: 0.75rem;">
-                                        <i class="fa-solid fa-check me-1"></i> Código copiado!
-                                    </small>
-                                </div>
 
-                                <!-- DETALHES DO PAGAMENTO -->
-                                <div class="p-3 rounded-4 mb-3" style="background:#f8f9fa; border: 1px dashed #ddd;">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span class="text-muted small">Identificador</span>
-                                        <span class="small fw-bold" id="pixTxid">PEDIDO-DEMO123</span>
+                                    <!-- STATUS (começa oculto) -->
+                                    <div id="pixStatusBox" class="mt-3 d-none">
+                                        <div class="alert alert-warning border-0 rounded-4 mb-0">
+                                            <i class="fa-regular fa-hourglass-half me-1"></i>
+                                            Verificando pagamento... aguarde.
+                                        </div>
                                     </div>
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span class="text-muted small">Beneficiário</span>
-                                        <span class="small fw-bold">Barriga Cheia Ltda.</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">Valor</span>
-                                        <span class="small fw-bold" id="pixValorFinal">
-                                            @Model.Carrinho.ValorSinal.ToString("C", pt)
-                                        </span>
-                                    </div>
-                                </div>
 
-                                <!-- AÇÕES -->
-                                <div class="d-flex flex-column flex-md-row gap-2">
-                                    <button type="button"
-                                            class="btn btn-success fw-bold rounded-4 flex-fill"
-                                            id="btnJaPaguei">
-                                        <i class="fa-solid fa-circle-check me-1"></i> Já paguei
-                                    </button>
                                 </div>
-
-                                <!-- STATUS (começa oculto) -->
-                                <div id="pixStatusBox" class="mt-3 d-none">
-                                    <div class="alert alert-warning border-0 rounded-4 mb-0">
-                                        <i class="fa-regular fa-hourglass-half me-1"></i>
-                                        Verificando pagamento... aguarde.
-                                    </div>
-                                </div>
-
                             </div>
+                        </div>
+                    </div>
+
+                    <div id="step3-cartao" class="d-none mb-5">
+                        <div class="bg-white p-4 rounded-4 border shadow-sm text-center">
+                            <i class="fa-solid fa-credit-card fa-3x mb-3" style="color: #6f42c1;"></i>
+                            <h5 class="fw-bold">Pagamento Online</h5>
+                            <p class="text-muted small px-lg-5">
+                                Clique no botão abaixo para abrir nosso checkout seguro e realizar o pagamento do sinal com seu cartão de crédito.
+                            </p>
+
+                            <div class="card bg-light border-0 rounded-4 p-3 mb-4 text-start">
+                                <div class="d-flex justify-content-between mb-2 small">
+                                    <span>Sinal (Cartão)</span>
+                                    <span class="fw-bold">@Model.Carrinho.ValorSinal.ToString("C", pt)</span>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>Taxa de processamento</span>
+                                    <span>R$ 0,00</span>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-primary w-100 fw-bold rounded-4 py-3 shadow" id="btnJaPaguei" style="background-color: #6f42c1; border: none;">
+                                <i class="fa-solid fa-lock me-2"></i> Pagar com Cartão Agora
+                            </button>
                         </div>
                     </div>
                 </section>

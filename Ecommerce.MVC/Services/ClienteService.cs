@@ -1,12 +1,13 @@
+using Ecommerce.MVC.Config;
+using Ecommerce.MVC.Entities;
+using Ecommerce.MVC.Helpers;
+using Ecommerce.MVC.Interfaces;
+using Ecommerce.MVC.Models.Clientes;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ecommerce.MVC.Interfaces;
-using Ecommerce.MVC.Models.Clientes;
-using Microsoft.EntityFrameworkCore;
-using Ecommerce.MVC.Config;
-using Ecommerce.MVC.Entities;
 
 namespace Ecommerce.MVC.Services;
 
@@ -19,28 +20,38 @@ public class ClienteService : IClienteService
         _context = context;
     }
 
-    public async Task<bool> RegistrarClienteAsync(RegistrarClienteViewModel model)
+    public async Task<ServiceResult<Cliente>> RegistrarClienteAsync(RegistrarClienteViewModel model)
     {
-        try 
-        {
-            var novoCliente = new Cliente
-            {
-                Nome = model.NomeCompleto,
-                Email = model.Email,
-                CPF = model.CPF.Replace(".", "").Replace("-", ""), 
-                Telefone = model.WhatsApp,
-                SenhaHash = BCrypt.Net.BCrypt.HashPassword(model.Senha), 
-                DataCadastro = DateTime.Now
-            };
+        var cpf = model.CPF?.Replace(".", "").Replace("-", "").Trim();
+        var email = model.Email?.Trim().ToLowerInvariant();
 
-            _context.Clientes.Add(novoCliente);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        catch
+        if (!CpfEhValido(cpf))
+            return ServiceResult<Cliente>.Fail("CPF inválido.");
+
+        var cpfExiste = await _context.Clientes.AnyAsync(c => c.CPF == cpf);
+        if (cpfExiste)
+            return ServiceResult<Cliente>.Fail("CPF já cadastrado.");
+
+        var emailExiste = await _context.Clientes
+            .AnyAsync(c => c.Email.ToLower() == email);
+
+        if (emailExiste)
+            return ServiceResult<Cliente>.Fail("E-mail já cadastrado.");
+
+        var novoCliente = new Cliente
         {
-            return false;
-        }
+            Nome = model.NomeCompleto,
+            Email = email,
+            CPF = cpf,
+            Telefone = model.WhatsApp,
+            SenhaHash = BCrypt.Net.BCrypt.HashPassword(model.Senha),
+            DataCadastro = DateTime.Now
+        };
+
+        _context.Clientes.Add(novoCliente);
+        await _context.SaveChangesAsync();
+
+        return ServiceResult<Cliente>.Ok(novoCliente, "Cliente cadastrado com sucesso.");
     }
 
     public async Task<Cliente> LoginAsync(LoginClienteViewModel model)
@@ -58,5 +69,37 @@ public class ClienteService : IClienteService
             return null;
 
         return cliente;
+    }
+
+    private bool CpfEhValido(string cpf)
+    {
+        if (string.IsNullOrWhiteSpace(cpf))
+            return false;
+
+        if (cpf.Length != 11 || cpf.Distinct().Count() == 1)
+            return false;
+
+        var numeros = cpf.Select(c => int.Parse(c.ToString())).ToArray();
+
+        // Primeiro dígito
+        var soma1 = 0;
+        for (int i = 0; i < 9; i++)
+            soma1 += numeros[i] * (10 - i);
+
+        var resto1 = soma1 % 11;
+        var digito1 = resto1 < 2 ? 0 : 11 - resto1;
+
+        if (numeros[9] != digito1)
+            return false;
+
+        // Segundo dígito
+        var soma2 = 0;
+        for (int i = 0; i < 10; i++)
+            soma2 += numeros[i] * (11 - i);
+
+        var resto2 = soma2 % 11;
+        var digito2 = resto2 < 2 ? 0 : 11 - resto2;
+
+        return numeros[10] == digito2;
     }
 }

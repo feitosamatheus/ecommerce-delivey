@@ -347,4 +347,91 @@
       `);
         }, 1500);
     });
+
+    function atualizarVisibilidadePagamento() {
+        const metodo = $('#selectPagamento').val(); 
+
+        if (metodo === 'pix') {
+            $('#step3-pix').removeClass('d-none');
+            $('#step3-cartao').addClass('d-none');
+        } else {
+            $('#step3-pix').addClass('d-none');
+            $('#step3-cartao').removeClass('d-none');
+        }
+    }
+
+    const $msgPix = $('#msg-pagamento-pix');
+    const $msgCartao = $('#msg-pagamento-cartao');
+
+    $('#selectPagamento').on('change', function () {
+        if ($(this).val() === 'pix') {
+            $msgPix.removeClass('d-none');
+            $msgCartao.addClass('d-none');
+        } else {
+            $msgPix.addClass('d-none');
+            $msgCartao.removeClass('d-none');
+        }
+        atualizarVisibilidadePagamento();
+    });
+
+    $(document).on("click", "#btnJaPaguei", function () {
+        const $btn = $(this);
+        const $statusBox = $("#pixStatusBox");
+        const pedidoId = $("#pixTxid").text().trim();
+
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Processando...');
+
+        $statusBox.removeClass("d-none").html(`
+            <div class="alert alert-warning border-0 rounded-4 mb-0">
+                <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
+                Verificando pagamento... aguarde.
+            </div>
+        `);
+
+        $.ajax({
+            url: '/Pedido/ConfirmarPagamentoSinal', 
+            type: 'POST',
+            data: { pedidoId: pedidoId },
+            success: function (response) {
+                if (response.success) {
+                    $statusBox.html(`
+                    <div class="alert alert-success border-0 rounded-4 mb-0 animate__animated animate__fadeIn">
+                        <i class="fa-solid fa-circle-check me-1"></i>
+                        Pagamento confirmado! Seu pedido foi reservado com sucesso.
+                    </div>
+                `);
+
+                    setTimeout(() => {
+                        window.location.href = response.redirectUrl;
+                    }, 2000);
+
+                } else {
+                 
+                    $statusBox.html(`
+                    <div class="alert alert-danger border-0 rounded-4 mb-0">
+                        <i class="fa-solid fa-circle-xmark me-1"></i>
+                        ${response.message || "Pagamento não identificado. Tente novamente em instantes."}
+                    </div>
+                `);
+                    resetBtn($btn);
+                }
+            },
+            error: function () {
+                // 5. Estado de Erro de Conexão
+                $statusBox.html(`
+                <div class="alert alert-danger border-0 rounded-4 mb-0">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                    Erro ao conectar com o servidor. Tente novamente.
+                </div>
+            `);
+                resetBtn($btn);
+            }
+        });
+    });
+
+    // Função auxiliar para resetar o botão caso o pagamento falhe
+    function resetBtn($btn) {
+        $btn.prop('disabled', false).html('<i class="fa-solid fa-circle-check me-1"></i> Já paguei via PIX');
+    }
+
 })();

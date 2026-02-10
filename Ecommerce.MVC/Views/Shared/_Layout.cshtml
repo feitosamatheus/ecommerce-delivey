@@ -43,10 +43,138 @@
     @await Html.PartialAsync("Partials/_ModalAlterarSenha.cshtml")
     @await Component.InvokeAsync("Footer")
 
+    <style>
+        /* Estilo Personalizado "Barriga Cheia" */
+        .modal-barriga-cheia .modal-content {
+            /* background-color: #F9F5F0; */
+            border-radius: 2rem;
+            border: none;
+        }
+
+        .modal-barriga-cheia .circle-check {
+            background-color: #4A321F; /* Marrom escuro */
+            color: #FFF;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto;
+        }
+
+        .modal-barriga-cheia .btn-principal {
+            background-color: #B26528; /* Marrom alaranjado do botão */
+            color: white;
+            border-radius: 1.5rem;
+            padding: 12px;
+            font-weight: bold;
+            border: none;
+            box-shadow: 0 4px 10px rgba(178, 101, 40, 0.3);
+        }
+
+            .modal-barriga-cheia .btn-principal:hover {
+                background-color: #8E4F1E;
+                color: white;
+            }
+
+        .modal-barriga-cheia .info-box {
+            background-color: transparent;
+            border: 2px solid #D9C5B2;
+            border-radius: 1rem;
+            color: #5D4037;
+        }
+
+        .modal-barriga-cheia .text-titulo {
+            color: #4A321F;
+            font-weight: 800;
+        }
+    </style>
+
+    <div class="modal fade modal-barriga-cheia" id="modalSucessoPedido" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered px-4">
+            <div class="modal-content shadow-lg">
+                <div class="modal-body text-center p-4">
+
+                    <div class="circle-check mb-4 animate__animated animate__bounceIn">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+
+                    <h2 class="text-titulo mb-3">Pedido Confirmado!</h2>
+
+                    <p class="text-muted px-2">
+                        Seu pagamento foi identificado e sua reserva foi feita com sucesso.
+                    </p>
+
+                    <div class="info-box p-3 my-4 d-flex align-items-center text-start">
+                        <i class="fa-solid fa-circle-info fa-2x me-3" style="color: #B26528;"></i>
+                        <span class="small">
+                            Você pode acompanhar o andamento deste pedido em <strong>'Meus Pedidos'</strong> no menu inferior.
+                        </span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("Index", "Home", new { abrirPedidos = true })" class="btn btn-principal">
+                            Ver Meus Pedidos
+                        </a>
+                        <button type="button" class="btn btn-link text-brown fw-bold mt-2" data-bs-dismiss="modal" style="color: #4A321F; text-decoration: none;">
+                            Continuar comprando <i class="fa-solid fa-xmark ms-1"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     @await RenderSectionAsync("Scripts", required: false)
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            const urlParams = new URLSearchParams(window.location.search);
 
+            if (urlParams.has('confirmado')) {
+                var modalSucesso = new bootstrap.Modal(document.getElementById('modalSucessoPedido'));
+                modalSucesso.show();
+                window.history.replaceState({}, document.title, window.location.pathname);
+                limparUrl();
+            }
+
+            if (urlParams.has('abrirPedidos')) {
+                addLoading("Carregando...");
+
+                setTimeout(() => {
+                    $.ajax({
+                          url: '/Pedido/BuscarModalPedidosEmAndamento',
+                        method: 'GET',
+                        success: function (html) {
+                            $('#conteudo-modal').empty();
+                            $('#conteudo-modal').html(html);
+
+                            const el = document.getElementById('modalPedidosEmAndamento');
+                            bootstrap.Modal.getOrCreateInstance(el).show();
+
+                            removeLoading();
+                        },
+                        error: function (xhr) {
+                            alert(xhr.responseText || 'Erro ao carregar pedidos.');
+                            removeLoading();
+                        }
+                    });
+                }, 800);
+
+                limparUrl();
+            }
+
+            function limparUrl() {
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+        });
+    </script>
 </body>
 </html>

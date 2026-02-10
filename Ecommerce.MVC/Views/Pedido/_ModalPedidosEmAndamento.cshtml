@@ -9,7 +9,7 @@
 
 <link rel="stylesheet" href="~/css/pedido/acompanhamento-pedido.css" asp-append-version="true" />
 
-<div class="modal fade" id="modalPedidosEmAndamento" tabindex="-1" aria-labelledby="modalPedidosEmAndamentoLabel" aria-hidden="true">
+<div class="modal fade" id="modalPedidosEmAndamento" tabindex="-1" aria-labelledby="modalPedidosEmAndamentoLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content bc-modal border-0 shadow-lg" style="overflow: hidden;">
             <div class="modal-header border-0 d-flex align-items-center justify-content-between">
@@ -23,7 +23,7 @@
                 </div>
                 <button type="button" class="btn-close-custom" title="Fechar" data-bs-dismiss="modal" aria-label="Fechar" style="position: static; font-size: 1.5rem;">&times;</button>
             </div>
-            <div class="modal-body pt-2 px-2 px-lg-4 bh-pedidos-em-andamento" id="modalPedidosEmAndamentoBody">
+            <div class="modal-body pt-2 px-2 px-lg-4 bh-pedidos-em-andamento" id="modalPedidosEmAndamentoBody" style="max-height: 87vh; overflow-y: auto;">
                 @functions {
                     private string MapStatusBadgeClass(EPedidoStatus status)
                     {
@@ -200,7 +200,7 @@
                                                     <div class="text-md-center bg-light p-2 px-3 rounded-2 shadow-sm">
                                                         <span class="label-mobile d-block">Status de Pagamento</span>
 
-                                                        <span class="badge rounded-pill px-3 @(p.StatusPagamento == "Pago" ? "bg-success" : "bg-warning text-dark")">
+                                                        <span class="badge rounded-pill px-3 @(p.StatusPagamento == "Sinal Pago" ? "bg-success" : "bg-warning text-dark")">
                                                             @p.StatusPagamento
                                                         </span>
                                                     </div>
@@ -229,11 +229,11 @@
                                                     </div>
                                                     <div class="progress mt-3" style="height: 6px; background-color: #e9ecef;">
                                                         @* Se estiver pago, a barra fica 100% *@
-                                                        <div class="progress-bar bg-success" role="progressbar" style="width: @(p.StatusPagamento == "Pago" ? "100%" : "50%")"></div>
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: @(p.StatusPagamento == "Sinal Pago" ? "100%" : "50%")"></div>
                                                     </div>
                                                 </div>
 
-                                                @if (p.StatusPagamento != "Pago")
+                                                @if (p.StatusPagamento != "Sinal Pago")
                                                 {
                                                     <div class="row g-3 mb-4">
                                                         <div class="col-12 col-lg-5">
@@ -281,7 +281,7 @@
                                                     </div>
                                                 }
 
-                                                <div class="card border-0 shadow-sm rounded-4 mb-3">
+                                                <div class="card border shadow-sm rounded-4 mb-3" style="background: #a9a9a936;">
                                                     <div class="card-body p-4">
                                                         @if (p.Itens == null || !p.Itens.Any())
                                                         {
@@ -291,12 +291,12 @@
                                                         {
                                                             @foreach (var it in p.Itens)
                                                             {
-                                                                <div class="mb-3">
+                                                                <div class="mb-1">
                                                                     <div class="d-flex justify-content-between align-items-center">
-                                                                        <span class="fw-bold text-dark" style="font-size: 1.05rem;">
+                                                                        <span class="fw-bold text-dark" style="font-size: 0.85rem;">
                                                                             @it.Quantidade x @it.ProdutoNome
                                                                         </span>
-                                                                        <span class="fw-bold text-dark" style="font-size: 1.05rem;">
+                                                                        <span class="fw-bold text-dark" style="font-size: 0.85rem;">
                                                                             @it.TotalLinha.ToString("C", pt)
                                                                         </span>
                                                                     </div>
@@ -306,7 +306,7 @@
                                                                         <div class="mt-1">
                                                                             @foreach (var ac in it.Acompanhamentos)
                                                                             {
-                                                                                <div class="d-flex justify-content-between text-muted ms-2" style="font-size: 0.85rem;">
+                                                                                <div class="d-flex justify-content-between text-muted ms-2" style="font-size: 0.75rem;">
                                                                                     <span>+ @ac.Nome.ToLower()</span>
                                                                                     <span>@ac.Preco.ToString("C", pt)</span>
                                                                                 </div>

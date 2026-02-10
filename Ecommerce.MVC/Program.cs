@@ -1,8 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Interfaces;
 using Ecommerce.MVC.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,18 +34,50 @@ builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<ICarrinhoService, CarrinhoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+
+        context.HttpContext.Response.Headers.Remove("Retry-After");
+
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            success = false,
+            message = "Não foi possível autenticar. Verifique os dados e tente novamente."
+        }, cancellationToken: token);
+    };
+
+    options.AddPolicy("LoginPolicy", httpContext =>
+    {
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        var email = (httpContext.Request.Query["email"].ToString() ?? string.Empty).Trim().ToLowerInvariant();
+        var key = $"{ip}:{email}";
+
+        return RateLimitPartition.GetTokenBucketLimiter(
+            partitionKey: key,
+            factory: _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 8,                     
+                TokensPerPeriod = 2,                
+                ReplenishmentPeriod = TimeSpan.FromSeconds(15),
+                AutoReplenishment = true,
+                QueueLimit = 0,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            });
+    });
+});
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-    // app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

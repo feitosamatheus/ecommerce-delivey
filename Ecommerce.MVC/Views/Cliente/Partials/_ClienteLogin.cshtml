@@ -95,22 +95,41 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">CPF</label>
-                        <input type="text" name="CPF" class="form-control" placeholder="000.000.000-00" required>
+                        <input type="text" name="CPF" class="form-control" placeholder="000.000.000-00" inputmode="numeric" autocomplete="off" maxlength="14" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">WhatsApp</label>
-                        <input type="tel" name="WhatsApp" class="form-control" placeholder="(00) 00000-0000" required>
+                        <input type="tel" name="WhatsApp" class="form-control" placeholder="(00) 00000-0000" inputmode="tel" autocomplete="off" maxlength="15" required>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Senha</label>
-                        <input type="password" name="Senha" class="form-control" placeholder="******" required>
+                        <div class="input-group">
+                            <input type="password" name="Senha" id="registerSenha"
+                                   class="form-control" maxlength="8" placeholder="******" required>
+                            <span class="input-group-text cursor-pointer"
+                                  onclick="togglePassword('registerSenha', this)">
+                                <i class="fa fa-eye"></i>
+                            </span>
+                        </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Confirmar Senha</label>
-                        <input type="password" name="ConfirmarSenha" class="form-control" placeholder="******" required>
+                        <div class="input-group">
+                            <input type="password" name="ConfirmarSenha" id="registerConfirmarSenha"
+                                   class="form-control" maxlength="8" placeholder="******" required>
+                            <span class="input-group-text cursor-pointer"
+                                  onclick="togglePassword('registerConfirmarSenha', this)">
+                                <i class="fa fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-0" style="position: relative; top: -9px;">
+                        <small class="text-muted">
+                            A senha deve conter entre <strong>6</strong> e <strong>8</strong> caracteres.
+                        </small>
                     </div>
                 </div>
 
@@ -246,15 +265,30 @@
         btnSubmit.disabled = true;
         addLoading("Processando...")
 
-        // Captura os dados baseados no atributo "name" do HTML
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
         
-        // Força os valores booleanos corretamente para o C#
         data.AceitaTermos = document.getElementById('checkTerms').checked;
         data.AceitaMarketing = document.getElementById('checkMarketing').checked;
 
-        console.log("Dados sendo enviados:", data); // Verifique no console se os campos estão preenchidos
+        const senha = (data.Senha || '').trim();
+        const confirmar = (data.ConfirmarSenha || '').trim();
+
+        if (senha.length < 6) {
+          alert('A senha deve ter no mínimo 6 caracteres.');
+          btnSubmit.disabled = false;
+          removeLoading();
+          return;
+        }
+
+        if (senha !== confirmar) {
+          alert('As senhas não conferem.');
+          btnSubmit.disabled = false;
+          removeLoading();
+          return;
+        }
+
+        console.log("Dados sendo enviados:", data); 
 
         try {
             const response = await fetch('/Cliente/Registrar', {
@@ -265,13 +299,20 @@
                 body: JSON.stringify(data)
             });
 
+            if (response.status === 429) {
+                alert('Não foi possível autenticar. Verifique os dados e tente novamente.!!!!');
+                btnSubmit.disabled = false;
+                removeLoading();
+                return;
+            }
+
             const result = await response.json();
 
             if (result.success) {
                 alert(result.message);
                 location.reload();
             } else {
-                alert(result.message + "\n" + (result.errors ? result.errors.join("\n") : "Erro desconhecido"));
+                alert(result.message);
                 btnSubmit.disabled = false;
                 removeLoading()
             }
@@ -325,4 +366,89 @@
             removeLoading()
         }
     });
+
+    function onlyDigits(value) {
+      return (value || '').replace(/\D/g, '');
+    }
+
+    function maskCPF(value) {
+      const d = onlyDigits(value).slice(0, 11);
+      // 000.000.000-00
+      const p1 = d.slice(0, 3);
+      const p2 = d.slice(3, 6);
+      const p3 = d.slice(6, 9);
+      const p4 = d.slice(9, 11);
+
+      let out = p1;
+      if (p2) out += '.' + p2;
+      if (p3) out += '.' + p3;
+      if (p4) out += '-' + p4;
+      return out;
+    }
+
+    function maskPhoneBR(value) {
+      const d = onlyDigits(value).slice(0, 11);
+
+      // (00) 0000-0000 (10 dígitos) OU (00) 00000-0000 (11 dígitos)
+      const ddd = d.slice(0, 2);
+      const part1 = d.length > 10 ? d.slice(2, 7) : d.slice(2, 6);
+      const part2 = d.length > 10 ? d.slice(7, 11) : d.slice(6, 10);
+
+      let out = '';
+      if (ddd) out = `(${ddd}`;
+      if (ddd.length === 2) out += ') ';
+      if (part1) out += part1;
+      if (part2) out += '-' + part2;
+
+      return out;
+    }
+
+    function applyMask(input, masker) {
+      if (!input) return;
+
+      const handler = () => {
+        const start = input.selectionStart;
+        const before = input.value;
+
+        input.value = masker(input.value);
+
+        // mantém o cursor de forma razoável
+        const diff = input.value.length - before.length;
+        const pos = (start || 0) + diff;
+        input.setSelectionRange(pos, pos);
+      };
+
+      input.addEventListener('input', handler);
+      input.addEventListener('blur', handler);
+
+      // aplica se já houver valor preenchido (ex: autofill)
+      handler();
+    }
+
+    // --- Aplicação das máscaras ---
+    (function initMasks() {
+      const cpfInput = document.querySelector('#register-form [name="CPF"]');
+      const whatsappInput = document.querySelector('#register-form [name="WhatsApp"]');
+
+      applyMask(cpfInput, maskCPF);
+      applyMask(whatsappInput, maskPhoneBR);
+    })();
+
+    function togglePassword(inputId, trigger) {
+        const input = document.getElementById(inputId);
+        const icon = trigger.querySelector('i');
+
+        if (!input) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
 </script>

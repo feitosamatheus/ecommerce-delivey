@@ -51,7 +51,7 @@ public class PedidoService : IPedidoService
 
                 // --- INFORMAÇÕES DE PAGAMENTO FICTÍCIAS ---
                 // Aqui simulamos que se o pedido for muito recente, está "Pendente"
-                StatusPagamento = "Aguardando Sinal",
+                StatusPagamento = (int)p.Status == (int)EPedidoStatus.Confirmado ? "Sinal Pago" : "Aguardando Sinal",
                 PixIdentificador = "a9b90c50-3128-4ad0-92f2-64167a511bb7",
                 PixBeneficiario = "Barriga Cheia Ltda.",
                 PixCopiaCola = "00020126330014BR.GOV.BCB.PIX0111+55999999999952040000530398654054.505802BR5920BROWNIE HOUSE DEMO6009OLINDA-PE62170513PEDIDO-...",

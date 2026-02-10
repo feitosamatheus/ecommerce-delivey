@@ -105,4 +105,14 @@ public class CarrinhoService : ICarrinhoService
             .Include(c => c.Itens).ThenInclude(i => i.Acompanhamentos)
             .FirstAsync(c => c.Id == carrinho.Id, ct);
     }
+
+    public async Task<int> ObterQuantidadeItensAsync(HttpContext http, CancellationToken ct = default)
+    {
+        var carrinho = await ObterOuCriarCarrinhoAsync(http, ct);
+
+        if (carrinho == null || carrinho.Itens == null)
+            return 0;
+
+        return carrinho.Itens.Sum(i => i.Quantidade);
+    }
 }

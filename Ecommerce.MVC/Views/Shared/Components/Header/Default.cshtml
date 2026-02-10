@@ -31,15 +31,15 @@
 
             <div class="col-12 col-lg-2 d-flex justify-content-end align-items-end mt-3 mt-md-0 gap-3">
                 <button type="button" class="btn bc-nav-btn shadow-sm position-relative @(ViewBag.Autenticado ? "btn-acompanhar-pedido" : "btn-acompanhar-pedido-login")">
-                    <i class="fa-solid fa-location-dot me-2"></i>
+                    <i class="fas fa-receipt me-2"></i>
                     <span>
-                        Acompanhar pedido
+                        Meus Pedidos
                         @if (ViewBag.Autenticado && ViewBag.TotalPedidos > 0)
                         {
                             <span class="badge rounded-pill shadow bg-danger position-absolute"
                                   style="font-size: 0.7rem; top: -5px; right: -5px;">
                                 @ViewBag.TotalPedidos
-                                <span class="visually-hidden">pedidos em andamento</span>
+                                <span class="visually-hidden">Meus Pedidos</span>
                             </span>
                         }
                     </span>
@@ -91,16 +91,16 @@
                             </li> *@
 
                             <li>
-                                <button class="dropdown-item btn-acompanhar-pedido py-2 d-flex align-items-center rounded-3 btn-acompanhar-pedido-nav" type="button">
+                                <button class="dropdown-item btn-acompanhar-pedido py-2 d-flex align-items-center rounded-3 btn-acompanhar-pedido-nav btn-hover-sidebar" type="button">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
-                                        <i class="fa-solid fa-location-dot text-secondary" style="font-size: 0.85rem;"></i>
+                                        <i class="fas fa-receipt text-secondary" style="font-size: 0.85rem;"></i>
                                     </div>
-                                    <span class="fw-semibold">Acompanhar Pedido</span>
+                                    <span class="fw-semibold">Meus Pedidos</span>
                                 </button>
                             </li>
 
                             <li>
-                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" data-bs-toggle="modal" data-bs-target="#modalAlterarSenhaCliente">
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-hover-sidebar" type="button" data-bs-toggle="modal" data-bs-target="#modalAlterarSenhaCliente">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
                                         <i class="fa-solid fa-lock text-secondary" style="font-size: 0.85rem;"></i>
                                     </div>
@@ -223,18 +223,18 @@
                             </li> *@
 
                             <li>
-                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-acompanhar-pedido btn-acompanhar-pedido-nav" type="button">
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-acompanhar-pedido btn-acompanhar-pedido-nav btn-hover-sidebar" type="button">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
-                                        <i class="fa-solid fa-location-dot text-secondary" style="font-size: 0.85rem;"></i>
+                                        <i class="fas fa-receipt text-secondary" style="font-size: 0.85rem;"></i>
                                     </div>
                                     <span class="fw-semibold">
-                                        Acompanhar Pedido
+                                        Meus Pedidos
                                     </span>
                                 </button>
                             </li>
 
                             <li>
-                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3" type="button" data-bs-toggle="modal" data-bs-target="#modalAlterarSenhaCliente">
+                                <button class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-hover-sidebar" type="button" data-bs-toggle="modal" data-bs-target="#modalAlterarSenhaCliente">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
                                         <i class="fa-solid fa-lock text-secondary" style="font-size: 0.85rem;"></i>
                                     </div>

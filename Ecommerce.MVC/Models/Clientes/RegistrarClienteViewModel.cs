@@ -25,7 +25,7 @@ public class RegistrarClienteViewModel
     public string WhatsApp { get; set; }
 
     [Required(ErrorMessage = "A senha é obrigatória.")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres.")]
+    [StringLength(8, MinimumLength = 6, ErrorMessage = "A senha deve ter entre 6 e 8 caracteres.")]
     [DataType(DataType.Password)]
     public string Senha { get; set; }
 

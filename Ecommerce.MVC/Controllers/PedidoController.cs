@@ -132,4 +132,57 @@ public class PedidoController : Controller
             return StatusCode(500, "Erro interno ao confirmar o pedido.");
         }
     }
+
+    [HttpPost]
+    public async Task<JsonResult> ConfirmarPagamentoSinal(string pedidoId)
+    {
+        try
+        {
+            if (!Guid.TryParse(pedidoId, out Guid guidPedido))
+            {
+                return Json(new { success = false, message = "Formato de identificador inválido." });
+            }
+
+            // 1. Busca o pedido no banco (ajuste 'Pedido' e 'Codigo' para seus nomes reais)
+            var pedido = await _db.Pedidos.FirstOrDefaultAsync(p => p.Id == guidPedido);
+
+            if (pedido == null)
+            {
+                return Json(new { success = false, message = "Pedido não encontrado no sistema." });
+            }
+
+            // 2. Verifica se já não está confirmado para evitar processamento duplicado
+            if (pedido.Status == Enums.EPedidoStatus.Confirmado)
+            {
+                return Json(new
+                {
+                    success = true,
+                    // Redireciona para a Home com um marcador de sucesso
+                    redirectUrl = Url.Action("Index", "Home", new { confirmado = true }),
+                    message = "Pagamento confirmado!"
+                });
+            }
+
+            // 3. Atualiza o status para 2 (Confirmado)
+            pedido.Status = Enums.EPedidoStatus.Confirmado;
+            //pedido.DataPagamentoSinal = DateTime.Now; // Recomendado salvar a data do pagamento
+
+            _db.Pedidos.Update(pedido);
+            await _db.SaveChangesAsync();
+
+            // 4. Retorna sucesso para o AJAX
+            return Json(new
+            {
+                success = true,
+                // Redireciona para a Home com um marcador de sucesso
+                redirectUrl = Url.Action("Index", "Home", new { confirmado = true }),
+                message = "Pagamento confirmado!"
+            });
+        }
+        catch (Exception ex)
+        {
+            // Logar o erro ex (usando Serilog ou ILogger)
+            return Json(new { success = false, message = "Erro ao processar atualização: " + ex.Message });
+        }
+    }
 }
