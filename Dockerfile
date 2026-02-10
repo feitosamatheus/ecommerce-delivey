@@ -11,8 +11,9 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# 🔥 porta fixa
-ENV ASPNETCORE_URLS=http://+:8000
+# Porta padrão (fallback). O Koyeb normalmente define PORT em runtime.
+ENV PORT=8000
+ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
 
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "Ecommerce.MVC.dll"]
