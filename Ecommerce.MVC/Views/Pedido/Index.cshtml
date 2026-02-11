@@ -1,0 +1,472 @@
+﻿@using System.Globalization
+@using Ecommerce.MVC.Enums
+@using Ecommerce.MVC.Models.Pedidos
+@model IReadOnlyList<PedidosEmAndamentoViewModel>
+@{
+    var pt = new CultureInfo("pt-BR");
+}
+
+<link rel="stylesheet" href="~/css/pedido/acompanhamento-pedido.css" asp-append-version="true" />
+
+<style>
+    .bh-page-header {
+        height: 40px;
+        z-index: 1050; /* Garante que fique acima de modais e outros elementos */
+        border-bottom: 1px solid #eee;
+        border-radius: 10px;
+    }
+
+    .btn-home-link {
+        color: #3c1e0a;
+        /* background-color: #f8f9fa; */
+        padding: 6px 12px;
+        border-radius: 20px;
+        transition: all 0.2s ease;
+    }
+
+        .btn-home-link:active {
+            background-color: #e9ecef;
+            transform: scale(0.95);
+        }
+
+        .btn-home-link:hover{
+            background-color:#f8f9fa;
+        }
+
+    /* Ajuste fino para o ícone de fogo pulsar sutilmente */
+    .fa-fire {
+        animation: flame-burn 2s infinite alternate;
+    }
+
+    .header-scrolled {
+        /* background-color: #785d4e !important; /* Cor branca ao scrollar */
+        background-color: #4d4845 !important; /* Cor branca ao scrollar */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
+        border-bottom: 1px solid #eee;
+        padding-top: 0.5rem !important; /* Encolhe um pouco o header ao scrollar */
+        padding-bottom: 0.5rem !important;
+
+        top: 10px !important;
+    }
+
+        /* Muda o título e ícones para Marrom quando o fundo ficar branco */
+        .header-scrolled h5 {
+            color: #fff !important;
+        }
+
+        /* Muda o link "Início" e a seta de voltar */
+        .header-scrolled a{
+            color: #fff !important;
+        }
+
+        .header-scrolled .btn-home-link {
+            color: #3c1e0a !important;
+            background-color: #f8f9fa !important; /* Fundo cinzinha pro botão início */
+        }
+
+        /* Mantém o ícone de fogo vermelho, mas você pode mudar se quiser */
+        .header-scrolled .fa-fire {
+            color: #dc3545 !important;
+        }
+
+    .transition-header {
+        transition: background-color 0.3s, box-shadow 0.3s, padding 0.3s;
+    }
+
+    @@keyframes flame-burn {
+        from {
+            opacity: 0.8;
+            transform: scale(1);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    }
+
+    .badge-total-pedidos {
+        top: 12px;
+        margin-left: 15px;
+    }
+
+    /* Ajuste para telas menores que 1199px (Tablets e Mobiles) */
+    @@media (max-width: 1199px) {
+        .btn-home-link{
+            display:none !important;
+        }
+
+        .badge-total-pedidos {
+            top: 9px;
+            margin-left: 15px;
+            font-size: 0.6rem; 
+        }
+    }
+</style>
+
+@functions {
+    private string MapStatusBadgeClass(EPedidoStatus status)
+    {
+        return status switch
+        {
+            EPedidoStatus.Cancelado => "bg-danger-subtle text-danger",
+            EPedidoStatus.Concluido => "bg-success-subtle text-success",
+            EPedidoStatus.Pronto => "bg-primary-subtle text-primary",
+            EPedidoStatus.EmPreparo => "bg-warning-subtle text-warning-custom",
+            EPedidoStatus.Confirmado => "bg-info-subtle text-info",
+            EPedidoStatus.AguardandoPagamento => "bg-warning-subtle text-warning-custom",
+            EPedidoStatus.Rascunho => "bg-secondary-subtle text-secondary",
+            _ => "bg-secondary-subtle text-secondary"
+        };
+    }
+
+    private bool IsRetirada(string metodoEntrega)
+    => (metodoEntrega ?? "").Trim().ToLower() == "retirar";
+}
+
+<div id="mainHeader" class="bh-page-header d-flex align-items-center justify-content-between px-3 px-xl-0  mb-2 sticky-top mx-2 mx-lg-0">
+    <div class="d-flex align-items-center">
+        <a href="javascript:history.back()" class="text-dark me-3 d-xl-none" title="Ir para o início">
+            <i class="fa-solid fa-arrow-left fs-5"></i>
+        </a>
+
+        <div class="position-relative">
+            <h5 class="fw-bolder mb-0" style="color: #3c1e0a; font-size: 1.1rem;">
+                <i class="fa-solid fa-fire me-2 text-danger"></i>Acompanhe @(ViewBag.TotalPedidos > 1 ? "seus" : "seu") @(ViewBag.TotalPedidos > 1 ? "Pedidos" : "Pedido")
+            </h5>
+            <span class="badge rounded-pill bg-danger shadow-sm position-absolute start-100 translate-middle badge-total-pedidos"
+                  style="font-size: 0.65rem; padding: 0.35em 0.65em;">
+                <span style="position: relative; top: 1px;">@ViewBag.TotalPedidos</span>
+                <span class="visually-hidden">pedidos em andamento</span>
+            </span>
+        </div>
+    </div>
+
+    @* Botão Retornar para o Início *@
+    <a href="@Url.Action("Index", "Home")" class="btn-home-link d-flex align-items-center bg-white gap-1 text-decoration-none" title="Ir para o início">
+        <i class="fa-solid fa-house" style="position: relative; top: -2px;"></i>
+        <span class="fw-bold" style="font-size: 0.9rem;">Início</span>
+    </a>
+</div>
+
+<div class="bh-pedidos-em-andamento bh-history container-fluid px-2 px-lg-0">
+    <div class="order-list">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="text-center text-muted p-4">
+                Nenhum pedido em andamento no momento.
+            </div>
+        }
+        else
+        {
+            foreach (var p in Model)
+            {
+                var step = p.Step; // vem do VM
+                var badgeClass = MapStatusBadgeClass(p.Status);
+                var metodoRetirada = IsRetirada(p.MetodoEntrega);
+
+                // precisa de um identificador único pro collapse; use o Código (se for único) ou crie uma propriedade Id no VM
+                var colId = "ped_" + (p.Codigo ?? Guid.NewGuid().ToString("N"));
+
+                <div class="order-wrapper order-wrapper-hover mb-2" style="border-radius: 10px;">
+                    <div class="order-grid toggle-detalhes" data-target="@colId">
+                        <div>
+                            <span class="label-mobile label-mobile-start">Pedido</span>
+                            <div class="fw-bold label-mobile-start" style="color: #3c1e0abd;">#@p.Codigo</div>
+                        </div>
+
+                        <div>
+                            <span class="label-mobile label-mobile-end">Data/Hora</span>
+                            <div class="text-muted small label-mobile-end">
+                                @p.CriadoEmUtc.ToLocalTime().ToString("dd/MM HH:mm")
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="label-mobile label-mobile-start">Status</span>
+                            <span class="badge @badgeClass py-2 px-3 label-mobile-end rounded-4">@p.StatusTexto</span>
+                        </div>
+
+                        <div>
+                            <span class="label-mobile label-mobile-end">Total</span>
+                            <div class="fw-bold label-mobile-end" style="color: #3c1e0abd;">@p.Total.ToString("C", pt)</div>
+                        </div>
+
+                        <div class="col-btn">
+                            <button class="btn-toggle-detalhes" type="button">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="@colId" class="collapse border-top">
+                        <div class="order-stepper">
+                            <div class="step @(step >= 1 ? "done" : "") @(step == 1 ? "active" : "")">
+                                <div class="step-circle">
+                                    @if (step > 1)
+                                    {
+                                        <i class="fa-solid fa-check"></i>
+                                    }
+                                    else
+                                    {
+
+                                        <i class="fa-solid fa-clock"></i>
+                                    }
+                                </div>
+                                <span>Pedido</span>
+                            </div>
+
+                            <div class="step @(step >= 2 ? "done" : "") @(step == 2 ? "active" : "")">
+                                <div class="step-circle">
+                                    @if (step > 2)
+                                    {
+                                        <i class="fa-solid fa-check"></i>
+                                    }
+                                    else
+                                    {
+
+                                        <i class="fa-solid fa-receipt"></i>
+                                    }
+                                </div>
+                                <span>Aprovado</span>
+                            </div>
+
+                            <div class="step @(step >= 3 ? "done" : "") @(step == 3 ? "active" : "")">
+                                <div class="step-circle">
+                                    @if (step > 3)
+                                    {
+                                        <i class="fa-solid fa-check"></i>
+                                    }
+                                    else
+                                    {
+
+                                        <i class="fa-solid fa-fire-burner"></i>
+                                    }
+                                </div>
+                                <span>Preparo</span>
+                            </div>
+
+                            <div class="step @(step >= 4 ? "done" : "") @(step == 4 ? "active" : "")">
+                                <div class="step-circle">
+                                    @if (step > 4)
+                                    {
+                                        <i class="fa-solid fa-check"></i>
+                                    }
+                                    else
+                                    {
+
+                                        <i class="fa-solid @(metodoRetirada ? "fa-box-open" : "fa-motorcycle")"></i>
+                                    }
+                                </div>
+                                <span>@(metodoRetirada ? "Pronto" : "Rota")</span>
+                            </div>
+
+                            <div class="step @(step >= 5 ? "done" : "") @(step == 5 ? "active" : "")">
+                                <div class="step-circle">
+                                    @if (step > 5)
+                                    {
+                                        <i class="fa-solid fa-check"></i>
+                                    }
+                                    else
+                                    {
+
+                                        <i class="fa-solid fa-house-chimney-check"></i>
+                                    }
+                                </div>
+                                <span>@(metodoRetirada ? "Retirado" : "Entregue")</span>
+                            </div>
+                        </div>
+
+                        <div class="bh-pedidos-em-andamento">
+                            <div class="p-4 bg-white shadow-sm order-wrapper">
+                                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-light p-3 rounded-circle text-primary shadow-sm ">
+                                            <i class="fa-solid fa-store fa-lg"></i>
+                                        </div>
+                                        <div>
+                                            <span class="label-mobile">Modo de Entrega</span>
+                                            <div class="fw-bold text-dark">@p.MetodoEntrega</div>
+                                            @if (p.HorarioRetirada != default)
+                                            {
+                                                <div class="text-success small fw-semibold">
+                                                    <i class="fa-regular fa-clock me-1"></i>
+                                                    Agendado: @p.HorarioRetirada.ToLocalTime().ToString("dd/MM/yyyy HH:mm", pt)
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-muted small">Aguardando definição de horário</div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="text-md-center bg-light p-2 px-3 rounded-2 shadow-sm">
+                                        <span class="label-mobile d-block">Status de Pagamento</span>
+
+                                        <span class="badge rounded-pill px-3 @(p.StatusPagamento == "Sinal Pago" ? "bg-success" : "bg-warning text-dark")">
+                                            @p.StatusPagamento
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <hr class="opacity-10 my-3" />
+
+                                <div class="bg-light p-3 rounded-4 border-dashed mb-4 shadow-sm">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7">
+                                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Sinal para Produção (50%)</small>
+                                            <div class="fs-4 fw-bold lh-1 text-success">
+                                                @p.ValorSinal.ToString("C", pt)
+                                            </div>
+                                            <small class="text-muted" style="font-size: 0.75rem;">
+                                                @* Note: Alterado para ValorRestanteRetirada conforme calculamos no C# *@
+                                                Restante na retirada: <b>@p.ValorRestanteRetirada.ToString("C", pt)</b>
+                                            </small>
+                                        </div>
+                                        <div class="col-md-5 text-md-end mt-2 mt-md-0">
+                                            <small class="text-muted d-block" style="font-size: 0.7rem;">Total do pedido</small>
+                                            <span class="fw-bold text-dark fs-5">
+                                                @p.Total.ToString("C", pt)
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-3" style="height: 6px; background-color: #e9ecef;">                
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: @(p.StatusPagamento == "Sinal Pago" ? "100%" : "50%")"></div>
+                                    </div>
+                                </div>
+
+                                @if (p.StatusPagamento != "Sinal Pago")
+                                {
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-12 col-lg-5">
+                                            <div class="bg-white p-3 rounded-4 shadow-sm h-100 text-center">
+                                                <div class="fw-bold mb-2" style="color: var(--bh-primary); font-size:0.9rem;">Escaneie o QR Code</div>
+                                                <img src="@p.PixQrCodeUrl" alt="QR Code PIX" class="img-fluid rounded-3 border p-2 mb-2" style="max-width: 160px;" />
+                                                <div class="badge rounded-pill text-bg-light border d-block w-100 py-2">
+                                                    <i class="fa-regular fa-clock me-1"></i> Expira em @p.PixExpiraEm
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-lg-7">
+                                            <div class="bg-white p-3 rounded-4 shadow-sm h-100 d-flex flex-column">
+                                                <label class="small text-muted fw-bold text-uppercase mb-2" style="font-size: 0.65rem;">PIX Copia e Cola</label>
+
+                                                <div class="input-group mb-3">
+                                                    <textarea id="pixCopiaCola_@p.Codigo" class="form-control form-control-sm bg-light" readonly style="resize: none; font-size: 0.75rem;">@p.PixCopiaCola</textarea>
+                                                    <button class="btn btn-outline-dark d-flex flex-column align-items-center justify-content-center px-3" onclick="copyToClipboard('pixCopiaCola_@p.Codigo')">
+                                                        <i class="fa-regular fa-copy mb-1"></i>
+                                                        <span style="font-size: 0.7rem; font-weight: bold;">Copiar</span>
+                                                    </button>
+                                                </div>
+
+                                                <div class="bg-light p-3 rounded-3 mb-3" style="font-size: 0.85rem; border: 1px dashed #dee2e6;">
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <span class="text-muted">Identificador</span>
+                                                        <span class="fw-bold text-dark text-truncate ms-2">@p.PixIdentificador</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <span class="text-muted">Beneficiário</span>
+                                                        <span class="fw-bold text-dark">@p.PixBeneficiario</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="text-muted">Valor</span>
+                                                        <span class="fw-bold text-dark">@p.ValorSinal.ToString("C", pt)</span>
+                                                    </div>
+                                                </div>
+
+                                                <button class="btn btn-success w-100 py-2 fw-bold rounded-3 shadow-sm mt-auto">
+                                                    <i class="fa-solid fa-circle-check me-2"></i>Já paguei
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="card border shadow-sm rounded-4 mb-3" style="background: #a9a9a936;">
+                                    <div class="card-body p-4">
+                                        @if (p.Itens == null || !p.Itens.Any())
+                                        {
+                                            <div class="text-center py-3 text-muted small">Nenhum item encontrado.</div>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var it in p.Itens)
+                                            {
+                                                <div class="mb-1">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="fw-bold text-dark" style="font-size: 0.85rem;">
+                                                            @it.Quantidade x @it.ProdutoNome
+                                                        </span>
+                                                        <span class="fw-bold text-dark" style="font-size: 0.85rem;">
+                                                            @it.TotalLinha.ToString("C", pt)
+                                                        </span>
+                                                    </div>
+
+                                                    @if (it.Acompanhamentos?.Any() == true)
+                                                    {
+                                                        <div class="mt-1">
+                                                            @foreach (var ac in it.Acompanhamentos)
+                                                            {
+                                                                <div class="d-flex justify-content-between text-muted ms-2" style="font-size: 0.75rem;">
+                                                                    <span>+ @ac.Nome.ToLower()</span>
+                                                                    <span>@ac.Preco.ToString("C", pt)</span>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+
+                                            <hr class="text-muted opacity-25">
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <span class="text-secondary" style="font-size: 1rem;">Total da encomenda</span>
+                                                <span class="fw-bold text-dark" style="font-size: 1.1rem;">
+                                                    @p.Total.ToString("C", pt)
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                @* Observações *@
+                                <div class="mb-2">
+                                    <span class="label-mobile">Observações</span>
+                                    <div class="small italic text-muted">
+                                        <i class="fa-regular fa-comment-dots me-1 opacity-50"></i>
+                                        @(string.IsNullOrWhiteSpace(p.Observacao) ? "Nenhuma observação" : p.Observacao)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+                    
+    </div>
+</div>
+            
+<script src="~/js/pedido/acompanhamento-pedido.js" asp-append-version="true"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const header = document.getElementById('mainHeader');
+
+        if (header) {
+            // Função para aplicar/remover as classes
+            const handleScroll = () => {
+                if (window.scrollY > 30) {
+                    header.classList.add('header-scrolled');
+                    // Opcional: remover classes nativas do bootstrap que conflitam
+                    header.classList.remove('bg-white', 'shadow-sm');
+                } else {
+                    header.classList.remove('header-scrolled');
+                }
+            };
+
+            window.addEventListener('scroll', handleScroll);
+            handleScroll(); // Executa ao carregar para caso a página já inicie com scroll
+        }
+    });
+</script>

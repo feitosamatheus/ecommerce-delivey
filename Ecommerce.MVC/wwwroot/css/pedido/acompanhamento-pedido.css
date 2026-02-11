@@ -57,12 +57,11 @@
     .bh-pedidos-em-andamento .col-btn {
         grid-column: span 2;
         text-align: center;
-        background: #3c1e0a;
-        border-radius: 20px;
-        margin-top: 5px;
-        width: 12%;
+        background: #4d4845bd !important;
+        border-radius: 7px;
+        width: 8%;
         position: relative;
-        left: 89%;
+        left: 93%;
     }
 
         .bh-pedidos-em-andamento .col-btn .fa-solid {

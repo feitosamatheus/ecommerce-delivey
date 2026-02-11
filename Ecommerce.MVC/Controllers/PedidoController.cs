@@ -30,6 +30,28 @@ public class PedidoController : Controller
         _produtoService = produtoService;
     }
 
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> Index(CancellationToken ct)
+    {
+        var clienteId = Guid.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+        var totalPedidosAndamento =
+            await _pedidoService.ObterQuantidadeEmAndamentoAsync(
+                clienteId,
+                HttpContext.RequestAborted
+            );
+
+        ViewBag.TotalPedidos = totalPedidosAndamento;
+
+        var pedidos = await _pedidoService.ListarEmAndamentoAsync(clienteId, ct);
+
+        return View(pedidos);
+    }
+
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> BuscarModalFinalizarPedido(CancellationToken ct)

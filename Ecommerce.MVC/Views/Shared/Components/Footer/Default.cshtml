@@ -138,7 +138,7 @@
 
     @if (Model.Autenticado)
     {
-        <a href="javascript:void(0)" class="tab-item js-acompanhar-pedidos">
+        <a href="@Url.Action("Index", "Pedido")" class="tab-item">
             @if (Model.TotalPedidosEmAndamento > 0)
             {
                 <div class="cart-icon-wrapper">
