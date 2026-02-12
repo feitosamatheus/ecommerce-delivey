@@ -25,6 +25,12 @@
     }
 }
 
+<style>
+    .bc-panel-none:empty {
+        display: none;
+    }
+</style>
+
 <div class="my-3 bc-container-home-desktop">
     <div class="row g-2">
         <div class="col-12 col-lg-8 col-xl-8">
@@ -43,7 +49,7 @@
                                 </button>
 
                                 <ul class="bc-select__options">
-                                    <li data-value="">Selecionar uma categoria</li>
+                                    <li data-value="">Todas</li>
                                     @foreach (var c in Model.Categorias.OrderBy(c => c.Nome))
                                     {
                                         <li data-value="@c.Id">@c.Nome</li>
@@ -51,7 +57,7 @@
                                 </ul>
 
                                 <select name="filtroTipo" hidden>
-                                    <option value="">Selecionar uma categoria</option>
+                                    <option value="">Todas</option>
                                     @foreach (var c in Model.Categorias.OrderBy(c => c.Nome))
                                     {
                                         <option value="@c.Id">@c.Nome</option>
@@ -188,11 +194,11 @@
                 <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id">
                     <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
 
-                    <div class="row g-3">
+                    <div class="row g-3 row-cols-1 row-cols-md-2">
                         @foreach (var p in produtos)
                         {
-                            <div class="col-12 col-md-6 bc-prod-col">
-                                <div class="bc-product p-3 bc-product-clickable bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                            <div class="col bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                                <div class="bc-product p-3 bc-product-clickable">
                                     <div class="d-flex gap-3">
                                         <div class="flex-grow-1 bc-product__info d-flex flex-column justify-content-between">
                                             <div>
@@ -242,7 +248,7 @@
 
                     <div class="bc-select w-100" data-name="filtroTipo" id="filtroCategoriaMobile">
                         <button type="button" class="bc-select__trigger">
-                            <span class="bc-select__value">Categorias</span>
+                            <span class="bc-select__value">Selecionar uma categoria</span>
                             <span class="bc-select__arrow"></span>
                         </button>
                         <ul class="bc-select__options">
@@ -380,11 +386,11 @@
         <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id" style="border-radius:20px;">
                 <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
 
-                <div class="row g-3">
+            <div class="row g-3 row-cols-1 row-cols-md-2">
                     @foreach (var p in produtos)
                     {
-                        <div class="col-12 col-md-6 bc-prod-col">
-                        <div class="bc-product p-3 bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                    <div class="col bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                        <div class="bc-product p-3 bc-product-clickable">
                                 <div class="d-flex gap-3">
                                 <div class="flex-grow-1 bc-product__info d-flex flex-column">
                                     <div class="mb-auto">
@@ -428,165 +434,217 @@
 
 (function () {
 
-    const spinner = document.getElementById('modalSpinner');
+        // =========================
+      // Helpers
+      // =========================
+      const norm = (s) =>
+        (s || "")
+          .toString()
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, ""); // remove acentos
 
-    function showSpinner() {
-    spinner?.classList.remove('d-none');
-    }
+      function getAllPanels() {
+        return Array.from(document.querySelectorAll('.bc-panel[data-categoria-id]'));
+      }
 
-    function hideSpinner() {
-    spinner?.classList.add('d-none');
-    }
+        function getAllProductCols(panelEl) {
+          return Array.from(panelEl.querySelectorAll('.bc-prod-col[data-produto-id][data-nome]'));
+        }
 
-    @* const filtro = document.querySelector('.bc-filter');
-    const offsetTop = filtro.offsetTop;
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > offsetTop - 15) filtro.classList.add('is-sticky');
-        else filtro.classList.remove('is-sticky');
-    });
+      function refreshCarousel(panelEl) {
+        // Ajuste para carrosséis: esconde slides vazios
+        const carousel = panelEl.querySelector(".carousel");
+        if (!carousel) return;
 
-    const filtroMb = document.querySelector('.bc-filter-mb');
-    const offsetTopMb = filtroMb.offsetTop;
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > offsetTopMb - 15) filtroMb.classList.add('is-sticky');
-        else filtroMb.classList.remove('is-sticky');
-    }); *@
-
-    const aplicarSticky = () => {
-        // Seleciona todos os elementos que devem ter comportamento sticky
-        const seletores = ['.bc-filter', '.bc-filter-mb'];
-        const scrollPos = window.scrollY;
-
-        seletores.forEach(seletor => {
-            const elemento = document.querySelector(seletor);
-            
-            // Só processa se o elemento existir e estiver visível na tela (display != none)
-            if (elemento && elemento.offsetParent !== null) {
-                // Se for a primeira execução, guardamos o offset original para não perder a referência
-                if (!elemento.dataset.originalOffset) {
-                    elemento.dataset.originalOffset = elemento.offsetTop;
-                }
-
-                const offsetReferencia = parseInt(elemento.dataset.originalOffset);
-
-                if (scrollPos > offsetReferencia - 5) {
-                    elemento.classList.add('is-sticky');
-                } else {
-                    elemento.classList.remove('is-sticky');
-                }
-            } else if (elemento) {
-                // Se o elemento estiver oculto (ex: filtro desktop no mobile), removemos o sticky por segurança
-                elemento.classList.remove('is-sticky');
-            }
+        const slides = Array.from(carousel.querySelectorAll(".carousel-item"));
+        slides.forEach((slide) => {
+          const anyVisibleCard = slide.querySelector('.bc-product[data-produto-id][data-nome]:not(.d-none)');
+          slide.classList.toggle("d-none", !anyVisibleCard);
         });
-    };
 
-    // Um único listener para controlar ambos
-    window.addEventListener('scroll', aplicarSticky, { passive: true });
+        // Se o slide ativo ficou oculto, move para o primeiro slide visível
+        const active = carousel.querySelector(".carousel-item.active");
+        if (active && active.classList.contains("d-none")) {
+          active.classList.remove("active");
+          const firstVisible = slides.find((s) => !s.classList.contains("d-none"));
+          if (firstVisible) firstVisible.classList.add("active");
+        }
 
-    function setupFilterLogic(suffix = '') {
-        // Elementos da Busca
-        const btnPesquisar = document.getElementById('btnPesquisar' + suffix);
-        const btnFecharBusca = document.getElementById('btnFecharBusca' + suffix);
-        const filtroCategoria = document.getElementById('filtroCategoria' + suffix);
-        const filtroTexto = document.getElementById('filtroTexto' + suffix);
-        const inputBusca = document.getElementById('filtroNome' + suffix);
+        // Indicadores/controles: opcional esconder se só restou 1 slide visível
+        const visibleSlides = slides.filter((s) => !s.classList.contains("d-none")).length;
+
+        const indicators = carousel.querySelector(".carousel-indicators");
+        const prevBtn = carousel.querySelector(".carousel-control-prev");
+        const nextBtn = carousel.querySelector(".carousel-control-next");
+
+        if (indicators) indicators.classList.toggle("d-none", visibleSlides <= 1);
+        if (prevBtn) prevBtn.classList.toggle("d-none", visibleSlides <= 1);
+        if (nextBtn) nextBtn.classList.toggle("d-none", visibleSlides <= 1);
+      }
+
+      // Estado único para desktop+mobile (mantém filtros sincronizados)
+      const filterState = {
+        categoriaId: "", // string
+        texto: ""        // string normalizada
+      };
+
+          function applyFilters() {
+      const categoriaId = (filterState.categoriaId || "").trim();
+      const texto = norm(filterState.texto);
+
+      const panels = getAllPanels();
+
+      panels.forEach((panel) => {
+        const panelCategoriaId = (panel.getAttribute("data-categoria-id") || "").trim();
+
+        // 1) Categoria
+        const categoriaOk = !categoriaId || panelCategoriaId === categoriaId;
+        if (!categoriaOk) {
+          panel.classList.add("d-none");
+          return;
+        }
+
+        const cols = getAllProductCols(panel);
+
+        // 2) Texto vazio: mostra tudo (COL e card interno)
+        if (!texto) {
+          cols.forEach((col) => {
+            col.classList.remove("d-none");
+            col.querySelector(".bc-product")?.classList.remove("d-none");
+          });
+
+          panel.classList.remove("d-none");
+          refreshCarousel(panel);
+          return;
+        }
+
+        // 3) Texto preenchido: filtra por data-nome da COLUNA
+        let anyVisible = false;
+
+        cols.forEach((col) => {
+          const nome = norm(col.getAttribute("data-nome"));
+          const match = nome.includes(texto);
+
+          col.classList.toggle("d-none", !match);
+
+          // opcional (não é necessário se a coluna já some, mas mantém coerência)
+          col.querySelector(".bc-product")?.classList.toggle("d-none", !match);
+
+          if (match) anyVisible = true;
+        });
+
+        // 4) Painel: some se nada visível
+        panel.classList.toggle("d-none", !anyVisible);
+
+        refreshCarousel(panel);
+      });
+    }
+
+
+      // =========================
+      // UI (Select custom + Busca)
+      // =========================
+      function setupFilterLogic(suffix = "") {
+        const btnPesquisar = document.getElementById("btnPesquisar" + suffix);
+        const btnFecharBusca = document.getElementById("btnFecharBusca" + suffix);
+        const filtroCategoria = document.getElementById("filtroCategoria" + suffix);
+        const filtroTexto = document.getElementById("filtroTexto" + suffix);
+        const inputBusca = document.getElementById("filtroNome" + suffix);
 
         let modoBuscaTexto = false;
 
-        // --- Lógica de Troca de Interface (Busca vs Select) ---
         function abrirBuscaTexto() {
-            filtroCategoria?.classList.add('d-none');
-            filtroTexto?.classList.remove('d-none');
-            btnPesquisar?.classList.add('d-none');
-            modoBuscaTexto = true;
-            setTimeout(() => inputBusca?.focus(), 50); // Timeout para garantir foco no mobile
+          filtroCategoria?.classList.add("d-none");
+          filtroTexto?.classList.remove("d-none");
+          btnPesquisar?.classList.add("d-none");
+          modoBuscaTexto = true;
+          setTimeout(() => inputBusca?.focus(), 50);
         }
 
         function fecharBuscaTexto() {
-            filtroTexto?.classList.add('d-none');
-            filtroCategoria?.classList.remove('d-none');
-            btnPesquisar?.classList.remove('d-none');
-            modoBuscaTexto = false;
+          filtroTexto?.classList.add("d-none");
+          filtroCategoria?.classList.remove("d-none");
+          btnPesquisar?.classList.remove("d-none");
+          modoBuscaTexto = false;
 
-            if (inputBusca) {
-                inputBusca.value = '';
-                inputBusca.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+          if (inputBusca) {
+            inputBusca.value = "";
+            filterState.texto = "";
+            applyFilters();
+          }
         }
 
-        btnPesquisar?.addEventListener('click', () => {
-            if (!modoBuscaTexto) abrirBuscaTexto();
-            else inputBusca?.focus();
+        btnPesquisar?.addEventListener("click", () => {
+          if (!modoBuscaTexto) abrirBuscaTexto();
+          else inputBusca?.focus();
         });
 
-        btnFecharBusca?.addEventListener('click', fecharBuscaTexto);
+        btnFecharBusca?.addEventListener("click", fecharBuscaTexto);
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modoBuscaTexto) fecharBuscaTexto();
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && modoBuscaTexto) fecharBuscaTexto();
         });
 
-        // --- Lógica do Select Customizado ---
-        const selectWrap = document.getElementById('filtroCategoria' + suffix);
+        // ---- Select customizado (desktop e mobile) ----
+        const selectWrap = document.getElementById("filtroCategoria" + suffix);
         if (selectWrap) {
-            const trigger = selectWrap.querySelector('.bc-select__trigger');
-            const optionsList = Array.from(selectWrap.querySelectorAll('.bc-select__options li'));
-            const valueSpan = selectWrap.querySelector('.bc-select__value');
-            const nativeSelect = selectWrap.querySelector('select');
+          const trigger = selectWrap.querySelector(".bc-select__trigger");
+          const optionsList = Array.from(selectWrap.querySelectorAll(".bc-select__options li"));
+          const valueSpan = selectWrap.querySelector(".bc-select__value");
+          const nativeSelect = selectWrap.querySelector("select"); // pode ser null no mobile
 
-            // Abre/Fecha Select
-            trigger?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isOpen = selectWrap.classList.contains('is-open');
-                // Fecha outros selects antes de abrir este
-                document.querySelectorAll('.bc-select').forEach(s => s.classList.remove('is-open'));
-                if (!isOpen) selectWrap.classList.add('is-open');
+          trigger?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const isOpen = selectWrap.classList.contains("is-open");
+            document.querySelectorAll(".bc-select").forEach((s) => s.classList.remove("is-open"));
+            if (!isOpen) selectWrap.classList.add("is-open");
+          });
+
+          optionsList.forEach((option) => {
+            option.addEventListener("click", (e) => {
+              e.stopPropagation();
+
+              optionsList.forEach((o) => o.classList.remove("is-selected"));
+              option.classList.add("is-selected");
+
+              if (valueSpan) valueSpan.textContent = option.textContent;
+
+              const categoriaId = option.dataset.value || "";
+
+              // Atualiza nativo (se existir) só para manter consistência
+              if (nativeSelect) {
+                nativeSelect.value = categoriaId;
+              }
+
+              // Atualiza estado global e aplica filtro
+              filterState.categoriaId = categoriaId;
+              applyFilters();
+
+              selectWrap.classList.remove("is-open");
             });
-
-            // Seleção de Opção
-            optionsList.forEach(option => {
-                option.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    
-                    optionsList.forEach(o => o.classList.remove('is-selected'));
-                    option.classList.add('is-selected');
-
-                    if (valueSpan) valueSpan.textContent = option.textContent;
-
-                    if (nativeSelect) {
-                        nativeSelect.value = option.dataset.value || '';
-                        nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-
-                    selectWrap.classList.remove('is-open');
-                });
-            });
+          });
         }
 
-        // --- Listeners de Eventos (Integração) ---
-        const selectNative = selectWrap?.querySelector('select');
-        selectNative?.addEventListener('change', () => {
-            console.log(`Filtro ${suffix || 'Desktop'} Categoria:`, selectNative.value);
+        // ---- Texto ----
+        inputBusca?.addEventListener("input", () => {
+          filterState.texto = inputBusca.value || "";
+          applyFilters();
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        setupFilterLogic("");
+        setupFilterLogic("Mobile");
+
+        document.addEventListener("click", () => {
+          document.querySelectorAll(".bc-select").forEach((s) => s.classList.remove("is-open"));
         });
 
-        inputBusca?.addEventListener('input', () => {
-            console.log(`Filtro ${suffix || 'Desktop'} Texto:`, inputBusca.value);
-        });
-    }
-
-    // 2. Inicialização Global
-    document.addEventListener('DOMContentLoaded', () => {
-        // Inicializa Desktop
-        setupFilterLogic(''); 
-        
-        // Inicializa Mobile
-        setupFilterLogic('Mobile');
-
-        // Clique fora fecha qualquer select aberto
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.bc-select').forEach(s => s.classList.remove('is-open'));
-        });
-    });
+        // aplica estado inicial (caso queira iniciar com tudo visível)
+        applyFilters();
+      });
 
     const host = document.getElementById('modalHost');
 

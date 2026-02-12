@@ -38,6 +38,7 @@
 
     <div id="conteudo-modal"></div>
 
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await Html.PartialAsync("Partials/_ModalVerMais.cshtml")
     @await Html.PartialAsync("Partials/_ModalContaCliente.cshtml")
     @await Html.PartialAsync("Partials/_ModalAlterarSenha.cshtml")
@@ -127,12 +128,60 @@
             </div>
         </div>
     </div>
+    <div class="modal fade modal-barriga-cheia" id="modalSucessoProduto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered px-4">
+            <div class="modal-content shadow-lg">
+                <div class="modal-body text-center p-4">
 
+                    <div class="circle-check mb-4 animate__animated animate__bounceIn" style="background-color: #d4edda; color: #28a745; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; font-size: 2rem;">
+                        <i class="fa-solid fa-cart-plus"></i>
+                    </div>
+
+                    <h2 class="text-titulo mb-3">Produto Adicionado!</h2>
+
+                    <p class="text-muted px-2">
+                        O item foi adicionado ao seu carrinho com sucesso e já está pronto para o pedido.
+                    </p>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
+                            Continuar Comprando
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-barriga-cheia" id="modalSucessoLogin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered px-4">
+            <div class="modal-content shadow-lg">
+                <div class="modal-body text-center p-4">
+
+                    <div class="circle-check mb-4 animate__animated animate__zoomIn" style="background-color: #e9ecef; color: #4A321F; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; font-size: 2rem;">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+
+                    <h2 class="text-titulo mb-3">Bem-vindo de volta!</h2>
+
+                    <p class="text-muted px-2">
+                        Seu login foi realizado com sucesso. Agora você pode finalizar seus pedidos.
+                    </p>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
+                            Acessar o Sistema
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 
     @await RenderSectionAsync("Scripts", required: false)
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         $(document).ready(function () {
             const urlParams = new URLSearchParams(window.location.search);
@@ -141,6 +190,18 @@
                 var modalSucesso = new bootstrap.Modal(document.getElementById('modalSucessoPedido'));
                 modalSucesso.show();
                 window.history.replaceState({}, document.title, window.location.pathname);
+                limparUrl();
+            }
+
+            if (urlParams.has('loginSucesso')) {
+                var modalLogin = new bootstrap.Modal(document.getElementById('modalSucessoLogin'));
+                modalLogin.show();
+                limparUrl();
+            }
+
+            if (urlParams.has('itemAdicionado')) {
+                var modalProduto = new bootstrap.Modal(document.getElementById('modalSucessoProduto'));
+                modalProduto.show();
                 limparUrl();
             }
 

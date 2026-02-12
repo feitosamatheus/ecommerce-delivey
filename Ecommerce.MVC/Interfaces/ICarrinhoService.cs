@@ -12,4 +12,5 @@ public interface ICarrinhoService
     Task<Carrinho> ObterOuCriarCarrinhoAsync(HttpContext http, CancellationToken ct = default);
     Task<Carrinho> AdicionarAsync(HttpContext http, AdicionarProdutoCarrinhoViewModel req, CancellationToken ct = default);
     Task<int> ObterQuantidadeItensAsync(HttpContext http, CancellationToken ct = default);
+    Task UnificarCarrinhoAsync(Guid clienteId, string token);
 }

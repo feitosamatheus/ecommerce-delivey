@@ -13,13 +13,10 @@ namespace Ecommerce.MVC.Entities;
         public Guid Id { get; set; } = Guid.NewGuid();
 
         // Token para usuário anônimo (cookie)
-        [Required]
         [Column(TypeName = "varchar(64)")]
         public string Token { get; set; } = null!;
 
-        // Se tiver autenticação depois (opcional)
-        [Column(TypeName = "varchar(100)")]
-        public string? UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 

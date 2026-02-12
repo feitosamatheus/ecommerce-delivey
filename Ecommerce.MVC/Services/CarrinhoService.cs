@@ -4,6 +4,7 @@ using Ecommerce.MVC.Helpers;
 using Ecommerce.MVC.Interfaces;
 using Ecommerce.MVC.Models.Produtos;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 public class CarrinhoService : ICarrinhoService
 {
@@ -16,19 +17,57 @@ public class CarrinhoService : ICarrinhoService
 
     public async Task<Carrinho> ObterOuCriarCarrinhoAsync(HttpContext http, CancellationToken ct = default)
     {
+        Guid? userId = null;
+
+        if (http.User.Identity?.IsAuthenticated == true)
+        {
+            var idClaim = http.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(idClaim, out var parsed))
+                userId = parsed;
+        }
+
+        if (userId.HasValue)
+        {
+            var carrinhoUsuario = await _db.Carrinhos
+                .Include(c => c.Itens)
+                .ThenInclude(i => i.Acompanhamentos)
+                .FirstOrDefaultAsync(c => c.UserId == userId, ct);
+
+            if (carrinhoUsuario != null)
+                return carrinhoUsuario;
+
+            var novoCarrinho = new Carrinho
+            {
+                UserId = userId,
+                UpdatedAtUtc = DateTime.UtcNow
+            };
+
+            _db.Carrinhos.Add(novoCarrinho);
+            await _db.SaveChangesAsync(ct);
+
+            return novoCarrinho;
+        }
+
         var token = CartTokenHelper.GetOrCreateToken(http);
 
-        var carrinho = await _db.Carrinhos
-            .Include(c => c.Itens).ThenInclude(i => i.Acompanhamentos)
-            .FirstOrDefaultAsync(c => c.Token == token, ct);
+        var carrinhoAnonimo = await _db.Carrinhos
+            .Include(c => c.Itens)
+            .ThenInclude(i => i.Acompanhamentos)
+            .FirstOrDefaultAsync(c => c.Token == token && c.UserId == null, ct);
 
-        if (carrinho != null) return carrinho;
+        if (carrinhoAnonimo != null)
+            return carrinhoAnonimo;
 
-        carrinho = new Carrinho { Token = token, UpdatedAtUtc = DateTime.UtcNow };
-        _db.Carrinhos.Add(carrinho);
+        var novoAnonimo = new Carrinho
+        {
+            Token = token,
+            UpdatedAtUtc = DateTime.UtcNow
+        };
+
+        _db.Carrinhos.Add(novoAnonimo);
         await _db.SaveChangesAsync(ct);
 
-        return carrinho;
+        return novoAnonimo;
     }
 
     public async Task<Carrinho> AdicionarAsync(HttpContext http, AdicionarProdutoCarrinhoViewModel req, CancellationToken ct = default)
@@ -114,5 +153,46 @@ public class CarrinhoService : ICarrinhoService
             return 0;
 
         return carrinho.Itens.Sum(i => i.Quantidade);
+    }
+
+    public async Task UnificarCarrinhoAsync(Guid clienteId, string token)
+    {
+        var carrinhoAnonimo = await _db.Carrinhos
+            .Include(c => c.Itens)
+            .FirstOrDefaultAsync(c => c.Token == token && c.UserId == null);
+
+        if (carrinhoAnonimo is null)
+            return;
+
+        var carrinhoCliente = await _db.Carrinhos
+            .Include(c => c.Itens)
+            .FirstOrDefaultAsync(c => c.UserId == clienteId);
+
+        if (carrinhoCliente is null)
+        {
+            carrinhoAnonimo.UserId = clienteId;
+            carrinhoAnonimo.Token = null;
+            await _db.SaveChangesAsync();
+            return;
+        }
+
+        foreach (var itemAnonimo in carrinhoAnonimo.Itens)
+        {
+            var existente = carrinhoCliente.Itens
+                .FirstOrDefault(i => i.ProdutoId == itemAnonimo.ProdutoId);
+
+            if (existente is null)
+            {
+                carrinhoCliente.Itens.Add(itemAnonimo);
+            }
+            else
+            {
+                existente.Quantidade += itemAnonimo.Quantidade;
+            }
+        }
+
+        _db.Carrinhos.Remove(carrinhoAnonimo);
+
+        await _db.SaveChangesAsync();
     }
 }

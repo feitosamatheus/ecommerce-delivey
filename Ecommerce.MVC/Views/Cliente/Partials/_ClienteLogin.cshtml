@@ -41,12 +41,12 @@
             <form id="loginForm">
                 <div class="mb-3 text-start">
                     <label class="form-label fw-bold">E-mail</label>
-                    <input type="email" id="loginEmail" class="form-control shadow-sm" placeholder="seu@email.com" required>
+                    <input type="email" id="loginEmail" class="form-control shadow-sm h-25" placeholder="seu@email.com" required>
                 </div>
 
                 <div class="mb-3 text-start">
                     <label class="form-label fw-bold">Senha</label>
-                    <input type="password" id="loginSenha" class="form-control shadow-sm" placeholder="******" onclick="togglePasswordVisibility('loginSenha')" required>
+                    <input type="password" id="loginSenha" class="form-control shadow-sm h-25" placeholder="******" onclick="togglePasswordVisibility('loginSenha')" required>
                     <div class="text-end mt-1">
                         <small>
                             <a href="javascript:void(0)" onclick="showForgot()" style="color: #d4a017; font-size: 0.75rem;">
@@ -56,8 +56,8 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn w-100 fw-bold text-white py-2"
-                        style="background-color: #3c1e0a; border-radius: 8px;">
+                <button type="submit" class="btn w-100 fw-bold text-white py-3"
+                        style="background-color: #3c1e0a; border-radius: 30px;">
                     Entrar
                 </button>
 
@@ -157,7 +157,7 @@
                     </p>
                 </div>
 
-                <button type="submit" class="btn w-100 fw-bold text-white py-2" style="background-color: #3c1e0a; border-radius: 8px;">
+                <button type="submit" class="btn w-100 fw-bold text-white py-3" style="background-color: #3c1e0a; border-radius: 30px;">
                     Finalizar Cadastro
                 </button>
 
@@ -178,9 +178,9 @@
         <form>
             <div class="mb-3 text-start">
                 <label class="form-label fw-bold">E-mail cadastrado</label>
-                <input type="email" class="form-control shadow-sm" placeholder="seu@email.com" required>
+                <input type="email" class="form-control shadow-sm  h-25" placeholder="seu@email.com" required>
             </div>
-            <button type="submit" class="btn w-100 fw-bold text-white py-2" style="background-color: #3c1e0a; border-radius: 8px;">
+            <button type="submit" class="btn w-100 fw-bold text-white py-3" style="background-color: #3c1e0a; border-radius: 30px;">
                 Enviar link de recuperação
             </button>
             <div class="text-center mt-3">
@@ -324,6 +324,7 @@
     });
 
     document.querySelector('#login-form form').addEventListener('submit', async function (e) {
+        debugger
         e.preventDefault();
         const btnSubmit = this.querySelector('button[type="submit"]');
         btnSubmit.disabled = true;
@@ -350,8 +351,8 @@
 
             if (result.success) {
                 // sucesso
-                alert(result.message || 'Login realizado com sucesso');
-                window.location.reload();
+                // alert(result.message || 'Login realizado com sucesso');
+                window.location.href = '@Url.Action("Index", "Home", new { loginSucesso = true })';
             } else {
                 alert(result.message || 'Erro ao realizar login');
                 console.error(result.errors);

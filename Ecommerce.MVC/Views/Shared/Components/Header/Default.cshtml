@@ -362,23 +362,33 @@
 
 
     document.addEventListener('click', async function (e) {
-        if (!e.target.closest('#btn-sair')) return;
-        addLoading("Saindo...")
+      const btn = e.target.closest('#btn-sair');
+      if (!btn) return;
 
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      addLoading("Saindo...");
+
+      try {
         const response = await fetch('/Cliente/Logout', {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
 
         if (response.ok) {
-            window.location.reload();
+          window.location.reload();
+        } else {
+          removeLoading();
+          alert('Não foi possível sair. Tente novamente.');
         }
-        else 
-        {
-            removeLoading();
-            alert('Não foi possível sair. Tente novamente.');
-        }
+      } catch {
+        removeLoading();
+        alert('Erro inesperado ao comunicar com o servidor.');
+      }
     });
+
 
     const btn = document.getElementById('btn-conta-dropdown');
     const btnMobile = document.getElementById('btn-conta-dropdown-mobile');

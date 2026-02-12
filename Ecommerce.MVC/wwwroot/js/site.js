@@ -3,6 +3,7 @@
     // Loading helpers (globais)
     // ===========================
     window.addLoading = function (text) {
+        debugger
         if (text != "" && text != null) {
             var textSpinner = document.querySelector(".text-spinner");
             if (textSpinner) textSpinner.textContent = text;
@@ -251,10 +252,7 @@
                 // ✅ fecha modal pelo ID (Bootstrap 5)
                 hideAddProdutoModal();
 
-                alert(data?.message || 'Adicionado ao carrinho com sucesso!');
-
-                // ⚠️ Evita gatilhos de auto-open de outros modais
-                window.location.href = '/';
+                window.location.href = '/Home/Index?itemAdicionado=true';
 
             } catch (err) {
                 console.error(err);

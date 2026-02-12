@@ -1,3 +1,5 @@
+using Ecommerce.MVC.Entities;
+using Ecommerce.MVC.Helpers;
 using Ecommerce.MVC.Interfaces;
 using Ecommerce.MVC.Models.Clientes;
 using Microsoft.AspNetCore.Authentication;
@@ -10,10 +12,12 @@ using System.Security.Claims;
 public class ClienteController : Controller
 {
     private readonly IClienteService _clienteService;
+    private readonly ICarrinhoService _carrinhoService;
 
-    public ClienteController(IClienteService clienteService)
+    public ClienteController(IClienteService clienteService, ICarrinhoService carrinhoService)
     {
         _clienteService = clienteService;
+        _carrinhoService = carrinhoService;
     }
 
     [HttpGet]
@@ -94,6 +98,14 @@ public class ClienteController : Controller
             });
 
         await SignInClienteAsync(result.Id, result.Nome, result.Email);
+
+        var token = CartTokenHelper.GetOrCreateToken(HttpContext);
+
+        await _carrinhoService.UnificarCarrinhoAsync(result.Id, token);
+
+        await SignInClienteAsync(result.Id, result.Nome, result.Email);
+
+        CartTokenHelper.ClearToken(HttpContext);
 
         return Json(new { success = true, message = "Login realizado com sucesso!" });
     }
