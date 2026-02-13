@@ -1,19 +1,23 @@
 ﻿@using System.Globalization
 @using Ecommerce.MVC.Enums
 @using Ecommerce.MVC.Models.Pedidos
+@using Microsoft.AspNetCore.Components.Web
 @model IReadOnlyList<PedidosEmAndamentoViewModel>
 @{
     var pt = new CultureInfo("pt-BR");
+    ViewData["Title"] = "Meus pedidos";
 }
 
 <link rel="stylesheet" href="~/css/pedido/acompanhamento-pedido.css" asp-append-version="true" />
 
 <style>
     .bh-page-header {
-        height: 40px;
+        height: 60px;
         z-index: 1050; /* Garante que fique acima de modais e outros elementos */
         border-bottom: 1px solid #eee;
-        border-radius: 10px;
+        border-radius: 5px;
+        background-color: #FFF;
+        box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     }
 
     .btn-home-link {
@@ -124,7 +128,7 @@
     => (metodoEntrega ?? "").Trim().ToLower() == "retirar";
 }
 
-<div id="mainHeader" class="bh-page-header d-flex align-items-center justify-content-between px-3 px-xl-0  mb-2 sticky-top mx-2 mx-lg-0">
+<div id="mainHeader" class="bh-page-header d-flex align-items-center justify-content-between px-3 mb-2 sticky-top mx-2 mx-lg-0">
     <div class="d-flex align-items-center">
         <a href="javascript:history.back()" class="text-dark me-3 d-xl-none" title="Ir para o início">
             <i class="fa-solid fa-arrow-left fs-5"></i>
@@ -134,11 +138,11 @@
             <h5 class="fw-bolder mb-0" style="color: #3c1e0a; font-size: 1.1rem;">
                 <i class="fa-solid fa-fire me-2 text-danger"></i>Acompanhe @(ViewBag.TotalPedidos > 1 ? "seus" : "seu") @(ViewBag.TotalPedidos > 1 ? "Pedidos" : "Pedido")
             </h5>
-            <span class="badge rounded-pill bg-danger shadow-sm position-absolute start-100 translate-middle badge-total-pedidos"
+            @* <span class="badge rounded-pill bg-danger shadow-sm position-absolute start-100 translate-middle badge-total-pedidos"
                   style="font-size: 0.65rem; padding: 0.35em 0.65em;">
                 <span style="position: relative; top: 1px;">@ViewBag.TotalPedidos</span>
                 <span class="visually-hidden">pedidos em andamento</span>
-            </span>
+            </span> *@
         </div>
     </div>
 

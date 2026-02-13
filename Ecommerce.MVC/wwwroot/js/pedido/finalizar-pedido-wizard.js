@@ -258,6 +258,7 @@
     // Step 2: Confirmar pedido (AJAX)
     // -----------------------------
     $(document).on("click", "#btnWizardNext[data-action=\"confirmar\"]", function (e) {
+        if (step !== 2) return;
         e.preventDefault();
         e.stopImmediatePropagation();
 

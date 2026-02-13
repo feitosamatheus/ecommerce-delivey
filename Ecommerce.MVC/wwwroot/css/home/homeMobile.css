@@ -100,9 +100,14 @@
     transition: background-color .2s ease, box-shadow .2s ease, transform .1s ease;
 }
 
+.bc-filter__btn{
+    color: #212529;
+}
+
 .bc-filter__btn:hover {
     background-color: #663E1A;
     transform: translateY(-1px);
+    color: #fff !important;
 }
 
 .bc-filter__input {

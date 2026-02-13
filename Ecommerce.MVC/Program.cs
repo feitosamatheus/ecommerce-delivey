@@ -15,10 +15,10 @@ builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Cliente/ContaModal";
+        options.LoginPath = "/Home/Index";
         options.LogoutPath = "/Cliente/Logout";
         options.AccessDeniedPath = "/AcessoNegado";
-        options.ExpireTimeSpan = TimeSpan.FromHours(2);
+        options.ExpireTimeSpan = TimeSpan.FromHours(24);
         options.SlidingExpiration = true;
 
         options.Cookie.Name = "Ecommerce.Auth";
@@ -47,7 +47,7 @@ builder.Services.AddRateLimiter(options =>
         await context.HttpContext.Response.WriteAsJsonAsync(new
         {
             success = false,
-            message = "Não foi possível autenticar. Verifique os dados e tente novamente."
+            message = "Nï¿½o foi possï¿½vel autenticar. Verifique os dados e tente novamente."
         }, cancellationToken: token);
     };
 

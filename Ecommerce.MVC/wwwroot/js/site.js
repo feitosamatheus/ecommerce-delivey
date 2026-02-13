@@ -230,7 +230,8 @@
             const payload = getModalPayload($modal);
             if (!payload.produtoId) return;
 
-            setLoadingAdicionar($modal, true);
+            addLoading("Adicionando...")
+            // setLoadingAdicionar($modal, true);
 
             try {
                 const resp = await fetch('/Carrinho/Adicionar', {
@@ -253,13 +254,14 @@
                 hideAddProdutoModal();
 
                 window.location.href = '/Home/Index?itemAdicionado=true';
-
+                
+                removeLoading()
+                addLoading("Redirecionando...")
             } catch (err) {
                 console.error(err);
                 alert(err?.message || 'Não foi possível adicionar ao carrinho.');
-            } finally {
-                setLoadingAdicionar($modal, false);
-            }
+                removeLoading()
+            } 
         });
 
 })(jQuery);

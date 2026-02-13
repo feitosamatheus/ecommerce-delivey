@@ -4,7 +4,7 @@
 @using System.Globalization
 
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Início";
 }
 
 @functions {
@@ -197,8 +197,8 @@
                     <div class="row g-3 row-cols-1 row-cols-md-2">
                         @foreach (var p in produtos)
                         {
-                            <div class="col bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
-                                <div class="bc-product p-3 bc-product-clickable">
+                            <div class="col bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                                <div class="bc-product p-3">
                                     <div class="d-flex gap-3">
                                         <div class="flex-grow-1 bc-product__info d-flex flex-column justify-content-between">
                                             <div>
@@ -239,9 +239,9 @@
 </div>
 </div>
 
-<div class="mb-2 mt-0 bc-container-home-mb p-2 pt-0">
+<div class="mb-2 mt-0 bc-container-home-mb p-2 p-lg-0 pt-0">
     <!-- FILTRO -->
-    <div class="bc-filter bc-filter-mb bc-filter--sticky p-3 mb-2 box-shadown-custom" style="border-radius:20px;">
+    <div class="bc-filter bc-filter-mb bc-filter--sticky p-3 mb-2 box-shadown-custom" style="border-radius: 15px;">
         <div class="row g-3 align-items-center">
             <div class="col-12 px-1">
                 <div class="d-flex gap-3 align-items-center">
@@ -268,8 +268,8 @@
                         </button>
                     </div>
 
-                    <button class="btn bc-filter__btn" type="button" id="btnPesquisarMobile">
-                        <i class="fa-solid fa-keyboard" style="color: #212529 !important;"></i>
+                    <button class="btn bc-filter__btn" type="button" id="btnPesquisarMobile" title="Buscar por texto">
+                        <i class="fa-solid fa-keyboard"></i>
                     </button>
 
                 </div>
@@ -279,7 +279,7 @@
 
     @if (Model.Categorias.Count() <= 0)
     {
-        <div class="bc-panel p-3 mb-3 text-center" style="border-radius:20px;">
+        <div class="bc-panel p-3 mb-3 text-center" style="border-radius:15px;">
             <div class="py-4 col-12">
                 <div class="fw-bold mb-1">Nenhum item disponível no momento</div>
                 <div class="text-muted">
@@ -383,14 +383,14 @@
         {
             var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
 
-        <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id" style="border-radius:20px;">
+        <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id" style="border-radius: 15px;">
                 <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
 
             <div class="row g-3 row-cols-1 row-cols-md-2">
                     @foreach (var p in produtos)
                     {
-                    <div class="col bc-prod-col" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
-                        <div class="bc-product p-3 bc-product-clickable">
+                    <div class="col bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                        <div class="bc-product p-3">
                                 <div class="d-flex gap-3">
                                 <div class="flex-grow-1 bc-product__info d-flex flex-column">
                                     <div class="mb-auto">
@@ -659,8 +659,6 @@
         try {
             addLoading("Carregando...");
 
-            showSpinner();
-
             const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
             method: 'GET',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -695,13 +693,12 @@
     }
 
     document.addEventListener('click', (e) => {
-        const btn = e.target.closest('.bc-product-clickable');
-        if (!btn) return;
+        const el = e.target.closest('.bc-product-clickable');
+        if (!el) return;
 
-        e.preventDefault();
-        e.stopPropagation();
+        console.log('CLICK:', el, 'produtoId:', el.dataset.produtoId);
 
-        const produtoId = btn.dataset.produtoId;
+        const produtoId = el.dataset.produtoId;
         if (!produtoId) return;
 
         abrirModalProduto(produtoId);

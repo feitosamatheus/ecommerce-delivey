@@ -107,7 +107,7 @@ public class PedidoService : IPedidoService
             throw new InvalidOperationException("Cliente não encontrado.");
 
         var token = CartTokenHelper.GetOrCreateToken(http);
-        var carrinho = await _db.Carrinhos.AsNoTracking().Include(c => c.Itens).ThenInclude(i => i.Acompanhamentos).FirstOrDefaultAsync(c => c.Token == token, ct);
+        var carrinho = await _db.Carrinhos.AsNoTracking().Include(c => c.Itens).ThenInclude(i => i.Acompanhamentos).FirstOrDefaultAsync(c => c.UserId == cliente.Id, ct);
 
         if (carrinho == null)
             throw new InvalidOperationException("Carrinho não encontrado.");
@@ -278,7 +278,7 @@ public class PedidoService : IPedidoService
         var carrinho = await _db.Carrinhos
             .Include(c => c.Itens)
                 .ThenInclude(i => i.Acompanhamentos)
-            .FirstOrDefaultAsync(c => c.Token == token, ct);
+            .FirstOrDefaultAsync(c => c.UserId == clienteId, ct);
 
         if (carrinho == null || carrinho.Itens.Count == 0)
             throw new InvalidOperationException("Carrinho vazio.");
@@ -364,7 +364,6 @@ public class PedidoService : IPedidoService
         await tx.CommitAsync(ct);
 
         CartTokenHelper.ClearToken(http);
-
         var valorSinal = Math.Round(pedido.Total * 0.50m, 2, MidpointRounding.AwayFromZero);
 
         // PIX fake
