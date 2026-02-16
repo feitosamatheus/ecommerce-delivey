@@ -49,8 +49,20 @@
 
                         @if (Model == null || !Model.Any())
                         {
-                            <div class="text-center text-muted p-4">
-                                Nenhum pedido em andamento no momento.
+                            <div id="emptyOrdersState" class="d-flex flex-column align-items-center justify-content-center py-5 px-3 pt-3 w-100">
+                                <div class="text-center bg-white" style="margin: 0 auto; border-radius:15px; max-width: 500px;">
+                                    <div class="mb-4 opacity-25">
+                                        @* Ícone de calendário ou sacola vazia combina mais com pedidos *@
+                                        <i class="fa-solid fa- calendar-xmark fa-4x text-secondary"></i>
+                                    </div>
+                                    <h4 class="fw-bold" style="color: #3c1e0a;">Nenhum pedido ativo</h4>
+                                    <p class="text-muted mb-4">
+                                        Você não possui pedidos em andamento no momento. Que tal dar uma olhada nas nossas delícias e fazer um novo pedido?
+                                    </p>
+                                    <button type="button" class="btn btn-outline-dark rounded-pill px-4 fw-bold" data-bs-dismiss="modal">
+                                        <i class="fa-solid fa-shop me-2"></i>Ver Cardápio
+                                    </button>
+                                </div>
                             </div>
                         }
                         else

@@ -35,6 +35,8 @@ public class Cliente
     public DateTime DataCadastro { get; set; } = DateTime.Now;
 
     public bool Ativo { get; set; } = true;
+    
+    public bool PrimeiroAcesso { get; set; } = true;
 
     public bool RecebeMarketing { get; set; }
 

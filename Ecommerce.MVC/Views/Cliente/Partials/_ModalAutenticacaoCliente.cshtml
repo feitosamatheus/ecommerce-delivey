@@ -1,0 +1,642 @@
+<style>
+    #auth-container {
+        position: relative; 
+    }
+    #modal-cliente-authBody .btn-principal {
+        background-color: #D98C1A; /* Marrom alaranjado do botão */
+        color: white;
+        border-radius: 1.5rem;
+        padding: 12px;
+        font-weight: bold;
+        border: none;
+        box-shadow: 0 4px 10px rgba(178, 101, 40, 0.3);
+    }
+
+        #modal-cliente-authBody .btn-principal:hover {
+            background-color: #8E4F1E;
+            color: white;
+        }
+    
+</style>
+
+<div class="modal fade" id="modal-cliente-auth" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg p-1">
+    <div class="modal-content bc-modal" style="border-radius: 20px;">
+        <div class="modal-body" id="modal-cliente-authBody">
+            <div class="row g-0" id="auth-container">
+                <div class="d-flex align-items-center" style="position:absolute;">
+                    <button type="button"
+                            id="btnVoltar"
+                            onclick="voltarModal()"
+                            class="btn-close-custom"
+                            aria-label="Voltar"
+                            style="display: none;">
+                        <i class="fa fa-arrow-left" style="font-size: 1.2rem;"></i>
+                    </button>
+
+                    <button type="button" style="font-size: 2rem;"
+                            onclick="fecharModal()"
+                            class="btn-close-custom ms-auto"
+                            aria-label="Close">
+                        &times;
+                    </button>
+                </div>
+
+                <div class="col-lg-5 d-none d-lg-block mb-2" id="img-banner" style="background: url('../../img/banner_lorem_login.png') center/cover; min-height: 480px;">
+                    <div class="h-100 w-100" style="background: rgba(60, 30, 10, 0.4);"></div>
+                </div>
+
+                @* LOGIN *@
+                <div class="col-lg-7 px-2 px-lg-5 py-3" id="login-form">
+                    <div class="text-center mb-2">
+                        <img src="~/img/logo4.png" alt="Logo" style="width: 80px;">
+                    </div>
+
+                    <div>
+                        <div class="text-center mb-4">
+                            <h4 class="fw-bold" style="color: #3c1e0a;">Entrar</h4>
+                            <p class="text-muted">Acesse para acompanhar seus pedidos</p>
+                        </div>
+                        <div id="loginErrorBox" class="alert alert-danger d-none" role="alert"></div>
+                        <form id="loginForm"
+                            asp-controller="Cliente"
+                            asp-action="Login"
+                            method="post"
+                            asp-antiforgery="true">
+
+                            <div class="mb-3 text-start">
+                                <label class="form-label fw-bold" for="loginEmail">E-mail</label>
+                                <input type="email"
+                                    id="loginEmail"
+                                    name="email"
+                                    class="form-control shadow-sm"
+                                    style="height: 40px !important;"
+                                    placeholder="seu@email.com"
+                                    required>
+                            </div>
+
+                            <div class="mb-3 text-start">
+                                <label class="form-label fw-bold" for="loginSenha">Senha</label>
+
+                                <div class="input-group shadow-sm" style="height: 40px;">
+                                    <input type="password"
+                                        id="loginSenha"
+                                        name="senha"
+                                        class="form-control"
+                                        style="height: 40px !important;"
+                                        placeholder="******"
+                                        required>
+
+                                    <span class="input-group-text cursor-pointer"
+                                        role="button"
+                                        aria-label="Mostrar/ocultar senha"
+                                        onclick="togglePasswordVisibility('loginSenha', this)">
+                                        <i class="fa fa-eye"></i>
+                                    </span>
+                                </div>
+
+                                <div class="text-end mt-1">
+                                    <small>
+                                        <a href="javascript:void(0)"
+                                        onclick="showForgot()"
+                                        style="color: #d4a017; font-size: 0.75rem;">
+                                            Esqueci minha senha
+                                        </a>
+                                    </small>
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                    class="btn w-100 btn-principal"
+                                    style="">
+                                Entrar
+                            </button>
+                            <div class="text-center mt-3">
+                                <small>Não tem conta?
+                                    <a href="javascript:void(0)" onclick="toggleAuth()" style="color: #d4a017;">
+                                        Cadastre-se
+                                    </a>
+                                </small>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+
+                @* REGISTRAR *@
+                <div class="col-12 px-2 px-lg-5 py-3 pt-0" id="register-form" style="display: none;">
+                    <div class="text-center mb-2" >
+                        <img src="~/img/logo4.png" alt="Logo" style="width: 80px;">
+                    </div>
+                    <div>
+                        <div class="text-center mb-4">
+                            <h4 class="fw-bold" style="color: #3c1e0a;">Criar Conta</h4>
+                            <p class="text-muted small">Preencha os dados para se cadastrar</p>
+                        </div>
+                        <div id="registerErrorBox" class="alert alert-danger d-none" role="alert"></div>
+                        <form id="registerForm"
+                            asp-controller="Cliente"
+                            asp-action="Registrar"
+                            method="post"
+                            asp-antiforgery="true">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nome Completo</label>
+                                <input type="text" name="NomeCompleto" class="form-control" placeholder="Seu nome" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">E-mail</label>
+                                <input type="email" name="Email" class="form-control" placeholder="exemplo@email.com" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">CPF</label>
+                                    <input type="text" name="CPF" class="form-control" placeholder="000.000.000-00"
+                                        inputmode="numeric" autocomplete="off" maxlength="14" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">WhatsApp</label>
+                                    <input type="tel" name="WhatsApp" class="form-control" placeholder="(00) 00000-0000"
+                                        inputmode="tel" autocomplete="off" maxlength="15" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Senha</label>
+                                    <div class="input-group">
+                                        <input type="password" name="Senha" id="registerSenha"
+                                            class="form-control" maxlength="8" placeholder="******" required>
+                                        <span class="input-group-text cursor-pointer"
+                                            onclick="togglePassword('registerSenha', this)">
+                                            <i class="fa fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Confirmar Senha</label>
+                                    <div class="input-group">
+                                        <input type="password" name="ConfirmarSenha" id="registerConfirmarSenha"
+                                            class="form-control" maxlength="8" placeholder="******" required>
+                                        <span class="input-group-text cursor-pointer"
+                                            onclick="togglePassword('registerConfirmarSenha', this)">
+                                            <i class="fa fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="mt-0" style="position: relative; top: -9px;">
+                                    <small class="text-muted">
+                                        A senha deve conter entre <strong>6</strong> e <strong>8</strong> caracteres.
+                                    </small>
+                                </div>
+                            </div>
+                            <hr class="my-4">
+                            <div class="bg-light p-3 rounded mb-3 border">
+                                <h6 class="fw-bold small mb-2" style="color: #3c1e0a;">Privacidade e Dados</h6>
+                                <div class="form-check mb-2 text-start">
+                                    <input class="form-check-input" type="checkbox" id="checkTerms" name="AceitaTermos" required>
+                                    <label class="form-check-label small" for="checkTerms">
+                                        Li e concordo com os <a href="#" style="color: #d4a017;">Termos de Uso</a> e a
+                                        <a href="#" style="color: #d4a017;">Política de Privacidade</a>.
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2 text-start">
+                                    <input class="form-check-input" type="checkbox" id="checkMarketing" name="AceitaMarketing">
+                                    <label class="form-check-label small" for="checkMarketing">
+                                        Aceito receber promoções e novidades via e-mail/WhatsApp. (Opcional)
+                                    </label>
+                                </div>
+                                <p class="text-muted" style="font-size: 0.75rem;">
+                                    * Seus dados serão utilizados apenas para processar seus pedidos e melhorar sua experiência conosco, conforme a LGPD.
+                                </p>
+                            </div>
+                            <button type="submit"
+                                    class="btn w-100 btn-principal">
+                                Finalizar Cadastro
+                            </button>
+                            <div class="text-center mt-3">
+                                <small>Já possui conta?
+                                    <a href="javascript:void(0)" onclick="toggleAuth()" style="color: #d4a017;">Fazer Login</a>
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                @* ESQUECI MINHA SENHA *@
+                <div class="col-lg-7 px-2 px-lg-5 py-3" id="forgot-password-form" style="display: none;">
+                    <div class="text-center mb-2 mt-4">
+                        <img src="~/img/logo4.png" alt="Logo" style="width: 80px;">
+                    </div>
+                    <div class="text-center mb-4">
+                        <h4 class="fw-bold" style="color: #3c1e0a;">Recuperar Senha</h4>
+                        <p class="text-muted">Insira seu e-mail para receber as instruções.</p>
+                    </div>
+                    <form>
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold">E-mail cadastrado</label>
+                            <input type="email" class="form-control shadow-sm" style=" height: 40px !important;" placeholder="seu@email.com" required>
+                        </div>
+                        <button type="submit" class="btn w-100  btn-principal">
+                            Enviar link de recuperação
+                        </button>
+                        <div class="text-center mt-3">
+                            <small><a href="javascript:void(0)" onclick="showLogin()" style="color: #d4a017;">Voltar para o Login</a></small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function togglePasswordVisibility(inputId, trigger) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+
+        const icon = trigger?.querySelector('i');
+        if (!icon) return;
+
+        const isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+
+        icon.classList.toggle('fa-eye', !isPassword);
+        icon.classList.toggle('fa-eye-slash', isPassword);
+    }
+    
+    function toggleAuth() {
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const forgotForm = document.getElementById('forgot-password-form');
+        const imgBanner = document.getElementById('img-banner');
+
+        if (loginForm.style.display === 'none') {
+            showLogin();
+        } else {
+            loginForm.style.display = 'none';
+            forgotForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            imgBanner.classList.replace('d-lg-block', 'd-lg-none');
+
+            document.getElementById('btnVoltar').style.display = 'inline-flex';
+        }
+    }
+
+    function showForgot() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('forgot-password-form').style.display = 'block';
+
+        document.getElementById('btnVoltar').style.display = 'inline-flex';
+        $('#btnVoltar').addClass('btn-voltar-recuperar').removeClass('btn-hidden');
+    }
+
+    function showLogin() {
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('forgot-password-form').style.display = 'none';
+
+        document.getElementById('btnVoltar').style.display = 'none';
+
+        const imgBanner = document.getElementById('img-banner');
+        imgBanner.classList.remove('d-lg-none');
+        imgBanner.classList.add('d-lg-block');
+        $('#btnVoltar').addClass('btn-hidden').removeClass('btn-voltar-recuperar');
+    }
+
+    function fecharModal() {
+        const modalElement = document.getElementById('modal-cliente-auth');
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+
+        setTimeout(showLogin, 500);
+    }
+
+    function voltarModal() {
+        showLogin();
+    }
+
+    $(document).on('submit', '#register-form form', function (e) {
+        e.preventDefault();
+
+        const $form = $(this);
+        const $btn = $form.find('button[type="submit"]');
+
+        const token = $form.find('input[name="__RequestVerificationToken"]').val();
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        data.AceitaTermos = document.getElementById('checkTerms')?.checked ?? false;
+        data.AceitaMarketing = document.getElementById('checkMarketing')?.checked ?? false;
+
+        // -----------------------------
+        // Helpers UI
+        // -----------------------------
+        function clearRegisterErrors() {
+            $('#registerErrorBox').addClass('d-none').text('');
+            $form.find('.is-invalid').removeClass('is-invalid');
+            $form.find('.invalid-feedback').text('');
+        }
+
+        function showRegisterError(message) {
+            $('#registerErrorBox').removeClass('d-none').text(message || 'Não foi possível concluir o cadastro.');
+        }
+
+        // Marca input por ID e escreve no *Feedback (se existir)
+        function setFieldErrorById(fieldId, message) {
+            const $field = $('#' + fieldId);
+            if ($field.length) {
+                $field.addClass('is-invalid');
+                const $fb = $('#' + fieldId + 'Feedback');
+                if ($fb.length) $fb.text(message || '');
+            }
+        }
+
+        // ModelState costuma vir como array de mensagens ou objeto; aqui suportamos array
+        function applyServerErrors(errors) {
+            if (!errors) return;
+
+            // Se vier array de strings (seu Registrar já retorna errors = erros)
+            if (Array.isArray(errors)) {
+                // Mostra geral e tenta heurística (opcional)
+                showRegisterError('Verifique os campos e tente novamente.');
+                return;
+            }
+
+            // Se vier objeto { Campo: ["msg1","msg2"] }
+            if (typeof errors === 'object') {
+                showRegisterError('Verifique os campos e tente novamente.');
+
+                Object.keys(errors).forEach((key) => {
+                    const msgs = errors[key];
+                    const msg = Array.isArray(msgs) ? (msgs[0] || '') : (msgs || '');
+                    // key pode ser "Email", "Senha", etc.
+                    setFieldErrorById(key, msg);
+                });
+            }
+        }
+
+        clearRegisterErrors();
+
+        // -----------------------------
+        // Validações client-side (mantendo sua regra, mas com UI)
+        // -----------------------------
+        const senha = (data.Senha || '').trim();
+        const confirmar = (data.ConfirmarSenha || '').trim();
+
+        if (senha.length < 6) {
+            showRegisterError('Corrija os campos destacados para continuar.');
+            setFieldErrorById('Senha', 'A senha deve ter no mínimo 6 caracteres.');
+            return;
+        }
+
+        if (senha !== confirmar) {
+            showRegisterError('Corrija os campos destacados para continuar.');
+            setFieldErrorById('Senha', 'As senhas não conferem.');
+            setFieldErrorById('ConfirmarSenha', 'As senhas não conferem.');
+            return;
+        }
+
+        // Se “AceitaTermos” for obrigatório, sugiro validar aqui também:
+        if (!data.AceitaTermos) {
+            showRegisterError('Você precisa aceitar os termos para continuar.');
+            // se você quiser marcar visualmente o checkbox, pode adicionar classe em um wrapper
+            return;
+        }
+
+        $.ajax({
+            url: '/Cliente/Registrar',
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(data),
+            headers: token ? { 'RequestVerificationToken': token } : {},
+            beforeSend: function () {
+                $btn.prop('disabled', true);
+                addLoading('Processando...');
+            },
+            statusCode: {
+                429: function () {
+                    uiNotify.toast.warn('Muitas tentativas. Aguarde um momento e tente novamente.');
+                    showRegisterError('Muitas tentativas. Aguarde um momento e tente novamente.');
+                }
+            },
+            success: function (result) {
+                if (result?.success) {
+                    uiNotify.toast.success(result.message || 'Cadastro realizado com sucesso!');
+                    window.location.href = `/Home/Index?loginSucesso=true&primeiroAcesso=true`;
+                    return;
+                }
+
+                // Falha de validação / regra de negócio
+                const msg = result?.message || 'Não foi possível concluir o cadastro.';
+                uiNotify.toast.warn(msg);
+                showRegisterError(msg);
+
+                // Se vier errors do ModelState
+                applyServerErrors(result?.errors);
+
+                // Fallback: se não veio estrutura de errors, pelo menos marca campos prováveis
+                // (opcional) Ex.: email em uso, etc. -> você pode setar aqui pelo message
+                $btn.prop('disabled', false);
+            },
+            error: function (xhr) {
+                let msg = 'Erro inesperado ao comunicar com o servidor. Tente novamente.';
+
+                uiNotify.alert.error(msg);
+                showRegisterError(msg);
+            },
+            complete: function () {
+                $btn.prop('disabled', false);
+                removeLoading();
+            }
+        });
+    });
+
+    $(document).on('submit', '#loginForm', function (e) {
+        e.preventDefault();
+        const $form = $(this);
+        const $btn  = $form.find('button[type="submit"]'); 
+        const token = $form.find('input[name="__RequestVerificationToken"]').val();
+
+        const $email = $('#loginEmail');
+        const $senha = $('#loginSenha');
+
+        // -----------------------------
+        // Helpers de UI
+        // -----------------------------
+        function clearLoginErrors() {
+            $('#loginErrorBox').addClass('d-none').text('');
+
+            $email.removeClass('is-invalid');
+            $senha.removeClass('is-invalid');
+
+            $('#loginEmailFeedback').text('');
+            $('#loginSenhaFeedback').text('');
+        }
+
+        function showLoginError(message) {
+            $('#loginErrorBox').removeClass('d-none').text(message || 'Não foi possível realizar o login.');
+        }
+
+        function setFieldError($field, feedbackSelector, message) {
+            $field.addClass('is-invalid');
+            $(feedbackSelector).text(message || '');
+        }
+
+        const payload = {
+            email: ($email.val() || '').trim(),
+            senha: $senha.val() || ''
+        };
+
+        clearLoginErrors();
+
+        // Validação básica no client (opcional, mas melhora UX)
+        if (!payload.email) {
+            setFieldError($email, '#loginEmailFeedback', 'Informe o e-mail.');
+            return;
+        }
+        if (!payload.senha) {
+            setFieldError($senha, '#loginSenhaFeedback', 'Informe a senha.');
+            return;
+        }
+
+        $.ajax({
+            url: '/Cliente/Login',
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(payload),
+            headers: token ? { 'RequestVerificationToken': token } : {},
+            beforeSend: function () {
+                $btn.prop('disabled', true);
+                addLoading('Processando...');
+            },
+            success: function (result) {
+                if (result && result.success) {
+                    uiNotify.toast.success('Login realizado com sucesso!');
+                    const foiPrimeiroAcesso = !!result.foiPrimeiroAcesso;
+                    window.location.href = `/Home/Index?loginSucesso=true&primeiroAcesso=${foiPrimeiroAcesso}`;
+                    return;
+                }
+
+                // Erro retornado pelo servidor
+                const msg = (result && result.message) || 'E-mail ou senha inválidos.';
+
+                uiNotify.toast.warn(msg);
+                showLoginError(msg);
+
+                // Marcar campos como inválidos (caso típico de credenciais)
+                $email.addClass('is-invalid');
+                $senha.addClass('is-invalid');
+
+                // Opcional: mensagens por campo
+                $('#loginEmailFeedback').text('Verifique o e-mail informado.');
+                $('#loginSenhaFeedback').text('Verifique a senha informada.');
+
+                $btn.prop('disabled', false);
+            },
+            statusCode: {
+                429: function () {
+                    uiNotify.toast.warn('Muitas tentativas. Aguarde um momento e tente novamente.');
+                    $btn.prop('disabled', false);
+                }
+            },
+            error: function (xhr) {
+                uiNotify.alert.error('Falha ao comunicar com o servidor. Tente novamente.');
+                $btn.prop('disabled', false);
+            },
+            complete: function () {
+                removeLoading();
+            }
+        });
+    });
+
+    function onlyDigits(value) {
+      return (value || '').replace(/\D/g, '');
+    }
+
+    function maskCPF(value) {
+      const d = onlyDigits(value).slice(0, 11);
+      // 000.000.000-00
+      const p1 = d.slice(0, 3);
+      const p2 = d.slice(3, 6);
+      const p3 = d.slice(6, 9);
+      const p4 = d.slice(9, 11);
+
+      let out = p1;
+      if (p2) out += '.' + p2;
+      if (p3) out += '.' + p3;
+      if (p4) out += '-' + p4;
+      return out;
+    }
+
+    function maskPhoneBR(value) {
+      const d = onlyDigits(value).slice(0, 11);
+
+      // (00) 0000-0000 (10 dígitos) OU (00) 00000-0000 (11 dígitos)
+      const ddd = d.slice(0, 2);
+      const part1 = d.length > 10 ? d.slice(2, 7) : d.slice(2, 6);
+      const part2 = d.length > 10 ? d.slice(7, 11) : d.slice(6, 10);
+
+      let out = '';
+      if (ddd) out = `(${ddd}`;
+      if (ddd.length === 2) out += ') ';
+      if (part1) out += part1;
+      if (part2) out += '-' + part2;
+
+      return out;
+    }
+
+    function applyMask(input, masker) {
+      if (!input) return;
+
+      const handler = () => {
+        const start = input.selectionStart;
+        const before = input.value;
+
+        input.value = masker(input.value);
+
+        // mantém o cursor de forma razoável
+        const diff = input.value.length - before.length;
+        const pos = (start || 0) + diff;
+        input.setSelectionRange(pos, pos);
+      };
+
+      input.addEventListener('input', handler);
+      input.addEventListener('blur', handler);
+
+      // aplica se já houver valor preenchido (ex: autofill)
+      handler();
+    }
+
+    // --- Aplicação das máscaras ---
+    (function initMasks() {
+      const cpfInput = document.querySelector('#register-form [name="CPF"]');
+      const whatsappInput = document.querySelector('#register-form [name="WhatsApp"]');
+
+      applyMask(cpfInput, maskCPF);
+      applyMask(whatsappInput, maskPhoneBR);
+    })();
+
+    function togglePassword(inputId, trigger) {
+        const input = document.getElementById(inputId);
+        const icon = trigger.querySelector('i');
+
+        if (!input) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+</script>

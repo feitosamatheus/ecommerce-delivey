@@ -3,7 +3,6 @@
     // Loading helpers (globais)
     // ===========================
     window.addLoading = function (text) {
-        debugger
         if (text != "" && text != null) {
             var textSpinner = document.querySelector(".text-spinner");
             if (textSpinner) textSpinner.textContent = text;
@@ -265,3 +264,70 @@
         });
 
 })(jQuery);
+
+window.uiNotify = (function () {
+  // Toast padrão (top-end)
+  const Toast = Swal.mixin({
+    toast: true,
+    position: 'bottom-end',
+    showConfirmButton: false,
+    timer: 3200,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer);
+      toast.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+  });
+
+  function toastSuccess(message, title = 'Sucesso') {
+    return Toast.fire({ icon: 'success', title, text: message || '' });
+  }
+
+  function toastError(message, title = 'Erro') {
+    return Toast.fire({ icon: 'error', title, text: message || '' });
+  }
+
+  function toastInfo(message, title = 'Atenção') {
+    return Toast.fire({ icon: 'info', title, text: message || '' });
+  }
+
+  function toastWarn(message, title = 'Aviso') {
+    return Toast.fire({ icon: 'warning', title, text: message || '' });
+  }
+
+  // Modal (alerta)
+  function alertSuccess(message, title = 'Sucesso') {
+    return Swal.fire({
+      icon: 'success',
+      title,
+      text: message || '',
+      confirmButtonText: 'OK'
+    });
+  }
+
+  function alertError(message, title = 'Não foi possível concluir') {
+    return Swal.fire({
+      icon: 'error',
+      title,
+      text: message || 'Ocorreu um erro. Tente novamente.',
+      confirmButtonText: 'OK'
+    });
+  }
+
+  function alertConfirm(message, title = 'Confirmação', confirmText = 'Confirmar', cancelText = 'Cancelar') {
+    return Swal.fire({
+      icon: 'question',
+      title,
+      text: message || '',
+      showCancelButton: true,
+      confirmButtonText: confirmText,
+      cancelButtonText: cancelText,
+      reverseButtons: true
+    });
+  }
+
+  return {
+    toast: { success: toastSuccess, error: toastError, info: toastInfo, warn: toastWarn },
+    alert: { success: alertSuccess, error: alertError, confirm: alertConfirm }
+  };
+})();

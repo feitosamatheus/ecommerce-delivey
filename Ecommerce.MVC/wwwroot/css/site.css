@@ -46,3 +46,11 @@ h1, h2, h3, h4, h5 {
   @import url("./comun/comunDesktop.css");
 
 }
+.swal2-container.swal2-top-end,
+.swal2-container.swal2-top-start,
+.swal2-container.swal2-top,
+.swal2-container.swal2-bottom-end,
+.swal2-container.swal2-bottom-start,
+.swal2-container.swal2-bottom {
+  z-index: 999999999 !important;
+}

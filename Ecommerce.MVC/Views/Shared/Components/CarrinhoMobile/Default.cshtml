@@ -8,7 +8,7 @@
        ============================ */
 
     .cart-mobile .bc-cart-container {
-        /* border-radius: 16px; */
+        border-radius: 20px; 
         box-shadow:none;
         background: #fff;
     }
@@ -40,7 +40,7 @@
     .cart-mobile .btn-checkout {
         border-radius: 50px;
         padding: 12px;
-        background: #edcd9a;
+        background: #D98C1A;
         transition: 0.3s;
     }
 
@@ -64,7 +64,7 @@
 
 <div class="modal fade" id="modalCarrinhoMobile" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered  p-3">
-        <div class="modal-content" style="border-radius: 15px;">
+        <div class="modal-content" style="border-radius: 20px;">
             <div class="modal-header border-0 d-flex align-items-center justify-content-between">
                 <div class="text-start d-flex align-items-start">
                     <h5 class="modal-title fw-bolder mb-0" style="color: #3c1e0a; font-weight: bold !important; font-size: 1rem; margin-bottom: 0.5rem !important;">
@@ -125,7 +125,7 @@
                             {
                                 if (User.Identity.IsAuthenticated)
                                 {
-                                    <button class="btn w-100 btn-checkout shadow-sm js-confirmar-add-produto" style="background: #edcd9a; color: black;"
+                                    <button class="btn w-100 btn-checkout shadow-sm js-confirmar-add-produto-mobile" style="background: #D98C1A; color: rgb(255, 255, 255); font-weight: 700;"
                                             @(Model.EstaVazio ? "disabled" : "")
                                             data-carrinho-id="@Model.CarrinhoId">
                                         FINALIZAR PEDIDO
@@ -135,7 +135,7 @@
                                 else
                                 {
                                     <button type="button"
-                                            class="btn w-100 d-flex align-items-center justify-content-center fw-bold btn-login-cart btn-checkout js-login-carrinho">
+                                            class="btn w-100 d-flex align-items-center justify-content-center fw-bold btn-login-cart btn-checkout js-login-carrinho-mobile">
                                         <i class="fa-solid fa-circle-user fs-5 me-2"></i>
                                         ENTRAR PARA FINALIZAR
                                     </button>
@@ -153,70 +153,73 @@
 </div>
 
 <script>
-
-    $(document).on('click', '.js-confirmar-add-produto', function () {
-        addLoading("Carregando...");
-
+    $(document).on('click', '.js-confirmar-add-produto-mobile', function () {
         $.ajax({
             url: '/Pedido/BuscarModalFinalizarPedido',
             method: 'GET',
+            beforeSend: function () {
+                addLoading("Carregando...");
+            },
             success: function (html) {
-                $('#conteudo-modal').empty();
-                $('#conteudo-modal').html(html);
+                const $conteudo = $('#conteudo-dinamico');
+                $conteudo.empty().html(html);
 
                 const el = document.getElementById('modalFinalizarPedido');
                 const modal = bootstrap.Modal.getOrCreateInstance(el);
 
                 modal.show();
 
-                if (window.wizardInitFinalizarPedido)
+                if (window.wizardInitFinalizarPedido) {
                     window.wizardInitFinalizarPedido();
-                removeLoading();
+                }
             },
+
             error: function (xhr) {
                 alert(xhr.responseText || 'Erro ao carregar o modal.');
+            },
+
+            complete: function () {
                 removeLoading();
             }
         });
     });
 
-    $(document).on('click', '.js-login-carrinho', function () {
-
-        addLoading("Carregando...");
-
+    $(document).on('click', '.js-login-carrinho-mobile', function () {
         const modalCarrinhoEl = document.getElementById('modalCarrinhoMobile');
-        const modalLoginEl = document.getElementById('modalContaCliente');
 
-        const modalCarrinho = bootstrap.Modal.getInstance(modalCarrinhoEl);
-        const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
+        function carregarEExibirLogin() {
+            $.ajax({
+                url: '/Cliente/BuscarModalAutenticacaoCliente',
+                method: 'GET',
+                cache: false,
+                beforeSend: function () {
+                    addLoading("Carregando...");
+                },
+                success: function (html) {
+                    $('#conteudo-dinamico').empty();
+                    $('#conteudo-dinamico').html(html);
 
-        // 1️⃣ Fecha o modal do carrinho, se estiver aberto
-        if (modalCarrinho) {
-            modalCarrinho.hide();
+                    const modalLoginEl    = document.getElementById('modal-cliente-auth');
+                    const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
+                    modalLogin.show();
+                },
+                error: function () {
+                    $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+                },
+                complete: function () {
+                    removeLoading();
+                }
+            });
         }
 
-        // 2️⃣ Quando o carrinho terminar de fechar, abre o login
-        modalCarrinhoEl.addEventListener('hidden.bs.modal', function handler() {
+        const modalCarrinho = modalCarrinhoEl ? bootstrap.Modal.getInstance(modalCarrinhoEl) : null;
 
-            modalCarrinhoEl.removeEventListener('hidden.bs.modal', handler);
-
-            const $body = $('#modalContaClienteBody');
-            $body.html('<div class="text-muted p-3">Carregando...</div>');
-
-            $.get('/Cliente/ContaClienteModal')
-                .done(function (html) {
-                    $body.html(html);
-                    modalLogin.show();
-                })
-                .fail(function () {
-                    $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
-                    modalLogin.show();
-                })
-                .always(function () {
-                    removeLoading();
-                });
-
-        }, { once: true });
+        if (modalCarrinho && modalCarrinhoEl.classList.contains('show')) {
+            modalCarrinhoEl.addEventListener('hidden.bs.modal', carregarEExibirLogin, { once: true });
+            modalCarrinho.hide();
+        } else {
+            carregarEExibirLogin();
+        }
     });
 
     let resizeTimeout = null;
@@ -240,5 +243,4 @@
             }
         }
     }
-
 </script>

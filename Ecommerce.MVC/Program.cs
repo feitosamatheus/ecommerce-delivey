@@ -7,6 +7,8 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddAntiforgery(o => o.HeaderName = "RequestVerificationToken");
+
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PgSqlConnection"))
 );

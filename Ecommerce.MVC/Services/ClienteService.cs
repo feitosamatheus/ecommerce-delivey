@@ -26,17 +26,17 @@ public class ClienteService : IClienteService
         var email = model.Email?.Trim().ToLowerInvariant();
 
         if (!CpfEhValido(cpf))
-            return ServiceResult<Cliente>.Fail("CPF inválido.");
+            return ServiceResult<Cliente>.Fail("CPF invÃ¡lido.");
 
         var cpfExiste = await _context.Clientes.AnyAsync(c => c.CPF == cpf);
         if (cpfExiste)
-            return ServiceResult<Cliente>.Fail("CPF já cadastrado.");
+            return ServiceResult<Cliente>.Fail("CPF jÃ¡ cadastrado.");
 
         var emailExiste = await _context.Clientes
             .AnyAsync(c => c.Email.ToLower() == email);
 
         if (emailExiste)
-            return ServiceResult<Cliente>.Fail("E-mail já cadastrado.");
+            return ServiceResult<Cliente>.Fail("E-mail jÃ¡ cadastrado.");
 
         var novoCliente = new Cliente
         {
@@ -54,21 +54,28 @@ public class ClienteService : IClienteService
         return ServiceResult<Cliente>.Ok(novoCliente, "Cliente cadastrado com sucesso.");
     }
 
-    public async Task<Cliente> LoginAsync(LoginClienteViewModel model)
+    public async Task<LoginResultadoViewModel> LoginAsync(LoginClienteViewModel model)
     {
-        var cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Email == model.Email);
+        // Precisa ser "tracked" para atualizar sem gambiarra
+        var cliente = await _context.Clientes
+            .FirstOrDefaultAsync(c => c.Email == model.Email);
 
-        if (cliente is null)
-            return null;
+        if (cliente is null) return null;
+        if (!cliente.Ativo) return null;
 
-        if (!cliente.Ativo)
-            return null;
-            
         var ok = BCrypt.Net.BCrypt.Verify(model.Senha, cliente.SenhaHash);
-        if (!ok)
-            return null;
+        if (!ok) return null;
 
-        return cliente;
+        // Snapshot do valor ANTES de alterar
+        var foiPrimeiroAcesso = cliente.PrimeiroAcesso;
+
+        if (foiPrimeiroAcesso)
+        {
+            cliente.PrimeiroAcesso = false;
+            await _context.SaveChangesAsync();
+        }
+
+        return new LoginResultadoViewModel(cliente, foiPrimeiroAcesso);
     }
 
     private bool CpfEhValido(string cpf)
@@ -81,7 +88,7 @@ public class ClienteService : IClienteService
 
         var numeros = cpf.Select(c => int.Parse(c.ToString())).ToArray();
 
-        // Primeiro dígito
+        // Primeiro dï¿½gito
         var soma1 = 0;
         for (int i = 0; i < 9; i++)
             soma1 += numeros[i] * (10 - i);
@@ -92,7 +99,7 @@ public class ClienteService : IClienteService
         if (numeros[9] != digito1)
             return false;
 
-        // Segundo dígito
+        // Segundo dï¿½gito
         var soma2 = 0;
         for (int i = 0; i < 10; i++)
             soma2 += numeros[i] * (11 - i);

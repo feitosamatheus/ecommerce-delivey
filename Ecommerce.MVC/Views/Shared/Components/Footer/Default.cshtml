@@ -99,8 +99,8 @@
         z-index: 10040 !important;
     }
 
-    /* Caso o seu modal seja um elemento customizado (#conteudo-modal) */
-    #conteudo-modal {
+    /* Caso o seu modal seja um elemento customizado (#conteudo-dinamico) */
+    #conteudo-dinamico {
         position: relative;
         z-index: 10060;
     }
@@ -185,8 +185,6 @@
     @await Component.InvokeAsync("CarrinhoMobile")
 </div>
 
-
-
 <script>
     $(document).on('click', '.js-acompanhar-pedidos', function () {
 
@@ -197,8 +195,8 @@
                   url: '/Pedido/BuscarModalPedidosEmAndamento',
                 method: 'GET',
                 success: function (html) {
-                    $('#conteudo-modal').empty();
-                    $('#conteudo-modal').html(html);
+                    $('#conteudo-dinamico').empty();
+                    $('#conteudo-dinamico').html(html);
 
                     const el = document.getElementById('modalPedidosEmAndamento');
                     bootstrap.Modal.getOrCreateInstance(el).show();
@@ -217,15 +215,15 @@
         $('#modalAcompanhamentoClienteBody').empty();
         addLoading("Carregando...");
 
-        const $body = $('#modalContaClienteBody');
-        const modalEl = document.getElementById('modalContaCliente');
+        const $body = $('#modal-cliente-authBody');
+        const modalEl = document.getElementById('modal-cliente-auth');
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
         $body.html('<div class="text-muted p-3">Carregando...</div>');
 
         // ⏳ Delay de 3 segundos
         setTimeout(function () {
-            $.get('/Cliente/ContaClienteModal')
+            $.get('/Cliente/BuscarModalAutenticacaoCliente')
                 .done(function (html) {
                     $body.html(html);
                     modal.show();

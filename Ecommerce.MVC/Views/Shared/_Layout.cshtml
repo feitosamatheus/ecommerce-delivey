@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -24,13 +25,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32x32.png" asp-append-version="true">
-<link rel="icon" type="image/png" sizes="16x16" href="~/favicon-16x16.png" asp-append-version="true">
-<link rel="apple-touch-icon" sizes="180x180" href="~/apple-icon-180x180.png" asp-append-version="true">
-<link rel="manifest" href="~/manifest.json" asp-append-version="true">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/favicon-16x16.png" asp-append-version="true">
+    <link rel="apple-touch-icon" sizes="180x180" href="~/apple-icon-180x180.png" asp-append-version="true">
+    <link rel="manifest" href="~/manifest.json" asp-append-version="true">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 </head>
 <body class="container-fluid container-lg px-0">
-    
+    @{
+        var nomeClaim =
+            User?.FindFirst(ClaimTypes.GivenName)?.Value
+            ?? User?.FindFirst(ClaimTypes.Name)?.Value
+            ?? User?.Identity?.Name
+            ?? "";
+
+        var primeiroNome = (nomeClaim ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+    }
     @* @await Html.PartialAsync("Partials/_Animacao.cshtml") *@
     @await Html.PartialAsync("Partials/_LoadingSpinner.cshtml")
     @await Component.InvokeAsync("Header")
@@ -41,11 +52,9 @@
         </main>
     </div>
 
-    <div id="conteudo-modal"></div>
+    <div id="conteudo-dinamico"></div>
 
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await Html.PartialAsync("Partials/_ModalVerMais.cshtml")
-    @await Html.PartialAsync("Partials/_ModalContaCliente.cshtml")
     @await Html.PartialAsync("Partials/_ModalAlterarSenha.cshtml")
     @await Component.InvokeAsync("Footer")
 
@@ -125,7 +134,7 @@
                             Ver Meus Pedidos
                         </a>
                         <button type="button" class="btn btn-link text-brown fw-bold mt-2" data-bs-dismiss="modal" style="color: #4A321F; text-decoration: none;">
-                            Continuar comprando <i class="fa-solid fa-xmark ms-1"></i>
+                            Continuar comprando 
                         </button>
                     </div>
 
@@ -161,86 +170,122 @@
     <div class="modal fade modal-barriga-cheia" id="modalSucessoLogin" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered px-4">
             <div class="modal-content shadow-lg">
-                <div class="modal-body text-center p-4">
+            <div class="modal-body text-center p-4">
 
-                    <div class="circle-check mb-4 animate__animated animate__zoomIn" style="background-color: #e9ecef; color: #4A321F; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; font-size: 2rem;">
-                        <i class="fa-solid fa-user-check"></i>
-                    </div>
-
-                    <h2 class="text-titulo mb-3">Bem-vindo de volta!</h2>
-
-                    <p class="text-muted px-2">
-                        Seu login foi realizado com sucesso. Agora você pode finalizar seus pedidos.
-                    </p>
-
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
-                            Acessar o Sistema
-                        </button>
-                    </div>
-
+                <div class="circle-check mb-4 animate__animated animate__zoomIn"
+                    style="background-color: #e9ecef; color: #4A321F; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; font-size: 2rem;">
+                <i class="fa-solid fa-user-check"></i>
                 </div>
+
+                <h2 class="text-titulo mb-3" id="loginTitulo"></h2>
+
+                <p class="text-muted px-2" id="loginMensagem"></p>
+
+                <div class="d-grid gap-2 mt-4">
+                <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
+                    Acessar o Sistema
+                </button>
+                </div>
+
+            </div>
             </div>
         </div>
-    </div>
+        </div>
+
 
     @await RenderSectionAsync("Scripts", required: false)
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
+        window.appUser = {
+            primeiroNome: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(primeiroNome))
+        };
+
         $(document).ready(function () {
             const urlParams = new URLSearchParams(window.location.search);
 
-            if (urlParams.has('confirmado')) {
-                var modalSucesso = new bootstrap.Modal(document.getElementById('modalSucessoPedido'));
-                modalSucesso.show();
-                window.history.replaceState({}, document.title, window.location.pathname);
-                limparUrl();
-            }
-
-            if (urlParams.has('loginSucesso')) {
-                var modalLogin = new bootstrap.Modal(document.getElementById('modalSucessoLogin'));
-                modalLogin.show();
-                limparUrl();
-            }
-
-            if (urlParams.has('itemAdicionado')) {
-                var modalProduto = new bootstrap.Modal(document.getElementById('modalSucessoProduto'));
-                modalProduto.show();
-                limparUrl();
-            }
-
-            if (urlParams.has('abrirPedidos')) {
-                addLoading("Carregando...");
-
-                setTimeout(() => {
-                    $.ajax({
-                          url: '/Pedido/BuscarModalPedidosEmAndamento',
-                        method: 'GET',
-                        success: function (html) {
-                            $('#conteudo-modal').empty();
-                            $('#conteudo-modal').html(html);
-
-                            const el = document.getElementById('modalPedidosEmAndamento');
-                            bootstrap.Modal.getOrCreateInstance(el).show();
-
-                            removeLoading();
-                        },
-                        error: function (xhr) {
-                            alert(xhr.responseText || 'Erro ao carregar pedidos.');
-                            removeLoading();
-                        }
-                    });
-                }, 800);
-
-                limparUrl();
+            function toBool(v) {
+                if (v == null) return false;
+                v = String(v).toLowerCase();
+                return v === '1' || v === 'true' || v === 'yes' || v === 'y';
             }
 
             function limparUrl() {
                 const cleanUrl = window.location.origin + window.location.pathname;
                 window.history.replaceState({}, document.title, cleanUrl);
             }
+
+            if (urlParams.has('confirmado')) {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalSucessoPedido')).show();
+                limparUrl();
+            }
+
+            if (urlParams.has('loginSucesso')) {
+                const primeiroAcesso = toBool(urlParams.get('primeiroAcesso'));
+                const nome = (window.appUser?.primeiroNome || '').trim();
+                const sufixoNome = nome ? `, ${nome}` : '';
+
+                const titulo = primeiroAcesso
+                ? `Seja bem-vindo${sufixoNome}!`
+                : `Bem-vindo de volta${sufixoNome}!`;
+
+                const mensagem = primeiroAcesso
+                ? 'Seu acesso foi criado com sucesso. Agora você pode finalizar seus pedidos.'
+                : 'Seu login foi realizado com sucesso. Agora você pode finalizar seus pedidos.';
+
+                $('#loginTitulo').text(titulo);
+                $('#loginMensagem').text(mensagem);
+
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalSucessoLogin')).show();
+                limparUrl();
+            }
+
+            if (urlParams.has('itemAdicionado')) {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalSucessoProduto')).show();
+                limparUrl();
+            }
+
+            if (urlParams.has('abrirPedidos')) {
+                const isDesktop = window.matchMedia('(min-width: 1200px)').matches;
+
+                // Remove o parâmetro da URL para não reabrir em refresh/volta
+                limparUrl();
+
+                if (!isDesktop) {
+                    // Mobile/tablet: vai para a página de pedidos
+                    window.location.replace('/Pedido/Index');
+                    return;
+                }
+
+                // Desktop: abre modal
+                addLoading("Carregando...");
+
+                setTimeout(() => {
+                    $.ajax({
+                    url: '/Pedido/BuscarModalPedidosEmAndamento',
+                    method: 'GET',
+                    success: function (html) {
+                        $('#conteudo-dinamico').empty().html(html);
+                        bootstrap.Modal
+                        .getOrCreateInstance(document.getElementById('modalPedidosEmAndamento'))
+                        .show();
+                    },
+                    error: function (xhr) {
+                        // se você tiver SweetAlert:
+                        // uiNotify.toast.error(xhr.responseText || 'Erro ao carregar pedidos.');
+                        alert(xhr.responseText || 'Erro ao carregar pedidos.');
+                    },
+                    complete: function () {
+                        removeLoading();
+                    }
+                    });
+                }, 800);
+            }
+
         });
+
     </script>
 </body>
 </html>

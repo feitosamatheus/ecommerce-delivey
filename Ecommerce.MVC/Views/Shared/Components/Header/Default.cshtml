@@ -291,157 +291,158 @@
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   (function () {
-     function abrirModalConta() {
+        function abrirModalConta() {
+        $.ajax({
+            url: '/Cliente/BuscarModalAutenticacaoCliente',
+            method: 'GET',
+            cache: false,
+            beforeSend: function () {
+                addLoading("Carregando...");
+            },
+            success: function (html) {
+                $('#conteudo-dinamico').empty();
+                $('#conteudo-dinamico').html(html);
+
+                const modalLoginEl    = document.getElementById('modal-cliente-auth');
+                const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
+                modalLogin.show();
+            },
+            error: function () {
+                $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+            },
+            complete: function () {
+                removeLoading();
+            }
+        });
+    }
+
+        window.irParaLogin = function() {
+            const modalAcompanhamentoEl = document.getElementById('modalAcompanhamentoCliente');
+            const instanciaAcompanhamento = bootstrap.Modal.getInstance(modalAcompanhamentoEl);
+
+            if (instanciaAcompanhamento) {
+                instanciaAcompanhamento.hide();
+
+                modalAcompanhamentoEl.addEventListener('hidden.bs.modal', function handler() {
+                    abrirModalConta(); 
+                    modalAcompanhamentoEl.removeEventListener('hidden.bs.modal', handler);
+                }, { once: true });
+            } else {
+                abrirModalConta();
+            }
+        };
         
-        $('#modalAcompanhamentoClienteBody').empty();
+        $(document).on('click', '#btn-abrir-login', abrirModalConta);
 
-        const $body = $('#modalContaClienteBody');
-        const modalEl = document.getElementById('modalContaCliente');
+        $(document).on('click', '#btn-meus-pedidos', abrirModalConta);
 
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        $(document).on('click', '.btn-acompanhar-pedido-login', abrirModalConta);
 
-        $body.html('<div class="text-muted p-3">Carregando...</div>');
+        $(document).on('click', '.btn-acompanhar-pedido', function () {
 
-        $.get('/Cliente/ContaClienteModal')
-        .done(function (html) {
-            $body.html(html);
-            modal.show();
-        })
-        .fail(function () {
-            $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
-            modal.show();
+            addLoading("Carregando...");
+
+            setTimeout(() => {
+                $.ajax({
+                    url: '/Pedido/BuscarModalPedidosEmAndamento',
+                    method: 'GET',
+                    success: function (html) {
+                        $('#conteudo-dinamico').empty();
+                        $('#conteudo-dinamico').html(html);
+
+                        const el = document.getElementById('modalPedidosEmAndamento');
+                        bootstrap.Modal.getOrCreateInstance(el).show();
+
+                        removeLoading();
+                    },
+                    error: function (xhr) {
+                        alert(xhr.responseText || 'Erro ao carregar pedidos.');
+                        removeLoading();
+                    }
+                });
+            }, 800); 
         });
-    }
 
-    window.irParaLogin = function() {
-        const modalAcompanhamentoEl = document.getElementById('modalAcompanhamentoCliente');
-        const instanciaAcompanhamento = bootstrap.Modal.getInstance(modalAcompanhamentoEl);
+        document.addEventListener('click', async function (e) {
+        const btn = e.target.closest('#btn-sair');
+        if (!btn) return;
 
-        if (instanciaAcompanhamento) {
-            instanciaAcompanhamento.hide();
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
 
-            modalAcompanhamentoEl.addEventListener('hidden.bs.modal', function handler() {
-                abrirModalConta(); 
-                modalAcompanhamentoEl.removeEventListener('hidden.bs.modal', handler);
-            }, { once: true });
-        } else {
-            abrirModalConta();
-        }
-    };
-    
-    $(document).on('click', '#btn-abrir-login', abrirModalConta);
+        addLoading("Saindo...");
 
-    $(document).on('click', '#btn-meus-pedidos', abrirModalConta);
-
-    $(document).on('click', '.btn-acompanhar-pedido-login', abrirModalConta);
-
-    $(document).on('click', '.btn-acompanhar-pedido', function () {
-
-        addLoading("Carregando...");
-
-        setTimeout(() => {
-            $.ajax({
-                  url: '/Pedido/BuscarModalPedidosEmAndamento',
-                method: 'GET',
-                success: function (html) {
-                    $('#conteudo-modal').empty();
-                    $('#conteudo-modal').html(html);
-
-                    const el = document.getElementById('modalPedidosEmAndamento');
-                    bootstrap.Modal.getOrCreateInstance(el).show();
-
-                    removeLoading();
-                },
-                error: function (xhr) {
-                    alert(xhr.responseText || 'Erro ao carregar pedidos.');
-                    removeLoading();
-                }
+        try {
+            const response = await fetch('/Cliente/Logout', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
-        }, 800); 
-    });
 
-
-    document.addEventListener('click', async function (e) {
-      const btn = e.target.closest('#btn-sair');
-      if (!btn) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-
-      addLoading("Saindo...");
-
-      try {
-        const response = await fetch('/Cliente/Logout', {
-          method: 'POST',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            if (response.ok) {
+            window.location.reload();
+            } else {
+            removeLoading();
+            alert('Não foi possível sair. Tente novamente.');
+            }
+        } catch {
+            removeLoading();
+            alert('Erro inesperado ao comunicar com o servidor.');
+        }
         });
 
-        if (response.ok) {
-          window.location.reload();
-        } else {
-          removeLoading();
-          alert('Não foi possível sair. Tente novamente.');
+        const btn = document.getElementById('btn-conta-dropdown');
+        const btnMobile = document.getElementById('btn-conta-dropdown-mobile');
+
+        let dropdownDesktop = btn ? bootstrap.Dropdown.getOrCreateInstance(btn) : null;
+        let dropdownMobile = btnMobile ? bootstrap.Dropdown.getOrCreateInstance(btnMobile) : null;
+
+        let aberto = false;
+        let abertoMobile = false;
+
+        if (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (aberto) dropdownDesktop.hide(); 
+                else dropdownDesktop.show();
+                
+                aberto = !aberto;
+                btn.setAttribute('aria-expanded', aberto);
+            });
         }
-      } catch {
-        removeLoading();
-        alert('Erro inesperado ao comunicar com o servidor.');
-      }
-    });
 
+        if (btnMobile) {
+            btnMobile.addEventListener('click', function (e) {
+                e.stopPropagation();
+                // Importante: Usar a instância correta (dropdownMobile)
+                if (abertoMobile) dropdownMobile.hide(); 
+                else dropdownMobile.show();
 
-    const btn = document.getElementById('btn-conta-dropdown');
-    const btnMobile = document.getElementById('btn-conta-dropdown-mobile');
+                abertoMobile = !abertoMobile;
+                btnMobile.setAttribute('aria-expanded', abertoMobile);
+            });
+        }
 
-    let dropdownDesktop = btn ? bootstrap.Dropdown.getOrCreateInstance(btn) : null;
-    let dropdownMobile = btnMobile ? bootstrap.Dropdown.getOrCreateInstance(btnMobile) : null;
-
-    let aberto = false;
-    let abertoMobile = false;
-
-    if (btn) {
-        btn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            if (aberto) dropdownDesktop.hide(); 
-            else dropdownDesktop.show();
-            
-            aberto = !aberto;
-            btn.setAttribute('aria-expanded', aberto);
+        document.addEventListener('click', function (e) {
+            if (dropdownDesktop && aberto) {
+                dropdownDesktop.hide();
+                aberto = false;
+            }
+            if (dropdownMobile && abertoMobile) {
+                dropdownMobile.hide();
+                abertoMobile = false;
+            }
         });
-    }
 
-    if (btnMobile) {
-        btnMobile.addEventListener('click', function (e) {
-            e.stopPropagation();
-            // Importante: Usar a instância correta (dropdownMobile)
-            if (abertoMobile) dropdownMobile.hide(); 
-            else dropdownMobile.show();
-
-            abertoMobile = !abertoMobile;
-            btnMobile.setAttribute('aria-expanded', abertoMobile);
+        document.addEventListener('click', function (e) {
+            @* if (!btn.closest('.dropdown')?.contains(e.target)) {
+                dropdown.hide();
+                aberto = false;
+                btn.setAttribute('aria-expanded', 'false');
+            } *@
         });
-    }
 
-    document.addEventListener('click', function (e) {
-        if (dropdownDesktop && aberto) {
-            dropdownDesktop.hide();
-            aberto = false;
-        }
-        if (dropdownMobile && abertoMobile) {
-            dropdownMobile.hide();
-            abertoMobile = false;
-        }
-    });
-
-    document.addEventListener('click', function (e) {
-        @* if (!btn.closest('.dropdown')?.contains(e.target)) {
-            dropdown.hide();
-            aberto = false;
-            btn.setAttribute('aria-expanded', 'false');
-        } *@
-    });
-
-    document.addEventListener('keydown', function (e) {
+        document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             dropdown.hide();
             aberto = false;

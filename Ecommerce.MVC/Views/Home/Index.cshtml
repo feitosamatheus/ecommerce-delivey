@@ -233,6 +233,20 @@
                     </div>
                 </div>
             }
+            <div id="emptySearchStateDesktop" class="d-none flex-column align-items-center justify-content-center py-1 px-0 w-100">
+                <div class="text-center p-5 bg-white shadow-sm" style="margin: 0 auto; border-radius:5px;">
+                    <div class="mb-4 opacity-25">
+                        <i class="fa-solid fa-magnifying-glass-chart fa-4x text-secondary"></i>
+                    </div>
+                    <h4 class="fw-bold" style="color: #3c1e0a;">Ops! Não encontramos nada</h4>
+                    <p class="text-muted mb-4">
+                        Não existem produtos que correspondam à sua busca ou filtro no momento. Tente usar termos diferentes ou limpar os filtros.
+                    </p>
+                    <button type="button" class="btn btn-outline-dark rounded-pill px-4 fw-bold" onclick="limparFiltroTexto('Mobile')">
+                        <i class="fa-solid fa-rotate-left me-2"></i>Limpar Filtros
+                    </button>
+                </div>
+            </div>
         }  
     </div>
     @await Component.InvokeAsync("Carrinho")
@@ -241,7 +255,7 @@
 
 <div class="mb-2 mt-0 bc-container-home-mb p-2 p-lg-0 pt-0">
     <!-- FILTRO -->
-    <div class="bc-filter bc-filter-mb bc-filter--sticky p-3 mb-2 box-shadown-custom" style="border-radius: 15px;">
+    <div class="bc-filter bc-filter-mb bc-filter--sticky p-3 mb-2 box-shadown-custom" style="border-radius: 5px;">
         <div class="row g-3 align-items-center">
             <div class="col-12 px-1">
                 <div class="d-flex gap-3 align-items-center">
@@ -279,7 +293,7 @@
 
     @if (Model.Categorias.Count() <= 0)
     {
-        <div class="bc-panel p-3 mb-3 text-center" style="border-radius:15px;">
+        <div class="bc-panel p-3 mb-3 text-center" style="border-radius: 5px;">
             <div class="py-4 col-12">
                 <div class="fw-bold mb-1">Nenhum item disponível no momento</div>
                 <div class="text-muted">
@@ -383,7 +397,7 @@
         {
             var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
 
-        <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id" style="border-radius: 15px;">
+        <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id" style="border-radius: 5px;">
                 <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
 
             <div class="row g-3 row-cols-1 row-cols-md-2">
@@ -425,6 +439,21 @@
                 </div>
             </div>
         }
+
+        <div id="emptySearchState" class="d-none flex-column align-items-center justify-content-center py-2 px-0 w-100">
+            <div class="text-center p-5 bg-white shadow-sm" style="margin: 0 auto; border-radius:5px;">
+                <div class="mb-4 opacity-25">
+                    <i class="fa-solid fa-magnifying-glass-chart fa-4x text-secondary"></i>
+                </div>
+                <h4 class="fw-bold" style="color: #3c1e0a;">Ops! Não encontramos nada</h4>
+                <p class="text-muted mb-4">
+                    Não existem produtos que correspondam à sua busca ou filtro no momento. Tente usar termos diferentes ou limpar os filtros.
+                </p>
+                <button type="button" class="btn btn-outline-dark rounded-pill px-4 fw-bold" onclick="limparFiltroTexto('Mobile')">
+                    <i class="fa-solid fa-rotate-left me-2"></i>Limpar Filtros
+                </button>
+            </div>
+        </div>
     }  
 </div>
 
@@ -493,9 +522,11 @@
           function applyFilters() {
       const categoriaId = (filterState.categoriaId || "").trim();
       const texto = norm(filterState.texto);
+    const emptyState = document.getElementById('emptySearchState');
+    const emptySearchStateDesktop = document.getElementById('emptySearchStateDesktop');
 
       const panels = getAllPanels();
-
+    let totalPanelsVisible = 0;
       panels.forEach((panel) => {
         const panelCategoriaId = (panel.getAttribute("data-categoria-id") || "").trim();
 
@@ -532,13 +563,36 @@
           // opcional (não é necessário se a coluna já some, mas mantém coerência)
           col.querySelector(".bc-product")?.classList.toggle("d-none", !match);
 
-          if (match) anyVisible = true;
+          if (match) {
+            anyVisible = true;
+            totalPanelsVisible++;
+            }
         });
 
         // 4) Painel: some se nada visível
         panel.classList.toggle("d-none", !anyVisible);
 
         refreshCarousel(panel);
+
+        if (emptyState) {
+            if (totalPanelsVisible === 0) {
+                emptyState.classList.remove('d-none');
+                emptyState.classList.add('d-flex');
+            } else {
+                emptyState.classList.add('d-none');
+                emptyState.classList.remove('d-flex');
+            }
+        }
+
+        if (emptySearchStateDesktop) {
+            if (totalPanelsVisible === 0) {
+                emptySearchStateDesktop.classList.remove('d-none');
+                emptySearchStateDesktop.classList.add('d-flex');
+            } else {
+                emptySearchStateDesktop.classList.add('d-none');
+                emptySearchStateDesktop.classList.remove('d-flex');
+            }
+        }
       });
     }
 
@@ -572,6 +626,14 @@
           if (inputBusca) {
             inputBusca.value = "";
             filterState.texto = "";
+            const emptyState = document.getElementById('emptySearchState');
+            emptyState?.classList.add('d-none');
+            emptyState?.classList.remove('d-flex');
+
+            const emptySearchStateDesktop = document.getElementById('emptySearchStateDesktop');
+            emptySearchStateDesktop?.classList.add('d-none');
+            emptySearchStateDesktop?.classList.remove('d-flex');
+        
             applyFilters();
           }
         }
@@ -703,7 +765,31 @@
 
         abrirModalProduto(produtoId);
     });
+
+    window.limparFiltroTexto = function (suffix = "") {
+        const inputBusca = document.getElementById("filtroNome");
+        const inputBuscaMobile = document.getElementById("filtroNomeMobile");
+
+        if (inputBusca) inputBusca.value = "";
+        if (inputBuscaMobile) inputBuscaMobile.value = "";
+
+        filterState.texto = "";
+        
+        // Dentro da sua applyFilters...
+        const emptyState = document.getElementById('emptySearchState');
+        emptyState?.classList.add('d-none');
+        emptyState?.classList.remove('d-flex');
+
+        // Dentro da sua applyFilters...
+        const emptySearchStateDesktop = document.getElementById('emptySearchStateDesktop');
+        emptySearchStateDesktop?.classList.add('d-none');
+        emptySearchStateDesktop?.classList.remove('d-flex');
+
+        // Agora ele ENXERGA a applyFilters porque estão no mesmo escopo
+        applyFilters(); 
+    };
 })();
+
 </script>
 
 

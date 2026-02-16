@@ -21,14 +21,12 @@ public class ClienteController : Controller
     }
 
     [HttpGet]
-    public IActionResult ContaClienteModal()
+    public IActionResult BuscarModalAutenticacaoCliente()
     {
         if (User.Identity?.IsAuthenticated == true)
-        {
-            return PartialView("Partials/_ClienteConta");
-        }
+            return RedirectToAction("home", "index");
 
-        return PartialView("Partials/_ClienteLogin");
+        return PartialView("Partials/_ModalAutenticacaoCliente");
     }
 
     [HttpGet]
@@ -66,7 +64,16 @@ public class ClienteController : Controller
         }
 
         var cliente = result.Data;
+
+        // 1) AutI: autentica o cliente recém-criado
         await SignInClienteAsync(cliente.Id, cliente.Nome, cliente.Email);
+
+        // 2) Carrinho: unifica o carrinho anônimo (se existir) com o carrinho do cliente
+        var token = CartTokenHelper.GetOrCreateToken(HttpContext);
+        await _carrinhoService.UnificarCarrinhoAsync(cliente.Id, token);
+
+        // 3) Token: limpa o token anônimo após unificar
+        CartTokenHelper.ClearToken(HttpContext);
 
         return Json(new
         {
@@ -77,6 +84,7 @@ public class ClienteController : Controller
 
     [HttpPost]
     [EnableRateLimiting("LoginPolicy")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login([FromBody] LoginClienteViewModel model)
     {
         if (!ModelState.IsValid)
@@ -97,17 +105,21 @@ public class ClienteController : Controller
                 message = "Não foi possível autenticar. Verifique os dados e tente novamente."
             });
 
-        await SignInClienteAsync(result.Id, result.Nome, result.Email);
+        await SignInClienteAsync(result.Cliente.Id, result.Cliente.Nome, result.Cliente.Email);
 
         var token = CartTokenHelper.GetOrCreateToken(HttpContext);
 
-        await _carrinhoService.UnificarCarrinhoAsync(result.Id, token);
+        await _carrinhoService.UnificarCarrinhoAsync(result.Cliente.Id, token);
 
-        await SignInClienteAsync(result.Id, result.Nome, result.Email);
+        await SignInClienteAsync(result.Cliente.Id, result.Cliente.Nome, result.Cliente.Email);
 
         CartTokenHelper.ClearToken(HttpContext);
 
-        return Json(new { success = true, message = "Login realizado com sucesso!" });
+        return Json(new { 
+            success = true, 
+            message = "Login realizado com sucesso!" ,
+            foiPrimeiroAcesso = result.FoiPrimeiroAcesso
+        });
     }
 
     [HttpPost]

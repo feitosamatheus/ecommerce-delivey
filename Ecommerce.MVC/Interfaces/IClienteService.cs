@@ -10,5 +10,5 @@ namespace Ecommerce.MVC.Interfaces;
 public interface IClienteService
 {
     Task<ServiceResult<Cliente>> RegistrarClienteAsync(RegistrarClienteViewModel model);
-    Task<Cliente> LoginAsync(LoginClienteViewModel model);
+    Task<LoginResultadoViewModel> LoginAsync(LoginClienteViewModel model);
 }

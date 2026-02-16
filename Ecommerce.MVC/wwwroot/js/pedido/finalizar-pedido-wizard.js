@@ -304,8 +304,7 @@
 
                 if (res.expiraEmUtc) startPixTimer(res.expiraEmUtc);
 
-                showSuccessToast("Pedido confirmado com sucesso! Agora finalize o pagamento via PIX.");
-
+                uiNotify.toast.success("Pedido confirmado com sucesso! Agora finalize o pagamento.");
                 // transforma o botão em "Fechar"
                 $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
 
@@ -313,7 +312,7 @@
             },
             error: function (xhr) {
                 $btn.prop("disabled", false).text("Confirmar pedido");
-                alert(xhr.responseText || "Erro ao processar pedido.");
+                uiNotify.alert.error(xhr.responseText || "Erro ao processar pedido.");
                 removeLoading?.();
             }
         });
