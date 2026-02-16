@@ -212,30 +212,28 @@
     });
 
     $(document).on('click', '.js-acompanhar-pedidos-login', function () {
-        $('#modalAcompanhamentoClienteBody').empty();
-        addLoading("Carregando...");
+        $.ajax({
+            url: '/Cliente/BuscarModalAutenticacaoCliente',
+            method: 'GET',
+            cache: false,
+            beforeSend: function () {
+                addLoading("Carregando...");
+            },
+            success: function (html) {
+                $('#conteudo-dinamico').empty();
+                $('#conteudo-dinamico').html(html);
 
-        const $body = $('#modal-cliente-authBody');
-        const modalEl = document.getElementById('modal-cliente-auth');
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-
-        $body.html('<div class="text-muted p-3">Carregando...</div>');
-
-        // ⏳ Delay de 3 segundos
-        setTimeout(function () {
-            $.get('/Cliente/BuscarModalAutenticacaoCliente')
-                .done(function (html) {
-                    $body.html(html);
-                    modal.show();
-                })
-                .fail(function () {
-                    $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
-                    modal.show();
-                })
-                .always(function () {
-                    removeLoading();
-                });
-        }, 2000);
+                const modalLoginEl    = document.getElementById('modal-cliente-auth');
+                const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
+                modalLogin.show();
+            },
+            error: function () {
+                $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+            },
+            complete: function () {
+                removeLoading();
+            }
+        });
     });
 
     $(document).on('click', '.js-abrir-carrinho-mobile', function () {
