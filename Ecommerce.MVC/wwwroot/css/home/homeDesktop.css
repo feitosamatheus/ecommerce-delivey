@@ -389,3 +389,8 @@
         transform: scale(1.05);
         box-shadow: 0 8px 18px rgba(74, 42, 21, 0.45);
     }
+
+/* Esconde painéis vazios de categorias */
+.bc-panel-none:empty {
+    display: none;
+}

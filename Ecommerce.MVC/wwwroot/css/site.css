@@ -32,17 +32,8 @@ h1, h2, h3, h4, h5 {
     color: rgb(74 42 21) !important;
 }
 
-@import url("./animacao/animacao.css");
-@import url("./header/headerMobile.css");
-
 @media (min-width: 768px) {
   html {
     font-size: 16px;
   }
-}
-
-@media (min-width: 1220px) {
-  @import url("./header/headerDesktop.css");
-  @import url("./comun/comunDesktop.css");
-
 }

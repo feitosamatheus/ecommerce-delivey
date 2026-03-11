@@ -1,4 +1,4 @@
-﻿/* Namespace do componente: Pedidos em andamento */
+/* Namespace do componente: Pedidos em andamento */
 .bh-pedidos-em-andamento {
     --bh-primary: #3c1e0a;
     --bh-success: #1f7a33;
@@ -229,4 +229,95 @@
 .bh-pedidos-em-andamento .order-stepper {
     /* Adicione uma transição de opacidade para o conteúdo interno */
     transition: opacity 0.3s ease-in-out;
+}
+
+/* =========================
+   Página Acompanhamento de Pedido (header)
+   ========================= */
+
+.bh-page-header {
+    height: 40px;
+    z-index: 1050;
+    border-bottom: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.btn-home-link {
+    color: #3c1e0a;
+    padding: 6px 12px;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+}
+
+.btn-home-link:active {
+    background-color: #e9ecef;
+    transform: scale(0.95);
+}
+
+.btn-home-link:hover {
+    background-color: #f8f9fa;
+}
+
+/* Ícone de fogo animado no título */
+.fa-fire {
+    animation: flame-burn 2s infinite alternate;
+}
+
+.header-scrolled {
+    background-color: #4d4845 !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
+    border-bottom: 1px solid #eee;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    top: 10px !important;
+}
+
+.header-scrolled h5 {
+    color: #fff !important;
+}
+
+.header-scrolled a {
+    color: #fff !important;
+}
+
+.header-scrolled .btn-home-link {
+    color: #3c1e0a !important;
+    background-color: #f8f9fa !important;
+}
+
+.header-scrolled .fa-fire {
+    color: #dc3545 !important;
+}
+
+.transition-header {
+    transition: background-color 0.3s, box-shadow 0.3s, padding 0.3s;
+}
+
+@keyframes flame-burn {
+    from {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+.badge-total-pedidos {
+    top: 12px;
+    margin-left: 15px;
+}
+
+@media (max-width: 1199px) {
+    .btn-home-link {
+        display: none !important;
+    }
+
+    .badge-total-pedidos {
+        top: 9px;
+        margin-left: 15px;
+        font-size: 0.6rem;
+    }
 }

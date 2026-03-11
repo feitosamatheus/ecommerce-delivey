@@ -1,4 +1,4 @@
-﻿@using System.Globalization
+@using System.Globalization
 @using Ecommerce.MVC.Enums
 @using Ecommerce.MVC.Models.Pedidos
 @model IReadOnlyList<PedidosEmAndamentoViewModel>
@@ -7,102 +7,6 @@
 }
 
 <link rel="stylesheet" href="~/css/pedido/acompanhamento-pedido.css" asp-append-version="true" />
-
-<style>
-    .bh-page-header {
-        height: 40px;
-        z-index: 1050; /* Garante que fique acima de modais e outros elementos */
-        border-bottom: 1px solid #eee;
-        border-radius: 10px;
-    }
-
-    .btn-home-link {
-        color: #3c1e0a;
-        /* background-color: #f8f9fa; */
-        padding: 6px 12px;
-        border-radius: 20px;
-        transition: all 0.2s ease;
-    }
-
-        .btn-home-link:active {
-            background-color: #e9ecef;
-            transform: scale(0.95);
-        }
-
-        .btn-home-link:hover{
-            background-color:#f8f9fa;
-        }
-
-    /* Ajuste fino para o ícone de fogo pulsar sutilmente */
-    .fa-fire {
-        animation: flame-burn 2s infinite alternate;
-    }
-
-    .header-scrolled {
-        /* background-color: #785d4e !important; /* Cor branca ao scrollar */
-        background-color: #4d4845 !important; /* Cor branca ao scrollar */
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
-        border-bottom: 1px solid #eee;
-        padding-top: 0.5rem !important; /* Encolhe um pouco o header ao scrollar */
-        padding-bottom: 0.5rem !important;
-
-        top: 10px !important;
-    }
-
-        /* Muda o título e ícones para Marrom quando o fundo ficar branco */
-        .header-scrolled h5 {
-            color: #fff !important;
-        }
-
-        /* Muda o link "Início" e a seta de voltar */
-        .header-scrolled a{
-            color: #fff !important;
-        }
-
-        .header-scrolled .btn-home-link {
-            color: #3c1e0a !important;
-            background-color: #f8f9fa !important; /* Fundo cinzinha pro botão início */
-        }
-
-        /* Mantém o ícone de fogo vermelho, mas você pode mudar se quiser */
-        .header-scrolled .fa-fire {
-            color: #dc3545 !important;
-        }
-
-    .transition-header {
-        transition: background-color 0.3s, box-shadow 0.3s, padding 0.3s;
-    }
-
-    @@keyframes flame-burn {
-        from {
-            opacity: 0.8;
-            transform: scale(1);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1.1);
-        }
-    }
-
-    .badge-total-pedidos {
-        top: 12px;
-        margin-left: 15px;
-    }
-
-    /* Ajuste para telas menores que 1199px (Tablets e Mobiles) */
-    @@media (max-width: 1199px) {
-        .btn-home-link{
-            display:none !important;
-        }
-
-        .badge-total-pedidos {
-            top: 9px;
-            margin-left: 15px;
-            font-size: 0.6rem; 
-        }
-    }
-</style>
 
 @functions {
     private string MapStatusBadgeClass(EPedidoStatus status)
