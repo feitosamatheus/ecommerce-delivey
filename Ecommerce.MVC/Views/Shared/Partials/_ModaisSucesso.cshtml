@@ -1,0 +1,88 @@
+<div class="modal fade modal-barriga-cheia" id="modalSucessoPedido" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered px-4">
+        <div class="modal-content shadow-lg">
+            <div class="modal-body text-center p-4">
+
+                <div class="circle-check mb-4 animate__animated animate__bounceIn">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+
+                <h2 class="text-titulo mb-3">Pedido Confirmado!</h2>
+
+                <p class="text-muted px-2">
+                    Seu pagamento foi identificado e sua reserva foi feita com sucesso.
+                </p>
+
+                <div class="info-box p-3 my-4 d-flex align-items-center text-start">
+                    <i class="fa-solid fa-circle-info fa-2x me-3" style="color: #B26528;"></i>
+                    <span class="small">
+                        Você pode acompanhar o andamento deste pedido em <strong>'Meus Pedidos'</strong> no menu inferior.
+                    </span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("Index", "Home", new { abrirPedidos = true })" class="btn btn-principal">
+                        Ver Meus Pedidos
+                    </a>
+                    <button type="button" class="btn btn-link text-brown fw-bold mt-2" data-bs-dismiss="modal" style="color: #4A321F; text-decoration: none;">
+                        Continuar comprando <i class="fa-solid fa-xmark ms-1"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-barriga-cheia" id="modalSucessoProduto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered px-4">
+        <div class="modal-content shadow-lg">
+            <div class="modal-body text-center p-4">
+
+                <div class="circle-check mb-4 animate__animated animate__bounceIn" style="background-color: #d4edda; color: #28a745; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; font-size: 2rem;">
+                    <i class="fa-solid fa-cart-plus"></i>
+                </div>
+
+                <h2 class="text-titulo mb-3">Produto Adicionado!</h2>
+
+                <p class="text-muted px-2">
+                    O item foi adicionado ao seu carrinho com sucesso e já está pronto para o pedido.
+                </p>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
+                        Continuar Comprando
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-barriga-cheia" id="modalSucessoLogin" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered px-4">
+        <div class="modal-content shadow-lg">
+            <div class="modal-body text-center p-4">
+
+                <div class="circle-check mb-4 animate__animated animate__zoomIn" style="background-color: #e9ecef; color: #4A321F; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; font-size: 2rem;">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+
+                <h2 class="text-titulo mb-3">Bem-vindo de volta!</h2>
+
+                <p class="text-muted px-2">
+                    Seu login foi realizado com sucesso. Agora você pode finalizar seus pedidos.
+                </p>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
+                        Acessar o Sistema
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+

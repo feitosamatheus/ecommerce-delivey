@@ -1,14 +1,22 @@
 is_global = true
 build_property.TargetFramework = net10.0
-build_property.TargetFrameworkIdentifier = .NETCoreApp
-build_property.TargetFrameworkVersion = v10.0
+build_property.TargetFramework = net10.0
+build_property.TargetPlatformMinVersion = 
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
 build_property.ProjectTypeGuids = 
 build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
 build_property.RootNamespace = Ecommerce.MVC
 build_property.RootNamespace = Ecommerce.MVC
 build_property.ProjectDir = C:\Users\matheus.feitosa\Documents\Ecommerce\Ecommerce.MVC\
@@ -22,16 +30,84 @@ build_property._RazorSourceGeneratorDebug =
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Cliente/Partials/_ClienteAcompanhamento.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxQYXJ0aWFsc1xfQ2xpZW50ZUFjb21wYW5oYW1lbnRvLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Cliente/Partials/_ClienteAlterarSenha.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxQYXJ0aWFsc1xfQ2xpZW50ZUFsdGVyYXJTZW5oYS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Cliente/Partials/_ClienteConta.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxQYXJ0aWFsc1xfQ2xpZW50ZUNvbnRhLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Cliente/Partials/_ClienteLogin.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxQYXJ0aWFsc1xfQ2xpZW50ZUxvZ2luLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Home/Privacy.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Pedido/_ModalFinalizarPedido.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvXF9Nb2RhbEZpbmFsaXphclBlZGlkby5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Error.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Pedido/_ModalPedidosEmAndamento.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvXF9Nb2RhbFBlZGlkb3NFbUFuZGFtZW50by5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Produto/_ModalAddProduto.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHV0b1xfTW9kYWxBZGRQcm9kdXRvLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Components/CarrinhoMobile/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcQ2FycmluaG9Nb2JpbGVcRGVmYXVsdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Components/Carrinho/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcQ2FycmluaG9cRGVmYXVsdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Components/Footer/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcRm9vdGVyXERlZmF1bHQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Components/Header/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcSGVhZGVyXERlZmF1bHQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Components/HorarioFuncionamento/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcSG9yYXJpb0Z1bmNpb25hbWVudG9cRGVmYXVsdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Partials/_Animacao.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXFBhcnRpYWxzXF9BbmltYWNhby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Partials/_LoadingSpinner.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXFBhcnRpYWxzXF9Mb2FkaW5nU3Bpbm5lci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Partials/_ModalAddProduto.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXFBhcnRpYWxzXF9Nb2RhbEFkZFByb2R1dG8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Partials/_ModalAlterarSenha.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXFBhcnRpYWxzXF9Nb2RhbEFsdGVyYXJTZW5oYS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Partials/_ModalContaCliente.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXFBhcnRpYWxzXF9Nb2RhbENvbnRhQ2xpZW50ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/Partials/_ModalVerMais.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXFBhcnRpYWxzXF9Nb2RhbFZlck1haXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/_Spinner.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9TcGlubmVyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/matheus.feitosa/Documents/Ecommerce/Ecommerce.MVC/Views/Shared/_ValidationScriptsPartial.cshtml]

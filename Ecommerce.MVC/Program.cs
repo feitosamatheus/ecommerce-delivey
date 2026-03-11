@@ -15,7 +15,7 @@ builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Cliente/ContaModal";
+        options.LoginPath = "/Home/Index";
         options.LogoutPath = "/Cliente/Logout";
         options.AccessDeniedPath = "/AcessoNegado";
         options.ExpireTimeSpan = TimeSpan.FromHours(2);
@@ -72,8 +72,8 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8000";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+//var port = Environment.GetEnvironmentVariable("PORT") ?? "8000";
+//builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var app = builder.Build();
 
@@ -85,6 +85,11 @@ app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}"
+);
 
 app.MapControllerRoute(
     name: "default",
