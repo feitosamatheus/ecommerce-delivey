@@ -153,6 +153,8 @@
                             <div class="pe-2">
                                 <div class="fw-bold bc-cart__item-name">@item.Nome</div>
                                 <small class="text-secondary fw-medium">@item.Quantidade x</small>
+                                <input type="number" min="1" value="@item.Quantidade">
+                                <button>Trash</button>
                             </div>
                             <div class="fw-bold bc-cart__item-price">
                                 @item.Total.ToString("C", new CultureInfo("pt-BR"))
