@@ -124,6 +124,81 @@
             /* transform: translateY(-2px); */
             color: #4b2c20 !important;
         }
+
+        .bc-cart__actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: space-between;
+        }
+
+        .bc-cart__qty-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border: 1px solid #ececec;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+
+        .bc-cart__qty-text {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .bc-cart__qty-input {
+            width: 56px;
+            height: 32px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.92rem;
+            font-weight: 600;
+            background: #fff;
+            color: #2d3436;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .bc-cart__qty-input:focus {
+            border-color: #D98C1A;
+            box-shadow: 0 0 0 3px rgba(217, 140, 26, 0.15);
+        }
+
+        .bc-cart__qty-input::-webkit-outer-spin-button,
+        .bc-cart__qty-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .bc-cart__qty-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .bc-cart__remove-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #f3d1d1;
+            background: #fff5f5;
+            color: #c0392b;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .bc-cart__remove-btn:hover {
+            background: #fdecec;
+            border-color: #e7b8b8;
+            color: #a5281b;
+        }
 </style>
 
 <div class="col-12 col-lg-4 col-xl-4">
@@ -146,21 +221,38 @@
         else
         {
             <div class="bc-cart__items-wrapper mb-4">
-                @foreach (var item in Model.Itens)
+                @foreach (CarrinhoItemViewModel item in Model.Itens)
                 {
                     <div class="bc-cart__item">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="pe-2">
                                 <div class="fw-bold bc-cart__item-name">@item.Nome</div>
-                                <small class="text-secondary fw-medium">@item.Quantidade x</small>
-                                <input type="number" min="1" value="@item.Quantidade">
-                                <button>Trash</button>
+
+                                
                             </div>
+
                             <div class="fw-bold bc-cart__item-price">
                                 @item.Total.ToString("C", new CultureInfo("pt-BR"))
                             </div>
+                            
                         </div>
+                        <div class="bc-cart__actions mt-2">
+                            <div class="bc-cart__qty-group">
+                                <span class="bc-cart__qty-text">Qtd</span>
+                                <input type="number"
+                                    min="1"
+                                    value="@item.Quantidade"
+                                    class="bc-cart__qty-input js-qtd-carrinho"
+                                    data-item-id="@item.ItemId" />
+                            </div>
 
+                            <button type="button"
+                                    class="bc-cart__remove-btn js-remover-item-carrinho"
+                                    data-item-id="@item.ItemId"
+                                    title="Remover item">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                         @if (item.Acompanhamentos.Any())
                         {
                             <ul class="list-unstyled bc-cart__acc-list">
@@ -242,4 +334,84 @@
         });
     });
 
+    $(document).on('focus', '.js-qtd-carrinho', function () {
+        $(this).data('valor-original', $(this).val());
+    });
+
+    $(document).on('blur', '.js-qtd-carrinho', function () {
+        const input = $(this);
+        const valorOriginal = input.data('valor-original');
+        let quantidade = parseInt(input.val());
+        const itemId = input.data('item-id');
+
+        if (!quantidade || quantidade < 1) {
+            quantidade = 1;
+            input.val(1);
+        }
+
+        if (String(valorOriginal) === String(quantidade)) {
+            return;
+        }
+
+        addLoading("Atualizando carrinho...");
+
+        $.ajax({
+            url: '/Carrinho/AtualizarQuantidade',
+            type: 'POST',
+            data: {
+                itemId: itemId,
+                quantidade: quantidade
+            },
+            success: function (response) {
+                if (response.sucesso) {
+                    location.reload();
+                } else {
+                    alert(response.mensagem || 'Não foi possível atualizar a quantidade.');
+                    removeLoading();
+                }
+            },
+            error: function (xhr) {
+                alert(xhr.responseText || 'Erro ao atualizar quantidade.');
+                removeLoading();
+            }
+        });
+    });
+
+    $(document).on('click', '.js-remover-item-carrinho', function () {
+    const botao = $(this);
+    const itemId = botao.data('item-id');
+
+    Swal.fire({
+        title: 'Remover item?',
+        text: 'Este item será removido do carrinho.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, remover',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        addLoading("Removendo item...");
+
+        $.ajax({
+            url: '/Carrinho/RemoverItem',
+            type: 'POST',
+            data: {
+                itemId: itemId
+            },
+            success: function (response) {
+                if (response.sucesso) {
+                    location.reload();
+                } else {
+                    Swal.fire('Erro', response.mensagem || 'Não foi possível remover o item.', 'error');
+                    removeLoading();
+                }
+            },
+            error: function (xhr) {
+                Swal.fire('Erro', xhr.responseText || 'Erro ao remover item.', 'error');
+                removeLoading();
+            }
+        });
+    });
+});
 </script>

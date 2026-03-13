@@ -152,7 +152,7 @@ public class CarrinhoService : ICarrinhoService
         if (carrinho == null || carrinho.Itens == null)
             return 0;
 
-        return carrinho.Itens.Sum(i => i.Quantidade);
+        return carrinho.Itens.Count();
     }
 
     public async Task UnificarCarrinhoAsync(Guid clienteId, string token)

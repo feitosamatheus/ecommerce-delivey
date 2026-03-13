@@ -60,10 +60,113 @@
     .modal.fade.modal-swap {
         transform: translateY(20px);
     }
+
+    .cart-mobile .bc-cart__acc-list {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-top: 8px;
+    }
+
+    .cart-mobile .bc-cart__acc-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: #636e72;
+        padding: 2px 0;
+    }
+
+    .cart-mobile .cart-mobile__actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        justify-content: space-between;
+    }
+
+    .cart-mobile .cart-mobile__qty-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border: 1px solid #ececec;
+        border-radius: 12px;
+        background: #fafafa;
+    }
+
+    .cart-mobile .cart-mobile__qty-label {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        line-height: 1;
+    }
+
+    .cart-mobile .cart-mobile__qty-input {
+        width: 52px;
+        height: 32px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 0.92rem;
+        font-weight: 600;
+        background: #fff;
+        color: #2d3436;
+        outline: none;
+        transition: all 0.2s ease;
+        box-shadow: none;
+    }
+
+    .cart-mobile .cart-mobile__qty-input:focus {
+        border-color: #D98C1A;
+        box-shadow: 0 0 0 3px rgba(217, 140, 26, 0.15);
+    }
+
+    .cart-mobile .cart-mobile__qty-input::-webkit-outer-spin-button,
+    .cart-mobile .cart-mobile__qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .cart-mobile .cart-mobile__qty-input[type=number] {
+        -moz-appearance: textfield;
+    }
+
+    .cart-mobile .cart-mobile__remove-btn {
+        width: 38px;
+        height: 38px;
+        border: 1px solid #f3d1d1;
+        background: #fff5f5;
+        color: #c0392b;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .cart-mobile .cart-mobile__remove-btn:hover {
+        background: #fdecec;
+        border-color: #e7b8b8;
+        color: #a5281b;
+    }
+
+    .cart-mobile .cart-mobile__remove-btn:active {
+        transform: scale(0.98);
+    }
+
+    .cart-mobile .bc-cart__item-price {
+        white-space: nowrap;
+        font-size: 0.95rem;
+        color: #2d3436;
+    }
 </style>
 
 <div class="modal fade" id="modalCarrinhoMobile" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered  p-3">
+    <div class="modal-dialog modal-dialog-centered  p-2">
         <div class="modal-content" style="border-radius: 20px;">
             <div class="modal-header border-0 d-flex align-items-center justify-content-between">
                 <div class="text-start d-flex align-items-start">
@@ -96,15 +199,46 @@
                                     @foreach (var item in Model.Itens)
                                     {
                                         <div class="bc-cart__item">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div class="pe-2">
+                                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                                <div class="pe-2 flex-grow-1">
                                                     <div class="fw-bold bc-cart__item-name">@item.Nome</div>
-                                                    <small class="text-secondary fw-medium">@item.Quantidade x</small>
+
+                                                    
                                                 </div>
-                                                <div class="fw-bold bc-cart__item-price">
+
+                                                <div class="fw-bold bc-cart__item-price text-end">
                                                     @item.Total.ToString("C", new CultureInfo("pt-BR"))
                                                 </div>
                                             </div>
+                                            <div class="cart-mobile__actions">
+                                                <div class="cart-mobile__qty-group">
+                                                    <span class="cart-mobile__qty-label">Qtd</span>
+                                                    <input type="number"
+                                                        min="1"
+                                                        value="@item.Quantidade"
+                                                        class="cart-mobile__qty-input js-qtd-carrinho-mobile"
+                                                        data-item-id="@item.ItemId" />
+                                                </div>
+
+                                                <button type="button"
+                                                        class="cart-mobile__remove-btn js-remover-item-carrinho-mobile"
+                                                        data-item-id="@item.ItemId"
+                                                        title="Remover item">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            @if (item.Acompanhamentos.Any())
+                                            {
+                                                <ul class="list-unstyled bc-cart__acc-list mt-2">
+                                                    @foreach (var a in item.Acompanhamentos)
+                                                    {
+                                                        <li class="bc-cart__acc-item">
+                                                            <span><i class="fa-solid fa-plus small me-1 opacity-50"></i>@a.Nome</span>
+                                                            <span>@a.Preco.ToString("C", new CultureInfo("pt-BR"))</span>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
                                         </div>
                                     }
                                 </div>
@@ -243,4 +377,80 @@
             }
         }
     }
+
+    $(document).on('focus', '.js-qtd-carrinho-mobile', function () {
+        $(this).data('valor-original', $(this).val());
+    });
+
+    $(document).on('blur', '.js-qtd-carrinho-mobile', function () {
+        const input = $(this);
+        const valorOriginal = input.data('valor-original');
+        let quantidade = parseInt(input.val());
+        const itemId = input.data('item-id');
+
+        if (!quantidade || quantidade < 1) {
+            quantidade = 1;
+            input.val(1);
+        }
+
+        if (String(valorOriginal) === String(quantidade)) {
+            return;
+        }
+
+        addLoading("Atualizando carrinho...");
+
+        $.ajax({
+            url: '/Carrinho/AtualizarQuantidade',
+            type: 'POST',
+            data: {
+                itemId: itemId,
+                quantidade: quantidade
+            },
+            success: function (response) {
+                if (response.sucesso) {
+                    location.reload();
+                } else {
+                    alert(response.mensagem || 'Não foi possível atualizar a quantidade.');
+                }
+            },
+            error: function (xhr) {
+                alert(xhr.responseText || 'Erro ao atualizar quantidade.');
+            },
+            complete: function () {
+                removeLoading();
+            }
+        });
+    });
+
+    $(document).on('click', '.js-remover-item-carrinho-mobile', function () {
+        const botao = $(this);
+        const itemId = botao.data('item-id');
+
+        if (!confirm('Deseja remover este item do carrinho?')) {
+            return;
+        }
+
+        addLoading("Removendo item...");
+
+        $.ajax({
+            url: '/Carrinho/RemoverItem',
+            type: 'POST',
+            data: {
+                itemId: itemId
+            },
+            success: function (response) {
+                if (response.sucesso) {
+                    location.reload();
+                } else {
+                    alert(response.mensagem || 'Não foi possível remover o item.');
+                }
+            },
+            error: function (xhr) {
+                alert(xhr.responseText || 'Erro ao remover item.');
+            },
+            complete: function () {
+                removeLoading();
+            }
+        });
+    });
 </script>
