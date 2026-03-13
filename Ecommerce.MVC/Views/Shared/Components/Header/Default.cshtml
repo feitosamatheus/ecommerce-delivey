@@ -108,6 +108,20 @@
                                 </button>
                             </li>
 
+                            @* SEÇÃO DO ADMINISTRADOR *@
+                            @if (ViewBag.Perfil == "cliente")
+                            {
+                                <li><hr class="dropdown-divider my-2 opacity-50"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-hover-sidebar" href="@Url.Action("Painel", "Admin")">
+                                        <div class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                            <i class="fa-solid fa-shield-halved text-secondary" style="font-size: 0.85rem;"></i>
+                                        </div>
+                                        <span class="fw-semibold" style="color: #4b2c20;">Área do Administrador</span>
+                                    </a>
+                                </li>
+                            }
+
                             <li><hr class="dropdown-divider my-2 opacity-50"></li>
 
                             <li>

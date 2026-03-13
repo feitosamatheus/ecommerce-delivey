@@ -66,7 +66,7 @@ public class ClienteController : Controller
         var cliente = result.Data;
 
         // 1) AutI: autentica o cliente recém-criado
-        await SignInClienteAsync(cliente.Id, cliente.Nome, cliente.Email);
+        await SignInClienteAsync(cliente.Id, cliente.Nome, cliente.Email, cliente.Role);
 
         // 2) Carrinho: unifica o carrinho anônimo (se existir) com o carrinho do cliente
         var token = CartTokenHelper.GetOrCreateToken(HttpContext);
@@ -105,13 +105,13 @@ public class ClienteController : Controller
                 message = "Não foi possível autenticar. Verifique os dados e tente novamente."
             });
 
-        await SignInClienteAsync(result.Cliente.Id, result.Cliente.Nome, result.Cliente.Email);
+        await SignInClienteAsync(result.Cliente.Id, result.Cliente.Nome, result.Cliente.Email, result.Cliente.Role);
 
         var token = CartTokenHelper.GetOrCreateToken(HttpContext);
 
         await _carrinhoService.UnificarCarrinhoAsync(result.Cliente.Id, token);
 
-        await SignInClienteAsync(result.Cliente.Id, result.Cliente.Nome, result.Cliente.Email);
+        await SignInClienteAsync(result.Cliente.Id, result.Cliente.Nome, result.Cliente.Email, result.Cliente.Role);
 
         CartTokenHelper.ClearToken(HttpContext);
 
@@ -129,13 +129,14 @@ public class ClienteController : Controller
         return Ok();
     }
 
-    private async Task SignInClienteAsync(Guid id, string nome, string email)
+    private async Task SignInClienteAsync(Guid id, string nome, string email, string role)
     {
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, id.ToString()),
             new Claim(ClaimTypes.Name, nome),
-            new Claim(ClaimTypes.Email, email)
+            new Claim(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.Role, role)
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

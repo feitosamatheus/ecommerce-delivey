@@ -22,11 +22,12 @@ public class HeaderViewComponent: ViewComponent
         string nomeCliente = null;
         bool autenticado = false;
         int totalPedidosAndamento = 0;
-
+        var perfil = "";
         if (HttpContext.User.Identity?.IsAuthenticated == true)
         {
             autenticado = true;
             nomeCliente = HttpContext.User.FindFirstValue(ClaimTypes.Name);
+            perfil = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
             var claimId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (Guid.TryParse(claimId, out var clienteId))
@@ -36,6 +37,7 @@ public class HeaderViewComponent: ViewComponent
         ViewBag.Autenticado = autenticado;
         ViewBag.NomeCliente = nomeCliente;
         ViewBag.TotalPedidos = totalPedidosAndamento;
+        ViewBag.Perfil = perfil;
 
         return View();
     }

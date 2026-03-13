@@ -167,31 +167,38 @@
             </div>
         </div>
     </div>
-    <div class="modal fade modal-barriga-cheia" id="modalSucessoLogin" tabindex="-1" aria-hidden="true">
+    <div class="modal fade modal-barriga-cheia" id="modalAcessoNegado" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered px-4">
             <div class="modal-content shadow-lg">
-            <div class="modal-body text-center p-4">
+                <div class="modal-body text-center p-4">
 
-                <div class="circle-check mb-4 animate__animated animate__zoomIn"
-                    style="background-color: #e9ecef; color: #4A321F; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; font-size: 2rem;">
-                <i class="fa-solid fa-user-check"></i>
+                    <div class="circle-check mb-4 animate__animated animate__shakeX"
+                            style="background-color: #f8d7da; color: #dc3545; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; font-size: 2.5rem; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <h2 class="text-titulo mb-3">Ops! Algo deu errado</h2>
+
+                    <p class="text-muted px-2">
+                        Parece que você não tem as permissões necessárias para acessar este conteúdo.
+                    </p>
+
+                    <div class="info-box p-3 my-4 d-flex align-items-center text-start" style="border-color: #e9ecef;">
+                        <i class="fa-solid fa-circle-question fa-2x me-3" style="color: #6c757d;"></i>
+                        <span class="small">
+                            Se você acredita que isso é um erro, entre em contato com o suporte técnico da unidade.
+                        </span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
+                            Voltar para o início
+                        </button>
+                    </div>
                 </div>
-
-                <h2 class="text-titulo mb-3" id="loginTitulo"></h2>
-
-                <p class="text-muted px-2" id="loginMensagem"></p>
-
-                <div class="d-grid gap-2 mt-4">
-                <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
-                    Acessar o Sistema
-                </button>
-                </div>
-
-            </div>
             </div>
         </div>
         </div>
-
 
     @await RenderSectionAsync("Scripts", required: false)
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -244,6 +251,11 @@
 
             if (urlParams.has('itemAdicionado')) {
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('modalSucessoProduto')).show();
+                limparUrl();
+            }
+
+            if (urlParams.has('acessoNegado')) {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAcessoNegado')).show();
                 limparUrl();
             }
 

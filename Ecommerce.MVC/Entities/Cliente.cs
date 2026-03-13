@@ -30,6 +30,9 @@ public class Cliente
 
     [Required]
     public string SenhaHash { get; set; }
+    
+    [Required]
+    public string Role { get; set; } = "Cliente";
 
     [Column(TypeName = "timestamp without time zone")]
     public DateTime DataCadastro { get; set; } = DateTime.Now;

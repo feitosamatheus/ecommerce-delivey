@@ -19,7 +19,7 @@ builder.Services
     {
         options.LoginPath = "/Home/Index";
         options.LogoutPath = "/Cliente/Logout";
-        options.AccessDeniedPath = "/AcessoNegado";
+        options.AccessDeniedPath = "/Home/Index";
         options.ExpireTimeSpan = TimeSpan.FromHours(24);
         options.SlidingExpiration = true;
 
@@ -27,6 +27,17 @@ builder.Services
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         options.Cookie.SameSite = SameSiteMode.Lax;
+
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnRedirectToAccessDenied = context =>
+            {
+                var returnUrl = context.Request.Path + context.Request.QueryString;
+                var redirectUrl = $"/Home/Index?acessoNegado=true&ReturnUrl={Uri.EscapeDataString(returnUrl)}";
+                context.Response.Redirect(redirectUrl);
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddControllersWithViews();
@@ -74,8 +85,8 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8000";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+//var port = Environment.GetEnvironmentVariable("PORT") ?? "8000";
+//builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var app = builder.Build();
 
@@ -89,7 +100,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+);
 
 app.Run();

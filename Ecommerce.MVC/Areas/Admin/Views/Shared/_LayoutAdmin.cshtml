@@ -1,0 +1,135 @@
+﻿@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    ViewData["Title"] ??= "Admin";
+    Layout = null;
+    var nomeUsuario = User?.Identity?.IsAuthenticated == true ? User.Identity.Name : "Usuário";
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Admin</title>
+
+    <link rel="stylesheet" href="~/adminlte4/css/adminlte.css" />
+    <link rel="stylesheet" href="~/adminlte4/css/adminlte.min.css" />
+    <link rel="stylesheet" href="~/adminlte4/assets/css/overlayscrollbars.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    
+    @RenderSection("Styles", required: false)
+    <style>
+        .status-online {
+            width: 10px;
+            height: 10px;
+            background-color: #28a745;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+        }
+    </style>
+</head>
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+    <div class="app-wrapper">
+
+        <!-- Header -->
+        <nav class="app-header navbar navbar-expand bg-body">
+            <div class="container-fluid">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
+                            <i class="bi bi-list"></i>
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <span class="status-online"></span>
+                            Olá, @nomeUsuario
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+            <div class="sidebar-brand">
+                <a href="@Url.Action("Index", "Home", new { area = "Admin" })" class="brand-link text-decoration-none">
+                    <span class="brand-text fw-light">Admin</span>
+                </a>
+            </div>
+
+            <div class="sidebar-wrapper">
+                <nav class="mt-2">
+                    <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu">
+
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index", "Home", new { area = "Admin" })"
+                               class="nav-link @(controller == "Home" ? "active" : "")">
+                                <i class="nav-icon bi bi-house-door"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index", "Produtos", new { area = "Admin" })"
+                               class="nav-link @(controller == "Produtos" ? "active" : "")">
+                                <i class="nav-icon bi bi-box-seam"></i>
+                                <p>Produtos</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index", "Pedidos", new { area = "Admin" })"
+                               class="nav-link @(controller == "Pedidos" ? "active" : "")">
+                                <i class="nav-icon bi bi-cart-check"></i>
+                                <p>Pedidos</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index", "Categorias", new { area = "Admin" })"
+                               class="nav-link @(controller == "Categorias" ? "active" : "")">
+                                <i class="nav-icon bi bi-tags"></i>
+                                <p>Categorias</p>
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="app-main">
+            <div class="app-content-header">
+                <div class="container-fluid">
+                    <h3 class="mb-0">@ViewData["Title"]</h3>
+                </div>
+            </div>
+
+            <div class="app-content">
+                <div class="container-fluid">
+                    @RenderBody()
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="float-end d-none d-sm-inline">
+                Administração
+            </div>
+            <strong>&copy; @DateTime.Now.Year</strong>
+        </footer>
+    </div>
+
+    <script src="~/adminlte4/js/bootstrap.bundle.min.js"></script>
+    <script src="~/adminlte4/js/adminlte.min.js"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

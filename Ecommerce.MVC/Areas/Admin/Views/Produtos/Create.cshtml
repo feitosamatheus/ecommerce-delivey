@@ -1,0 +1,66 @@
+@model Ecommerce.MVC.Models.Admin.AdminProdutoFormViewModel
+
+@{
+    ViewData["Title"] = "Novo produto - Admin";
+    var categorias = ViewBag.Categorias as IEnumerable<Ecommerce.MVC.Entities.Categoria> ?? Enumerable.Empty<Ecommerce.MVC.Entities.Categoria>();
+}
+
+<div class="container my-4">
+    <h2 class="h4 mb-3">Novo produto</h2>
+
+    <form asp-area="Admin" asp-controller="Produtos" asp-action="Create" method="post" class="card shadow-sm">
+        <div class="card-body">
+            <div class="mb-3">
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control" />
+                <span asp-validation-for="Nome" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Descricao" class="form-label"></label>
+                <textarea asp-for="Descricao" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Descricao" class="text-danger small"></span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="Preco" class="form-label"></label>
+                    <input asp-for="Preco" class="form-control" />
+                    <span asp-validation-for="Preco" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TempoPreparoMinutos" class="form-label"></label>
+                    <input asp-for="TempoPreparoMinutos" class="form-control" />
+                    <span asp-validation-for="TempoPreparoMinutos" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="CategoriaId" class="form-label"></label>
+                    <select asp-for="CategoriaId" class="form-select"
+                            asp-items="new SelectList(categorias, nameof(Ecommerce.MVC.Entities.Categoria.Id), nameof(Ecommerce.MVC.Entities.Categoria.Nome))">
+                        <option value="">Selecione...</option>
+                    </select>
+                    <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <label asp-for="ImagemUrl" class="form-label"></label>
+                <input asp-for="ImagemUrl" class="form-control" />
+                <span asp-validation-for="ImagemUrl" class="text-danger small"></span>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+            <a asp-area="Admin" asp-controller="Produtos" asp-action="Index" class="btn btn-outline-secondary">
+                Voltar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                Salvar
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
