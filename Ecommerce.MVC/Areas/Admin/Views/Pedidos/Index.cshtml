@@ -1,42 +1,359 @@
 @model IEnumerable<Ecommerce.MVC.Entities.Pedido>
 
 @{
-    ViewData["Title"] = "Pedidos - Admin";
+    ViewData["Title"] = "Pedidos";
+    ViewData["Description"] = "Gerencie e monitore os dados de Pedidos com facilidade.";
 }
+<style>
+    /* Estilo Clean para o Card de Filtros */
+    .card-filter-clean {
+        border: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05) !important;
+        border-radius: 0.75rem !important;
+        background-color: #ffffff;
+    }
 
-<div class="container my-4">
-    <h2 class="h4 mb-3">Pedidos recentes</h2>
+    .card-filter-clean .card-header {
+        background-color: transparent;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 1rem 1.25rem;
+    }
 
-    <div class="table-responsive bg-white rounded-3 shadow-sm">
-        <table class="table table-sm align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Código</th>
-                    <th>Cliente</th>
-                    <th>Data</th>
-                    <th class="text-end">Total</th>
-                    <th>Status</th>
-                    <th style="width:1%;"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in Model)
+    /* Labels menores e levemente acinzentadas (estilo moderno) */
+    .card-filter-clean .form-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        color: #64748b; /* Slate 500 */
+        margin-bottom: 0.5rem;
+    }
+
+    /* Inputs mais suaves */
+    .card-filter-clean .form-control, 
+    .card-filter-clean .form-select {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+        color: #334155;
+        transition: all 0.2s ease;
+    }
+
+    .card-filter-clean .form-control:focus, 
+    .card-filter-clean .form-select:focus {
+        border-color: #94a3b8;
+        box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1);
+        outline: 0;
+    }
+
+    /* Botões com cantos arredondados */
+    .btn-filter-action {
+        border-radius: 0.5rem;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-filter-outline {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+    }
+
+    .btn-filter-outline:hover {
+        background: #f8fafc;
+        color: #334155;
+        border-color: #cbd5e1;
+    }
+    /* Customização Clean para o Card de Tabela */
+    .card-table-clean {
+        border: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+        border-radius: 0.75rem !important;
+        overflow: hidden;
+    }
+
+    .card-table-clean .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 1.25rem;
+    }
+
+    .card-table-clean .card-title {
+        font-weight: 600;
+        color: #334155; /* Slate 700 */
+    }
+
+    /* Estilização da Tabela */
+    .table-clean thead th {
+        background-color: #f8fafc !important;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.025em;
+        font-weight: 700;
+        color: #64748b; /* Slate 500 */
+        border-top: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem 0.75rem !important;
+    }
+
+    .table-clean tbody td {
+        padding: 1rem 0.75rem !important;
+        vertical-align: middle;
+        color: #475569;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table-clean tbody tr:hover {
+        background-color: #f8fafc;
+        transition: background-color 0.2s ease;
+    }
+
+    /* Badges mais modernas (Pills) */
+    .badge-pill-custom {
+        padding: 0.4em 0.8em;
+        border-radius: 50rem;
+        font-weight: 500;
+        font-size: 0.85em;
+    }
+
+    /* Botão de ação minimalista */
+    .btn-action {
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    /* Esconde a versão Desktop no Mobile e vice-versa */
+    @@media (max-width: 767.98px) {
+        .d-mobile-block { display: block !important; }
+        .d-desktop-none { display: none !important; }
+        
+        .card-body-mobile {
+            padding: 0 !important;
+        }
+    }
+
+    /* Estilo do Card Mobile Individual */
+    .mobile-order-item {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .mobile-order-item:last-child {
+        border-bottom: none;
+    }
+
+    .mobile-order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+</style>
+<div class="container-fluid my- px-0">
+    <div class="card card-filter-clean mb-4">
+        <div class="card-header d-flex align-items-center">
+            <h3 class="card-title fs-6 mb-0">
+                <i class="fas fa-filter me-2 text-muted"></i>
+                Filtros de Pesquisa
+            </h3>
+
+            <div class="card-tools ms-auto">
+                <button type="button"
+                        class="btn btn-tool"
+                        data-lte-toggle="card-collapse"
+                        title="Recolher">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <form class="py-2" id="formFiltroPedidos" method="get" action="/Admin/Pedidos/Index">
+                <div class="row g-3"> @* g-3 adiciona espaçamento uniforme entre as colunas *@
+                    <div class="col-md-4">
+                        <div>
+                            <label for="dataInicio" class="form-label">Data inicial</label>
+                            <input type="date" class="form-control" id="dataInicio" name="dataInicio">
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div>
+                            <label for="dataFim" class="form-label">Data final</label>
+                            <input type="date" class="form-control" id="dataFim" name="dataFim">
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div>
+                            <label for="status" class="form-label">Status do Pedido</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Todos os status</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="EmPreparacao">Em preparação</option>
+                                <option value="SaiuParaEntrega">Saiu para entrega</option>
+                                <option value="Concluido">Concluído</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-3" style="border-top: 1px solid #f1f5f9;">
+
+                <div class="d-flex justify-content-end align-items-center">
+                    <a href="/Admin/Pedidos/Index" class="btn btn-filter-action btn-filter-outline me-2">
+                        <i class="fas fa-eraser opacity-50"></i>
+                        Limpar
+                    </a>
+
+                    <button type="submit" class="btn btn-filter-action btn-primary shadow-sm">
+                        <i class="fas fa-search"></i>
+                        Aplicar Filtros
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card card-table-clean mt-4">
+        <div class="card-header d-flex align-items-center justify-content-between row">
+            <h3 class="card-title mb-0 col-6">
+                <i class="fas fa-shopping-cart me-2 text-primary"></i>
+                Lista de Pedidos
+            </h3>
+            <div class="d-flex justify-content-end col-6">
+                <div class="card-tools">
+                    @if (Model != null && Model.Any())
+                    {
+                        <span class="badge rounded-pill bg-light text-primary border">
+                            @Model.Count() <span class="d-none d-sm-inline">Pedidos</span>
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive d-none d-md-block">
+                <table class="table table-clean mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Código</th>
+                            <th>Cliente</th>
+                            <th>Data</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var p in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-dark">#@p.Codigo</td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span>@(p.Cliente?.Nome ?? "-")</span>
+                                            <small class="text-muted" style="font-size: 0.75rem;">Consumidor Final</small>
+                                        </div>
+                                    </td>
+                                    <td>@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                                    <td class="text-end fw-bold text-primary">@p.Total.ToString("C")</td>
+                                    <td class="text-center">
+                                        @{
+                                            var statusClass = p.Status.ToString() switch {
+                                                "Pendente" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
+                                                "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                                                "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
+                                                _ => "bg-primary-subtle text-primary-emphasis border-primary-subtle"
+                                            };
+                                        }
+                                        <span class="badge border badge-pill-custom @statusClass">
+                                            @p.Status
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a asp-area="Admin" asp-controller="Pedidos" asp-action="Details" asp-route-id="@p.Id"
+                                        class="btn btn-sm btn-light border btn-action">
+                                            <i class="fas fa-eye text-muted me-1"></i> Abrir
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-md-none">
+                @if (Model != null && Model.Any())
                 {
-                    <tr>
-                        <td>@p.Codigo</td>
-                        <td>@p.Cliente?.Nome</td>
-                        <td>@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                        <td class="text-end">@p.Total.ToString("C")</td>
-                        <td>@p.Status</td>
-                        <td class="text-end">
-                            <a asp-area="Admin" asp-controller="Pedidos" asp-action="Details" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary">
-                                Detalhes
-                            </a>
-                        </td>
-                    </tr>
+                    @foreach (var p in Model)
+                    {
+                        <div class="mobile-order-item">
+                            <div class="mobile-order-header">
+                                <div>
+                                    <span class="fw-bold text-dark d-block">#@p.Codigo</span>
+                                    <small class="text-muted">@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                                @{
+                                    var statusClassMob = p.Status.ToString() switch {
+                                        "Pendente" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
+                                        "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                                        "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
+                                        _ => "bg-primary-subtle text-primary-emphasis border-primary-subtle"
+                                    };
+                                }
+                                <span class="badge border badge-pill-custom @statusClassMob" style="font-size: 0.7rem;">
+                                    @p.Status
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div>
+                                    <span class="d-block text-secondary" style="font-size: 0.9rem;">@(p.Cliente?.Nome ?? "-")</span>
+                                    <span class="fw-bold text-primary">@p.Total.ToString("C")</span>
+                                </div>
+                                <a asp-area="Admin" asp-controller="Pedidos" asp-action="Details" asp-route-id="@p.Id"
+                                class="btn btn-sm btn-light border px-3">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
                 }
-            </tbody>
-        </table>
+            </div>
+
+            @if (Model == null || !Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-inbox d-block mb-2 fa-2x opacity-25"></i>
+                    Nenhum pedido encontrado.
+                </div>
+            }
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.querySelector('.btn-collapse-filtro')?.addEventListener('click', function () {
+            const card = this.closest('.card');
+            const icon = this.querySelector('i');
+            const vaiFechar = !card.classList.contains('collapsed-card');
+
+            icon.className = `fas fa-${vaiFechar ? 'plus' : 'minus'}`;
+        });
+    </script>
+}
 

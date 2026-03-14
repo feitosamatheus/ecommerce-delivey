@@ -12,12 +12,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - Admin</title>
 
-    <link rel="stylesheet" href="~/adminlte4/css/adminlte.css" />
     <link rel="stylesheet" href="~/adminlte4/css/adminlte.min.css" />
     <link rel="stylesheet" href="~/adminlte4/assets/css/overlayscrollbars.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     @RenderSection("Styles", required: false)
+
     <style>
         .status-online {
             width: 10px;
@@ -27,12 +28,43 @@
             display: inline-block;
             box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
         }
+        /* Estilo para o Título da Página */
+        .page-title {
+            font-weight: 700;
+            color: #1e293b; /* Slate 800 */
+            letter-spacing: -0.02em;
+            font-size: 1.75rem;
+        }
+
+        .app-content-header {
+            padding: 2rem 0 1.5rem 0; /* Mais espaço em cima e embaixo */
+            background: transparent;
+        }
+
+        /* Breadcrumb Minimalista */
+        .breadcrumb-clean {
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+
+        .breadcrumb-clean a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb-clean a:hover {
+            color: #3b82f6;
+        }
     </style>
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
     <div class="app-wrapper">
 
-        <!-- Header -->
         <nav class="app-header navbar navbar-expand bg-body">
             <div class="container-fluid">
                 <ul class="navbar-nav">
@@ -54,7 +86,6 @@
             </div>
         </nav>
 
-        <!-- Sidebar -->
         <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
             <div class="sidebar-brand">
                 <a href="@Url.Action("Index", "Home", new { area = "Admin" })" class="brand-link text-decoration-none">
@@ -103,33 +134,61 @@
             </div>
         </aside>
 
-        <!-- Main -->
-        <main class="app-main">
-            <div class="app-content-header">
-                <div class="container-fluid">
-                    <h3 class="mb-0">@ViewData["Title"]</h3>
+        @* <main class="app-main">
+            <div class="app-content-header"> 
+                <div class="container-fluid"> 
+                    <h3 class="mb-0">@ViewData["Title"]</h3> 
+                </div> 
+            </div>
+            <div class="app-content">
+                <div class="container-fluid px-0">
+                    @RenderBody()
                 </div>
             </div>
+        </main> *@
+        <main class="app-main" >
+            <div class="app-content-header" style="padding: 1rem .5rem .0rem .5rem !important"> 
+                <div class="container-fluid px-1"> @* Adicionado padding lateral para alinhar com o conteúdo *@
+                    
+                    @* Caminho de navegação opcional *@
+                    <nav aria-label="breadcrumb" class="breadcrumb-clean">
+                        <ol class="breadcrumb mb-1">
+                            <li class="breadcrumb-item"><a href="/Admin/Dashboard">Admin</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+                        </ol>
+                    </nav>
 
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h1 class="page-title mb-0">@ViewData["Title"]</h1>
+                            <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                                @ViewData["Description"]
+                            </p>
+                        </div>
+                        
+                        @* Espaço para um botão de ação rápida, caso precise no futuro *@
+                        <div class="page-actions">
+                            @* Exemplo: <a href="/Admin/Pedidos/Create" class="btn btn-primary btn-action shadow-sm">Novo Pedido</a> *@
+                        </div>
+                    </div>
+                    <hr class="" style="border-top: 1px solid #b8bbbf">
+                </div> 
+            </div>
             <div class="app-content">
-                <div class="container-fluid">
+                <div class="container-fluid px-1"> @* Alinhado com o header *@
                     @RenderBody()
                 </div>
             </div>
         </main>
 
-        <!-- Footer -->
         <footer class="app-footer">
-            <div class="float-end d-none d-sm-inline">
-                Administração
-            </div>
+            <div class="float-end d-none d-sm-inline">Administração</div>
             <strong>&copy; @DateTime.Now.Year</strong>
         </footer>
     </div>
 
     <script src="~/adminlte4/js/bootstrap.bundle.min.js"></script>
     <script src="~/adminlte4/js/adminlte.min.js"></script>
-
     @RenderSection("Scripts", required: false)
 </body>
 </html>
