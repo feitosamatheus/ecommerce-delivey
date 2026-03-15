@@ -167,7 +167,7 @@
 
             <div class="card-tools ms-auto">
                 <button type="button"
-                        class="btn btn-tool"
+                        class="btn btn-tool btn-collapse-filtro"
                         data-lte-toggle="card-collapse"
                         title="Recolher">
                     <i class="fas fa-minus"></i>
@@ -176,32 +176,54 @@
         </div>
 
         <div class="card-body">
-            <form class="py-2" id="formFiltroPedidos" method="get" action="/Admin/Pedidos/Index">
-                <div class="row g-3"> @* g-3 adiciona espaçamento uniforme entre as colunas *@
-                    <div class="col-md-4">
+            <form class="py-2" id="formFiltroPedidos" method="get" action="@Url.Action("Index", "Pedidos", new { area = "Admin" })">
+                <div class="row g-3">
+                    <div class="col-md-3">
                         <div>
                             <label for="dataInicio" class="form-label">Data inicial</label>
-                            <input type="date" class="form-control" id="dataInicio" name="dataInicio">
+                            <input type="date"
+                                class="form-control"
+                                id="dataInicio"
+                                name="dataInicio"
+                                value="@(string.IsNullOrEmpty(Context.Request.Query["dataInicio"]) ? DateTime.Today.ToString("yyyy-MM-dd") : Context.Request.Query["dataInicio"].ToString())">
                         </div>
                     </div>
-
-                    <div class="col-md-4">
+                    
+                    <div class="col-md-3">
                         <div>
                             <label for="dataFim" class="form-label">Data final</label>
-                            <input type="date" class="form-control" id="dataFim" name="dataFim">
+                            <input type="date"
+                                class="form-control"
+                                id="dataFim"
+                                name="dataFim"
+                                value="@(string.IsNullOrEmpty(Context.Request.Query["dataFim"]) ? DateTime.Today.ToString("yyyy-MM-dd") : Context.Request.Query["dataFim"].ToString())">
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <div>
+                            <label for="tipoData" class="form-label">Filtrar por</label>
+                            <select class="form-select" id="tipoData" name="tipoData">
+                                <option value="CriadoEmUtc" selected="@(Context.Request.Query["tipoData"] == "CriadoEmUtc" || string.IsNullOrEmpty(Context.Request.Query["tipoData"]))">
+                                    Data do pedido
+                                </option>
+                                <option value="HorarioRetirada" selected="@(Context.Request.Query["tipoData"] == "HorarioRetirada")">
+                                    Data de retirada
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
                         <div>
                             <label for="status" class="form-label">Status do Pedido</label>
                             <select class="form-select" id="status" name="status">
                                 <option value="">Todos os status</option>
-                                <option value="Pendente">Pendente</option>
-                                <option value="EmPreparacao">Em preparação</option>
-                                <option value="SaiuParaEntrega">Saiu para entrega</option>
-                                <option value="Concluido">Concluído</option>
-                                <option value="Cancelado">Cancelado</option>
+                                <option value="Pendente" selected="@(Context.Request.Query["status"] == "Pendente")">Pendente</option>
+                                <option value="EmPreparacao" selected="@(Context.Request.Query["status"] == "EmPreparacao")">Em preparação</option>
+                                <option value="SaiuParaEntrega" selected="@(Context.Request.Query["status"] == "SaiuParaEntrega")">Saiu para entrega</option>
+                                <option value="Concluido" selected="@(Context.Request.Query["status"] == "Concluido")">Concluído</option>
+                                <option value="Cancelado" selected="@(Context.Request.Query["status"] == "Cancelado")">Cancelado</option>
                             </select>
                         </div>
                     </div>
@@ -210,12 +232,14 @@
                 <hr class="my-3" style="border-top: 1px solid #f1f5f9;">
 
                 <div class="d-flex justify-content-end align-items-center">
-                    <a href="/Admin/Pedidos/Index" class="btn btn-filter-action btn-filter-outline me-2">
+                    <a href="@Url.Action("Index", "Pedidos", new { area = "Admin" })"
+                    id="btnLimparFiltros"
+                    class="btn btn-filter-action btn-filter-outline me-2">
                         <i class="fas fa-eraser opacity-50"></i>
                         Limpar
                     </a>
 
-                    <button type="submit" class="btn btn-filter-action btn-primary shadow-sm">
+                    <button type="submit" id="btnPesquisarPedidos" class="btn btn-filter-action btn-primary shadow-sm">
                         <i class="fas fa-search"></i>
                         Aplicar Filtros
                     </button>
@@ -223,137 +247,195 @@
             </form>
         </div>
     </div>
-    <div class="card card-table-clean mt-4">
-        <div class="card-header d-flex align-items-center justify-content-between row">
-            <h3 class="card-title mb-0 col-6">
-                <i class="fas fa-shopping-cart me-2 text-primary"></i>
-                Lista de Pedidos
-            </h3>
-            <div class="d-flex justify-content-end col-6">
-                <div class="card-tools">
-                    @if (Model != null && Model.Any())
-                    {
-                        <span class="badge rounded-pill bg-light text-primary border">
-                            @Model.Count() <span class="d-none d-sm-inline">Pedidos</span>
-                        </span>
-                    }
-                </div>
+    <div id="resultadoPedidos">
+        @await Html.PartialAsync("_PedidosLista", Model)
+    </div>
+</div>
+<div class="modal fade" id="modalDetalhesPedido" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content" id="conteudoModalPedido">
+            <div class="modal-body text-center py-5">
+                <i class="fas fa-spinner fa-spin me-2"></i> Carregando...
             </div>
-        </div>
-
-        <div class="card-body p-0">
-            <div class="table-responsive d-none d-md-block">
-                <table class="table table-clean mb-0">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">Código</th>
-                            <th>Cliente</th>
-                            <th>Data</th>
-                            <th class="text-end">Total</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-end pe-4">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Any())
-                        {
-                            @foreach (var p in Model)
-                            {
-                                <tr>
-                                    <td class="ps-4 fw-bold text-dark">#@p.Codigo</td>
-                                    <td>
-                                        <div class="d-flex flex-column">
-                                            <span>@(p.Cliente?.Nome ?? "-")</span>
-                                            <small class="text-muted" style="font-size: 0.75rem;">Consumidor Final</small>
-                                        </div>
-                                    </td>
-                                    <td>@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy")</td>
-                                    <td class="text-end fw-bold text-primary">@p.Total.ToString("C")</td>
-                                    <td class="text-center">
-                                        @{
-                                            var statusClass = p.Status.ToString() switch {
-                                                "Pendente" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
-                                                "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
-                                                "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
-                                                _ => "bg-primary-subtle text-primary-emphasis border-primary-subtle"
-                                            };
-                                        }
-                                        <span class="badge border badge-pill-custom @statusClass">
-                                            @p.Status
-                                        </span>
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <a asp-area="Admin" asp-controller="Pedidos" asp-action="Details" asp-route-id="@p.Id"
-                                        class="btn btn-sm btn-light border btn-action">
-                                            <i class="fas fa-eye text-muted me-1"></i> Abrir
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="d-md-none">
-                @if (Model != null && Model.Any())
-                {
-                    @foreach (var p in Model)
-                    {
-                        <div class="mobile-order-item">
-                            <div class="mobile-order-header">
-                                <div>
-                                    <span class="fw-bold text-dark d-block">#@p.Codigo</span>
-                                    <small class="text-muted">@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
-                                </div>
-                                @{
-                                    var statusClassMob = p.Status.ToString() switch {
-                                        "Pendente" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
-                                        "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
-                                        "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
-                                        _ => "bg-primary-subtle text-primary-emphasis border-primary-subtle"
-                                    };
-                                }
-                                <span class="badge border badge-pill-custom @statusClassMob" style="font-size: 0.7rem;">
-                                    @p.Status
-                                </span>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <div>
-                                    <span class="d-block text-secondary" style="font-size: 0.9rem;">@(p.Cliente?.Nome ?? "-")</span>
-                                    <span class="fw-bold text-primary">@p.Total.ToString("C")</span>
-                                </div>
-                                <a asp-area="Admin" asp-controller="Pedidos" asp-action="Details" asp-route-id="@p.Id"
-                                class="btn btn-sm btn-light border px-3">
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                    }
-                }
-            </div>
-
-            @if (Model == null || !Model.Any())
-            {
-                <div class="text-center py-5 text-muted">
-                    <i class="fas fa-inbox d-block mb-2 fa-2x opacity-25"></i>
-                    Nenhum pedido encontrado.
-                </div>
-            }
         </div>
     </div>
 </div>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 @section Scripts {
     <script>
-        document.querySelector('.btn-collapse-filtro')?.addEventListener('click', function () {
-            const card = this.closest('.card');
-            const icon = this.querySelector('i');
-            const vaiFechar = !card.classList.contains('collapsed-card');
+        $(function () {
+            $("#formFiltroPedidos").on("submit", function (e) {
+                e.preventDefault();
 
-            icon.className = `fas fa-${vaiFechar ? 'plus' : 'minus'}`;
-        });
+                const $form = $(this);
+                const $btn = $form.find("#btnPesquisarPedidos");
+                const url = $form.attr("action") + "?" + $form.serialize();
+
+                $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Pesquisando');
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    success: function (html) {
+                        $("#resultadoPedidos").html(html);
+                        window.history.replaceState({}, "", url);
+                    },
+                    error: function () {
+                        alert("Não foi possível carregar os pedidos.");
+                    },
+                    complete: function () {
+                        $btn.prop("disabled", false).html('<i class="fas fa-search"></i> Aplicar Filtros');
+                    }
+                });
+            });
+
+            $("#formFiltroPedidos").on("click", "#btnLimparFiltros", function (e) {
+                e.preventDefault();
+
+                const $form = $("#formFiltroPedidos");
+                const $btn = $form.find("#btnPesquisarPedidos");
+                const url = $(this).attr("href");
+
+                $form[0].reset();
+                $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Pesquisando');
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    success: function (html) {
+                        $("#resultadoPedidos").html(html);
+                        window.history.replaceState({}, "", url);
+                    },
+                    error: function () {
+                        alert("Não foi possível carregar os pedidos.");
+                    },
+                    complete: function () {
+                        $btn.prop("disabled", false).html('<i class="fas fa-search"></i> Aplicar Filtros');
+                    }
+                });
+            });
+
+            $(".btn-collapse-filtro").on("click", function () {
+                const $card = $(this).closest(".card");
+                const $icon = $(this).find("i");
+                const vaiFechar = !$card.hasClass("collapsed-card");
+
+                $icon.attr("class", `fas fa-${vaiFechar ? "plus" : "minus"}`);
+            });
+        
+            $(document).on("click", ".btn-ver-pedido", function (e) {
+                e.preventDefault();
+
+                const url = $(this).data("url");
+                const modalEl = document.getElementById("modalDetalhesPedido");
+                const $conteudo = $("#conteudoModalPedido");
+
+                $conteudo.html(`
+                    <div class="modal-body text-center py-5">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Carregando...
+                    </div>
+                `);
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    success: function (html) {
+                        $conteudo.html(html);
+                        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                    },
+                    error: function () {
+                        $conteudo.html(`
+                            <div class="modal-header">
+                                <h5 class="modal-title">Erro</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-danger mb-0">
+                                    Não foi possível carregar os detalhes do pedido.
+                                </div>
+                            </div>
+                        `);
+
+                        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                    }
+                });
+            });
+
+            $(document).on("click", "#btnSalvarStatus", function () {
+                const $btn = $(this);
+                const id = $btn.data("id");
+                const status = $("#novoStatus").val();
+                const $feedback = $("#statusPedidoFeedback");
+                const modalEl = document.getElementById("modalDetalhesPedido");
+
+                if (!status) {
+                    $feedback.html('<div class="alert alert-warning mb-0">Selecione um status.</div>');
+                    return;
+                }
+
+                $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin me-1"></i> Salvando');
+
+                $.ajax({
+                    url: '@Url.Action("AtualizarStatus", "Pedidos", new { area = "Admin" })',
+                    type: "POST",
+                    data: {
+                        id: id,
+                        status: status
+                    },
+                    success: function (response) {
+                        if (!response.sucesso) {
+                            $feedback.html('<div class="alert alert-danger mb-0">' + response.mensagem + '</div>');
+                            return;
+                        }
+
+                        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+                        $(modalEl).one("hidden.bs.modal", function () {
+                            $("#conteudoModalPedido").html(`
+                                <div class="modal-body text-center py-5">
+                                    <i class="fas fa-spinner fa-spin me-2"></i> Carregando...
+                                </div>
+                            `);
+
+                            $(".modal-backdrop").remove();
+                            $("body").removeClass("modal-open").css("padding-right", "");
+
+                            if (typeof Swal !== "undefined") {
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Status atualizado",
+                                    text: response.mensagem,
+                                    confirmButtonText: "OK"
+                                }).then(() => {
+                                    $("#formFiltroPedidos").trigger("submit");
+                                });
+                            } else {
+                                alert(response.mensagem);
+                                $("#formFiltroPedidos").trigger("submit");
+                            }
+                        });
+
+                        modal.hide();
+                    },
+                    error: function () {
+                        $feedback.html('<div class="alert alert-danger mb-0">Não foi possível atualizar o status.</div>');
+                    },
+                    complete: function () {
+                        $btn.prop("disabled", false).html('<i class="fas fa-save me-1"></i> Salvar status');
+                    }
+                });
+            });
+          });
     </script>
 }
 
