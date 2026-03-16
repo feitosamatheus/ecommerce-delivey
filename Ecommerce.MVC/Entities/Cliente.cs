@@ -30,6 +30,9 @@ public class Cliente
 
     [Required]
     public string SenhaHash { get; set; }
+
+    //novo
+    public string IdClientePagamento { get; set; }
     
     [Required]
     public string Role { get; set; } = "Cliente";

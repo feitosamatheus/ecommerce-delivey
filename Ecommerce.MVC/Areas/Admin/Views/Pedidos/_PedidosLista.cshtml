@@ -1,20 +1,80 @@
 @model Ecommerce.MVC.Models.Admin.Pedidos.PedidosIndexViewModel
+@{
+    string IconeOrdenacao(string coluna)
+    {
+        if (Model.SortColumn != coluna)
+            return "fas fa-sort text-muted opacity-50";
 
+        return Model.SortDirection == "asc"
+            ? "fas fa-sort-up text-primary"
+            : "fas fa-sort-down text-primary";
+    }
+}
+<style>
+    /* Estilização da Paginação Clean */
+    .pagination-clean .page-link {
+        border: 1px solid #e2e8f0;
+        color: #64748b; /* Slate 500 */
+        margin: 0 2px;
+        border-radius: 0.5rem !important;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        padding: 0.4rem 0.8rem;
+    }
+
+        .pagination-clean .page-link:hover {
+            background-color: #f8fafc;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+
+    .pagination-clean .page-item.active .page-link {
+        background-color: #0d6efd; /* Slate 700 */
+        border-color: #fff;
+        color: #fff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .pagination-clean .page-item.disabled .page-link {
+        background-color: #f8fafc;
+        border-color: #f1f5f9;
+        color: #cbd5e1;
+    }
+
+    /* Ajuste para ícones dentro da paginação se desejar usar */
+    .pagination-clean .page-link i {
+        font-size: 0.75rem;
+    }
+</style>
 <div class="card card-table-clean mt-4">
     <div class="card-header d-flex align-items-center justify-content-between row">
-        <h3 class="card-title mb-0 col-6">
+        <h3 class="card-title mb-0 col-md-4">
             <i class="fas fa-shopping-cart me-2 text-primary"></i>
             Lista de Pedidos
         </h3>
 
-        <div class="d-flex justify-content-end col-6">
-            <div class="card-tools">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap">
                 @if (Model.Itens != null && Model.Itens.Any())
                 {
                     <span class="badge rounded-pill bg-light text-primary border">
                         @Model.TotalRegistros <span class="d-none d-sm-inline">Pedidos</span>
                     </span>
                 }
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select form-select-sm"
+                            id="tamanhoPagina"
+                            name="tamanhoPagina"
+                            form="formFiltroPedidos"
+                            style="width: 90px;">
+                        <option value="5" selected="@(Model.TamanhoPagina == 5)">5</option>
+                        <option value="10" selected="@(Model.TamanhoPagina == 10)">10</option>
+                        <option value="20" selected="@(Model.TamanhoPagina == 20)">20</option>
+                        <option value="50" selected="@(Model.TamanhoPagina == 50)">50</option>
+                        <option value="100" selected="@(Model.TamanhoPagina == 100)">100</option>
+                    </select>
+                </div>
+
             </div>
         </div>
     </div>
@@ -24,12 +84,32 @@
             <table class="table table-clean mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4">Código</th>
-                        <th>Cliente</th>
-                        <th>Data</th>
-                        <th class="text-end">Total</th>
-                        <th class="text-center">Status</th>
-                        <th class="text-end pe-4">Ações</th>
+                        <th class="ps-4">
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="Codigo">
+                                Código <i class="@IconeOrdenacao("Codigo") ms-1"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="Cliente">
+                                Cliente <i class="@IconeOrdenacao("Cliente") ms-1"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="CriadoEmUtc">
+                                Data <i class="@IconeOrdenacao("CriadoEmUtc") ms-1"></i>
+                            </a>
+                        </th>
+                        <th class="text-end">
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="Total">
+                                Total <i class="@IconeOrdenacao("Total") ms-1"></i>
+                            </a>
+                        </th>
+                        <th class="text-center">
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="Status">
+                                Status <i class="@IconeOrdenacao("Status") ms-1"></i>
+                            </a>
+                        </th>
+                        <th class="text-center pe-4">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,7 +144,7 @@
                                         @p.Status
                                     </span>
                                 </td>
-                                <td class="text-end pe-4">
+                                <td class="text-center pe-4">
                                     <a href="javascript:void(0);"
                                        class="btn btn-sm btn-light border btn-action btn-ver-pedido"
                                        data-url="@Url.Action("DetailsModal", "Pedidos", new { area = "Admin", id = p.Id })">
@@ -141,21 +221,32 @@
                     de @Model.TotalRegistros registros
                 </div>
 
-                <nav>
-                    <ul class="pagination pagination-sm mb-0">
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination pagination-sm pagination-clean mb-0">
                         <li class="page-item @(Model.PaginaAtual == 1 ? "disabled" : "")">
-                            <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual - 1)">Anterior</a>
+                            <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual - 1)" aria-label="Anterior">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
                         </li>
 
                         @for (int i = 1; i <= Model.TotalPaginas; i++)
                         {
-                            <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
-                                <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@i">@i</a>
-                            </li>
+                            @if (i == 1 || i == Model.TotalPaginas || (i >= Model.PaginaAtual - 2 && i <= Model.PaginaAtual + 2))
+                            {
+                                <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                    <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@i">@i</a>
+                                </li>
+                            }
+                            else if (i == Model.PaginaAtual - 3 || i == Model.PaginaAtual + 3)
+                            {
+                                <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+                            }
                         }
 
                         <li class="page-item @(Model.PaginaAtual == Model.TotalPaginas ? "disabled" : "")">
-                            <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual + 1)">Próxima</a>
+                            <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual + 1)" aria-label="Próximo">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
                         </li>
                     </ul>
                 </nav>

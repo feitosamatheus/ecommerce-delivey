@@ -178,7 +178,9 @@
         <div class="card-body">
             <form class="py-2" id="formFiltroPedidos" method="get" action="@Url.Action("Index", "Pedidos", new { area = "Admin" })">
                 <input type="hidden" id="pagina" name="pagina" value="@Model.PaginaAtual" />
-                <input type="hidden" id="tamanhoPagina" name="tamanhoPagina" value="@Model.TamanhoPagina" />
+                <input type="hidden" id="sortColumn" name="sortColumn" value="@Model.SortColumn" />
+                <input type="hidden" id="sortDirection" name="sortDirection" value="@Model.SortDirection" />
+
                 <div class="row g-3">
                     <div class="col-md-3">
                         <div>
@@ -281,7 +283,8 @@
                     $form.find("#pagina").val(1);
                 }
 
-                const url = $form.attr("action") + "?" + $form.serialize();
+                let url = $form.attr("action") + "?" + $form.serialize();
+                url += "&tamanhoPagina=" + ($("#tamanhoPagina").val() || 5);
 
                 $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Pesquisando');
 
@@ -309,9 +312,14 @@
 
                 const $form = $("#formFiltroPedidos");
                 const $btn = $form.find("#btnPesquisarPedidos");
-                const url = $(this).attr("href");
+                const urlBase = $(this).attr("href");
 
                 $form[0].reset();
+                $form.find("#pagina").val(1);
+                $("#tamanhoPagina").val(10);
+
+                const url = urlBase + "?" + $form.serialize() + "&tamanhoPagina=" + $("#tamanhoPagina").val();
+
                 $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Pesquisando');
 
                 $.ajax({
@@ -456,7 +464,30 @@
                 $("#pagina").val(pagina);
                 $("#formFiltroPedidos").trigger("submit", [true]);
             });
-          });
+            
+            $(document).on("change", "#tamanhoPagina", function () {
+                $("#pagina").val(1);
+                $("#formFiltroPedidos").trigger("submit", [true]);
+            });
+
+            $(document).on("click", ".ordenacao-pedido", function (e) {
+                e.preventDefault();
+
+                const coluna = $(this).data("coluna");
+                const $sortColumn = $("#sortColumn");
+                const $sortDirection = $("#sortDirection");
+
+                if ($sortColumn.val() === coluna) {
+                    $sortDirection.val($sortDirection.val() === "asc" ? "desc" : "asc");
+                } else {
+                    $sortColumn.val(coluna);
+                    $sortDirection.val("asc");
+                }
+
+                $("#pagina").val(1);
+                $("#formFiltroPedidos").trigger("submit", [true]);
+            });
+        });
     </script>
 }
 

@@ -23,22 +23,26 @@ public class PedidosController : Controller
     }
 
     public async Task<IActionResult> Index(
-        DateTime? dataInicio,
-        DateTime? dataFim,
-        string? status,
-        string? tipoData,
-        int pagina = 1,
-        int tamanhoPagina = 10)
+    DateTime? dataInicio,
+    DateTime? dataFim,
+    string? status,
+    string? tipoData,
+    int pagina = 1,
+    int tamanhoPagina = 5,
+    string? sortColumn = "CriadoEmUtc",
+    string? sortDirection = "desc")
     {
         dataInicio ??= DateTime.Today;
         dataFim ??= DateTime.Today;
         tipoData ??= "CriadoEmUtc";
+        sortColumn ??= "CriadoEmUtc";
+        sortDirection ??= "desc";
 
         if (pagina < 1)
             pagina = 1;
 
         if (tamanhoPagina <= 0)
-            tamanhoPagina = 10;
+            tamanhoPagina = 5;
 
         var query = _db.Pedidos
             .AsNoTracking()
@@ -59,9 +63,26 @@ public class PedidosController : Controller
         if (!string.IsNullOrWhiteSpace(status))
             query = query.Where(p => p.Status.ToString() == status);
 
-        query = tipoData == "HorarioRetirada"
-            ? query.OrderByDescending(p => p.HorarioRetirada)
-            : query.OrderByDescending(p => p.CriadoEmUtc);
+        query = (sortColumn, sortDirection.ToLower()) switch
+        {
+            ("Codigo", "asc") => query.OrderBy(p => p.Codigo),
+            ("Codigo", "desc") => query.OrderByDescending(p => p.Codigo),
+
+            ("Cliente", "asc") => query.OrderBy(p => p.Cliente!.Nome),
+            ("Cliente", "desc") => query.OrderByDescending(p => p.Cliente!.Nome),
+
+            ("Total", "asc") => query.OrderBy(p => p.Total),
+            ("Total", "desc") => query.OrderByDescending(p => p.Total),
+
+            ("Status", "asc") => query.OrderBy(p => p.Status),
+            ("Status", "desc") => query.OrderByDescending(p => p.Status),
+
+            ("HorarioRetirada", "asc") => query.OrderBy(p => p.HorarioRetirada),
+            ("HorarioRetirada", "desc") => query.OrderByDescending(p => p.HorarioRetirada),
+
+            ("CriadoEmUtc", "asc") => query.OrderBy(p => p.CriadoEmUtc),
+            _ => query.OrderByDescending(p => p.CriadoEmUtc)
+        };
 
         var totalRegistros = await query.CountAsync();
 
@@ -79,7 +100,9 @@ public class PedidosController : Controller
             DataInicio = dataInicio,
             DataFim = dataFim,
             Status = status,
-            TipoData = tipoData
+            TipoData = tipoData,
+            SortColumn = sortColumn,
+            SortDirection = sortDirection
         };
 
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -87,7 +110,7 @@ public class PedidosController : Controller
 
         return View(vm);
     }
-    
+
     public async Task<IActionResult> DetailsModal(Guid id)
     {
         var pedido = await _db.Pedidos

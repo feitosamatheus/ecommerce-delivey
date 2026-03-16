@@ -15,4 +15,7 @@ public class PedidosIndexViewModel
     public DateTime? DataFim { get; set; }
     public string? Status { get; set; }
     public string? TipoData { get; set; }
+
+    public string SortColumn { get; set; } = "CriadoEmUtc";
+    public string SortDirection { get; set; } = "desc";
 }

@@ -29,4 +29,5 @@ public class Pedido
     public DateTime CriadoEmUtc { get; set; } = DateTime.UtcNow;
 
     public List<PedidoItem> Itens { get; set; } = new();
+    public PedidoPagamento? PedidoPagamento { get; set; }
 }

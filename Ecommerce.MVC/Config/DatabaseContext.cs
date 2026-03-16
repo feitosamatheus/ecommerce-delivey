@@ -22,6 +22,22 @@ public class DatabaseContext : DbContext
     public DbSet<ProdutoAcompanhamentoCategoria> ProdutoAcompanhamentoCategorias { get; set; }
 
     public DbSet<Pedido> Pedidos { get; set; }
+    public DbSet<PedidoPagamento> PedidoPagamentos { get; set; }
     public DbSet<PedidoItem> PedidoItens { get; set; }
     public DbSet<PedidoSequencial> PedidoSequenciais { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Pedido>()
+            .HasOne(p => p.PedidoPagamento)
+            .WithOne(pp => pp.Pedido)
+            .HasForeignKey<PedidoPagamento>(pp => pp.PedidoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PedidoPagamento>()
+            .HasIndex(pp => pp.PedidoId)
+            .IsUnique();
+    }
 }

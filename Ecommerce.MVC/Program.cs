@@ -3,6 +3,7 @@ using Ecommerce.MVC.Interfaces;
 using Ecommerce.MVC.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Headers;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +42,23 @@ builder.Services
     });
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddHttpClient("Asaas", (sp, c) =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+
+    var baseUrl = config["Asaas:BaseUrl"];
+    var apiKey = config["Asaas:ApiKey"];
+    var userAgent = config["Asaas:UserAgent"];
+
+    c.BaseAddress = new Uri(baseUrl!);
+
+    c.DefaultRequestHeaders.Add("access_token", apiKey);
+    c.DefaultRequestHeaders.Add("User-Agent", userAgent);
+    c.DefaultRequestHeaders.Accept.Add(
+        new MediaTypeWithQualityHeaderValue("application/json"));
+});
+
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
