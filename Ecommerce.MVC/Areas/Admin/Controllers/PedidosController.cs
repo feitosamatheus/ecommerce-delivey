@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Enums;
+using Ecommerce.MVC.Models.Admin.Pedidos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,11 +22,23 @@ public class PedidosController : Controller
         _db = db;
     }
 
-    public async Task<IActionResult> Index(DateTime? dataInicio, DateTime? dataFim, string? status, string? tipoData)
+    public async Task<IActionResult> Index(
+        DateTime? dataInicio,
+        DateTime? dataFim,
+        string? status,
+        string? tipoData,
+        int pagina = 1,
+        int tamanhoPagina = 10)
     {
         dataInicio ??= DateTime.Today;
         dataFim ??= DateTime.Today;
         tipoData ??= "CriadoEmUtc";
+
+        if (pagina < 1)
+            pagina = 1;
+
+        if (tamanhoPagina <= 0)
+            tamanhoPagina = 10;
 
         var query = _db.Pedidos
             .AsNoTracking()
@@ -39,13 +52,9 @@ public class PedidosController : Controller
         var fimUtc = DateTime.SpecifyKind(fimLocal, DateTimeKind.Local).ToUniversalTime();
 
         if (tipoData == "HorarioRetirada")
-        {
             query = query.Where(p => p.HorarioRetirada >= inicioUtc && p.HorarioRetirada < fimUtc);
-        }
         else
-        {
             query = query.Where(p => p.CriadoEmUtc >= inicioUtc && p.CriadoEmUtc < fimUtc);
-        }
 
         if (!string.IsNullOrWhiteSpace(status))
             query = query.Where(p => p.Status.ToString() == status);
@@ -54,16 +63,31 @@ public class PedidosController : Controller
             ? query.OrderByDescending(p => p.HorarioRetirada)
             : query.OrderByDescending(p => p.CriadoEmUtc);
 
+        var totalRegistros = await query.CountAsync();
+
         var pedidos = await query
-            .Take(100)
+            .Skip((pagina - 1) * tamanhoPagina)
+            .Take(tamanhoPagina)
             .ToListAsync();
 
+        var vm = new PedidosIndexViewModel
+        {
+            Itens = pedidos,
+            PaginaAtual = pagina,
+            TamanhoPagina = tamanhoPagina,
+            TotalRegistros = totalRegistros,
+            DataInicio = dataInicio,
+            DataFim = dataFim,
+            Status = status,
+            TipoData = tipoData
+        };
+
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("_PedidosLista", pedidos);
+            return PartialView("_PedidosLista", vm);
 
-        return View(pedidos);
+        return View(vm);
     }
-
+    
     public async Task<IActionResult> DetailsModal(Guid id)
     {
         var pedido = await _db.Pedidos

@@ -1,4 +1,4 @@
-@model IEnumerable<Ecommerce.MVC.Entities.Pedido>
+@model Ecommerce.MVC.Models.Admin.Pedidos.PedidosIndexViewModel
 
 @{
     ViewData["Title"] = "Pedidos";
@@ -177,6 +177,8 @@
 
         <div class="card-body">
             <form class="py-2" id="formFiltroPedidos" method="get" action="@Url.Action("Index", "Pedidos", new { area = "Admin" })">
+                <input type="hidden" id="pagina" name="pagina" value="@Model.PaginaAtual" />
+                <input type="hidden" id="tamanhoPagina" name="tamanhoPagina" value="@Model.TamanhoPagina" />
                 <div class="row g-3">
                     <div class="col-md-3">
                         <div>
@@ -219,9 +221,11 @@
                             <label for="status" class="form-label">Status do Pedido</label>
                             <select class="form-select" id="status" name="status">
                                 <option value="">Todos os status</option>
-                                <option value="Pendente" selected="@(Context.Request.Query["status"] == "Pendente")">Pendente</option>
-                                <option value="EmPreparacao" selected="@(Context.Request.Query["status"] == "EmPreparacao")">Em preparação</option>
-                                <option value="SaiuParaEntrega" selected="@(Context.Request.Query["status"] == "SaiuParaEntrega")">Saiu para entrega</option>
+                                <option value="Rascunho" selected="@(Context.Request.Query["status"] == "Rascunho")">Rascunho</option>
+                                <option value="AguardandoPagamento" selected="@(Context.Request.Query["status"] == "AguardandoPagamento")">Aguardando pagamento</option>
+                                <option value="Confirmado" selected="@(Context.Request.Query["status"] == "Confirmado")">Confirmado</option>
+                                <option value="EmPreparo" selected="@(Context.Request.Query["status"] == "EmPreparo")">Em preparo</option>
+                                <option value="Pronto" selected="@(Context.Request.Query["status"] == "Pronto")">Pronto</option>
                                 <option value="Concluido" selected="@(Context.Request.Query["status"] == "Concluido")">Concluído</option>
                                 <option value="Cancelado" selected="@(Context.Request.Query["status"] == "Cancelado")">Cancelado</option>
                             </select>
@@ -267,11 +271,16 @@
 @section Scripts {
     <script>
         $(function () {
-            $("#formFiltroPedidos").on("submit", function (e) {
+            $("#formFiltroPedidos").on("submit", function (e, manterPagina) {
                 e.preventDefault();
 
                 const $form = $(this);
                 const $btn = $form.find("#btnPesquisarPedidos");
+
+                if (!manterPagina) {
+                    $form.find("#pagina").val(1);
+                }
+
                 const url = $form.attr("action") + "?" + $form.serialize();
 
                 $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Pesquisando');
@@ -434,6 +443,18 @@
                         $btn.prop("disabled", false).html('<i class="fas fa-save me-1"></i> Salvar status');
                     }
                 });
+            });
+          
+            $(document).on("click", ".paginacao-pedido", function (e) {
+                e.preventDefault();
+
+                const pagina = $(this).data("pagina");
+
+                if (!pagina || $(this).closest(".page-item").hasClass("disabled") || $(this).closest(".page-item").hasClass("active"))
+                    return;
+
+                $("#pagina").val(pagina);
+                $("#formFiltroPedidos").trigger("submit", [true]);
             });
           });
     </script>

@@ -1,4 +1,4 @@
-@model IEnumerable<Ecommerce.MVC.Entities.Pedido>
+@model Ecommerce.MVC.Models.Admin.Pedidos.PedidosIndexViewModel
 
 <div class="card card-table-clean mt-4">
     <div class="card-header d-flex align-items-center justify-content-between row">
@@ -6,12 +6,13 @@
             <i class="fas fa-shopping-cart me-2 text-primary"></i>
             Lista de Pedidos
         </h3>
+
         <div class="d-flex justify-content-end col-6">
             <div class="card-tools">
-                @if (Model != null && Model.Any())
+                @if (Model.Itens != null && Model.Itens.Any())
                 {
                     <span class="badge rounded-pill bg-light text-primary border">
-                        @Model.Count() <span class="d-none d-sm-inline">Pedidos</span>
+                        @Model.TotalRegistros <span class="d-none d-sm-inline">Pedidos</span>
                     </span>
                 }
             </div>
@@ -32,11 +33,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model != null && Model.Any())
+                    @if (Model.Itens != null && Model.Itens.Any())
                     {
-                        @foreach (var p in Model)
+                        @foreach (var p in Model.Itens)
                         {
-                            <tr>
+                            var statusClass = p.Status.ToString() switch
+                            {
+                                "Rascunho" => "bg-secondary-subtle text-secondary-emphasis border-secondary-subtle",
+                                "AguardandoPagamento" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
+                                "Confirmado" => "bg-info-subtle text-info-emphasis border-info-subtle",
+                                "EmPreparo" => "bg-primary-subtle text-primary-emphasis border-primary-subtle",
+                                "Pronto" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                                "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                                "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
+                                _ => "bg-light text-dark border"
+                            };
+
+                            <tr data-pedido-id="@p.Id">
                                 <td class="ps-4 fw-bold text-dark">#@p.Codigo</td>
                                 <td>
                                     <div class="d-flex flex-column">
@@ -47,24 +60,15 @@
                                 <td>@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy")</td>
                                 <td class="text-end fw-bold text-primary">@p.Total.ToString("C")</td>
                                 <td class="text-center">
-                                    @{
-                                        var statusClass = p.Status.ToString() switch
-                                        {
-                                            "Pendente" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
-                                            "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
-                                            "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
-                                            _ => "bg-primary-subtle text-primary-emphasis border-primary-subtle"
-                                        };
-                                    }
-                                    <span class="badge border badge-pill-custom @statusClass">
+                                    <span class="badge border badge-pill-custom @statusClass pedido-status-texto">
                                         @p.Status
                                     </span>
                                 </td>
                                 <td class="text-end pe-4">
                                     <a href="javascript:void(0);"
-                                        class="btn btn-sm btn-light border btn-action btn-ver-pedido"
-                                        data-url="@Url.Action("DetailsModal", "Pedidos", new { area = "Admin", id = p.Id })">
-                                            <i class="fas fa-eye text-muted me-1"></i> Abrir
+                                       class="btn btn-sm btn-light border btn-action btn-ver-pedido"
+                                       data-url="@Url.Action("DetailsModal", "Pedidos", new { area = "Admin", id = p.Id })">
+                                        <i class="fas fa-eye text-muted me-1"></i> Abrir
                                     </a>
                                 </td>
                             </tr>
@@ -75,26 +79,30 @@
         </div>
 
         <div class="d-md-none">
-            @if (Model != null && Model.Any())
+            @if (Model.Itens != null && Model.Itens.Any())
             {
-                @foreach (var p in Model)
+                @foreach (var p in Model.Itens)
                 {
-                    <div class="mobile-order-item">
+                    var statusClassMob = p.Status.ToString() switch
+                    {
+                        "Rascunho" => "bg-secondary-subtle text-secondary-emphasis border-secondary-subtle",
+                        "AguardandoPagamento" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
+                        "Confirmado" => "bg-info-subtle text-info-emphasis border-info-subtle",
+                        "EmPreparo" => "bg-primary-subtle text-primary-emphasis border-primary-subtle",
+                        "Pronto" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                        "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                        "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
+                        _ => "bg-light text-dark border"
+                    };
+
+                    <div class="mobile-order-item" data-pedido-id="@p.Id">
                         <div class="mobile-order-header">
                             <div>
                                 <span class="fw-bold text-dark d-block">#@p.Codigo</span>
                                 <small class="text-muted">@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
                             </div>
-                            @{
-                                var statusClassMob = p.Status.ToString() switch
-                                {
-                                    "Pendente" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
-                                    "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
-                                    "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
-                                    _ => "bg-primary-subtle text-primary-emphasis border-primary-subtle"
-                                };
-                            }
-                            <span class="badge border badge-pill-custom @statusClassMob" style="font-size: 0.7rem;">
+
+                            <span class="badge border badge-pill-custom @statusClassMob pedido-status-texto" style="font-size: 0.7rem;">
                                 @p.Status
                             </span>
                         </div>
@@ -104,10 +112,11 @@
                                 <span class="d-block text-secondary" style="font-size: 0.9rem;">@(p.Cliente?.Nome ?? "-")</span>
                                 <span class="fw-bold text-primary">@p.Total.ToString("C")</span>
                             </div>
+
                             <a href="javascript:void(0);"
-                                class="btn btn-sm btn-light border px-3 btn-ver-pedido"
-                                data-url="@Url.Action("DetailsModal", "Pedidos", new { area = "Admin", id = p.Id })">
-                                    <i class="fas fa-chevron-right"></i>
+                               class="btn btn-sm btn-light border px-3 btn-ver-pedido"
+                               data-url="@Url.Action("DetailsModal", "Pedidos", new { area = "Admin", id = p.Id })">
+                                <i class="fas fa-chevron-right"></i>
                             </a>
                         </div>
                     </div>
@@ -115,11 +124,41 @@
             }
         </div>
 
-        @if (Model == null || !Model.Any())
+        @if (Model.Itens == null || !Model.Itens.Any())
         {
             <div class="text-center py-5 text-muted">
                 <i class="fas fa-inbox d-block mb-2 fa-2x opacity-25"></i>
                 Nenhum pedido encontrado.
+            </div>
+        }
+
+        @if (Model.TotalPaginas > 1)
+        {
+            <div class="d-flex justify-content-between align-items-center p-3 border-top bg-white flex-wrap gap-2">
+                <div class="text-muted small">
+                    Exibindo @(((Model.PaginaAtual - 1) * Model.TamanhoPagina) + 1)
+                    até @(Math.Min(Model.PaginaAtual * Model.TamanhoPagina, Model.TotalRegistros))
+                    de @Model.TotalRegistros registros
+                </div>
+
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item @(Model.PaginaAtual == 1 ? "disabled" : "")">
+                            <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual - 1)">Anterior</a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPaginas; i++)
+                        {
+                            <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@i">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.PaginaAtual == Model.TotalPaginas ? "disabled" : "")">
+                            <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual + 1)">Próxima</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         }
     </div>
