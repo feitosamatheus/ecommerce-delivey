@@ -1,6 +1,7 @@
 using Ecommerce.MVC.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,4 +31,7 @@ public class Pedido
 
     public List<PedidoItem> Itens { get; set; } = new();
     public PedidoPagamento? PedidoPagamento { get; set; }
+
+    [NotMapped]
+    public decimal ValorEntrada => Math.Round(Total * 0.5m, 2);
 }

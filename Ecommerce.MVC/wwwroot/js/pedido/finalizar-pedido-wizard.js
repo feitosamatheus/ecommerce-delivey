@@ -283,30 +283,43 @@
             method: "POST",
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(payload),
-            success: function (res) {
-                // Vai para step 3
+            success: async function (res) {
                 stopPixTimer();
                 showStep(3);
                 window._pedidoConfirmado = true;
 
-                // Preenche Step 3 (VM/Response)
-                $("#pixCopiaCola").val(res.pixCopiaCola || "");
-                $("#pixChave").val(res.pixChave || "");
-                $("#pixTxid").text(res.pedidoId || "-");
-                $("#pixValorFinal").text(formatBRL(res.valor));
-                $("#pixValorSinal").text(formatBRL(res.valor));
+                const pedidoId = res.pedidoId;
+                const valor = res.valor;
 
-                if (res.qrCodeBase64) {
-                    $("#pixQrImg").attr("src", "data:image/png;base64," + res.qrCodeBase64);
-                } else {
-                    $("#pixQrImg").attr("src", "");
+                if (!pedidoId) {
+                    uiNotify.alert.error("Pedido confirmado, mas o identificador do pedido não foi retornado.");
+                    $btn.prop("disabled", false).text("Confirmar pedido");
+                    removeLoading?.();
+                    return;
                 }
 
-                if (res.expiraEmUtc) startPixTimer(res.expiraEmUtc);
+                $("#pixPedidoId").val(pedidoId);
+                $("#pixCopiaCola").val("");
+                $("#pixTxid").text("Gerando...");
+                $("#pixQrImg").attr("src", "");
+                $("#pixValorFinal").text(formatBRL(valor || 0));
 
-                uiNotify.toast.success("Pedido confirmado com sucesso! Agora finalize o pagamento.");
-                // transforma o botão em "Fechar"
-                $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                $("#pixStatusBox").removeClass("d-none").html(`
+                    <div class="alert alert-warning border-0 rounded-4 mb-0">
+                        <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
+                        Gerando cobrança PIX...
+                    </div>
+                `);
+
+                try {
+                    await carregarPixPedido(pedidoId);
+
+                    uiNotify.toast.success("Pedido confirmado com sucesso! Agora finalize o pagamento.");
+                    $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                } catch (err) {
+                    uiNotify.alert.error(err.message || "Erro ao gerar cobrança PIX.");
+                    $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                }
 
                 removeLoading?.();
             },
@@ -432,6 +445,73 @@
     // Função auxiliar para resetar o botão caso o pagamento falhe
     function resetBtn($btn) {
         $btn.prop('disabled', false).html('<i class="fa-solid fa-circle-check me-1"></i> Já paguei via PIX');
+    }
+
+    //-----------------------------------------------------------
+    async function carregarPixPedido(pedidoId) {
+        try {
+            addLoading?.("Gerando PIX...");
+
+            const response = await fetch("/api/Pagamento/criar-cliente-cobranca-pix", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    pedidoId: pedidoId,
+                    description: "Pagamento do pedido " + pedidoId
+                })
+            });
+
+            const res = await response.json();
+
+            if (!response.ok || !res.sucesso) {
+                throw new Error(res.mensagem || "Não foi possível gerar o PIX.");
+            }
+
+            preencherStepPix(res);
+
+            removeLoading?.();
+            return res;
+        } catch (error) {
+            removeLoading?.();
+
+            $("#pixStatusBox").removeClass("d-none").html(`
+            <div class="alert alert-danger border-0 rounded-4 mb-0">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                ${error.message || "Erro ao gerar cobrança PIX."}
+            </div>
+        `);
+
+            throw error;
+        }
+    }
+
+    function preencherStepPix(res) {
+        const payment = res.payment || {};
+        const pixQrCode = res.pixQrCode || {};
+
+        $("#pixCopiaCola").val(pixQrCode.payload || "");
+        $("#pixTxid").text(payment.id || "-");
+        $("#pixValorFinal").text(formatBRL(payment.value || 0));
+
+        if (pixQrCode.encodedImage) {
+            $("#pixQrImg").attr("src", "data:image/png;base64," + pixQrCode.encodedImage);
+        } else {
+            $("#pixQrImg").attr("src", "");
+        }
+
+        if (pixQrCode.expirationDate) {
+            startPixTimer(pixQrCode.expirationDate);
+        } else {
+            $("#pixExpiraEm").text("--:--:--");
+        }
+
+        $("#pixStatusBox").addClass("d-none").html("");
+
+        if (res.pedidoPagamentoExistente) {
+            uiNotify?.toast?.info?.("PIX já existente para este pedido. Reutilizando cobrança.");
+        }
     }
 
 })();

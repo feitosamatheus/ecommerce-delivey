@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 namespace Ecommerce.MVC.Controllers;
 
 [ApiController]
+[Route("api/[controller]")]
 [Authorize]
 public class PagamentoController : Controller
 {
@@ -22,7 +23,7 @@ public class PagamentoController : Controller
         _context = context;
     }
 
-    [HttpPost]
+    [HttpPost("criar-cliente-cobranca-pix")]
     public async Task<IActionResult> CriarClienteECobrancaPix([FromBody] PagamentoPixViewModel model)
     {
         try
@@ -71,6 +72,15 @@ public class PagamentoController : Controller
                 {
                     sucesso = false,
                     mensagem = "Pedido não encontrado."
+                });
+            }
+
+            if (pedido.ValorEntrada < 5m)
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "O valor mínimo para gerar cobrança PIX é de R$ 5,00."
                 });
             }
 
@@ -125,7 +135,7 @@ public class PagamentoController : Controller
 
             var pagamento = await CriarCobrancaPix(
                 customerId,
-                pedido.Total,
+                pedido.ValorEntrada,
                 DateTime.UtcNow.AddHours(24),
                 ""
             );
@@ -154,6 +164,14 @@ public class PagamentoController : Controller
                 });
             }
 
+            DateTime? expiracaoPixUtc = null;
+
+            if (!string.IsNullOrWhiteSpace(qrCode.ExpirationDate) &&
+                DateTimeOffset.TryParse(qrCode.ExpirationDate, out var dto))
+            {
+                expiracaoPixUtc = dto.UtcDateTime;
+            }
+
             var pedidoPagamento = new PedidoPagamento
             {
                 PedidoId = pedido.Id,
@@ -165,13 +183,15 @@ public class PagamentoController : Controller
                 Status = MapearStatusAsaas(pagamento.Status),
                 PixPayload = qrCode.Payload,
                 PixEncodedImage = qrCode.EncodedImage,
-                PixExpirationDate = qrCode.ExpirationDate,
+                PixExpirationDate = expiracaoPixUtc,
                 InvoiceUrl = pagamento.InvoiceUrl,
                 CriadoEmUtc = DateTime.UtcNow
             };
 
             _context.PedidoPagamentos.Add(pedidoPagamento);
             await _context.SaveChangesAsync();
+
+            var expiracaoVisualUtc = DateTime.UtcNow.AddHours(24).ToString("o");
 
             return Json(new
             {
@@ -191,7 +211,7 @@ public class PagamentoController : Controller
                 {
                     encodedImage = qrCode.EncodedImage,
                     payload = qrCode.Payload,
-                    expirationDate = qrCode.ExpirationDate,
+                    expirationDate = expiracaoVisualUtc,
                     description = qrCode.Description
                 }
             });
@@ -369,7 +389,7 @@ public class PagamentoController : Controller
         public string? Payload { get; set; }
 
         [JsonPropertyName("expirationDate")]
-        public DateTime? ExpirationDate { get; set; }
+        public string? ExpirationDate { get; set; }
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }
