@@ -229,6 +229,105 @@ public class PagamentoController : Controller
         }
     }
 
+    [HttpPost("confirmar-pagamento")]
+    public async Task<IActionResult> ConfirmarPagamentoSinal([FromBody] ConfirmarPagamentoRequest request)
+    {
+        try
+        {
+            if (request == null || request.PedidoId == Guid.Empty)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Pedido inválido."
+                });
+            }
+
+            var pedidoId = request.PedidoId;
+
+            var clienteIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(clienteIdClaim) || !Guid.TryParse(clienteIdClaim, out var clienteId))
+            {
+                Response.StatusCode = 401;
+                return Json(new
+                {
+                    success = false,
+                    message = "Usuário não autenticado."
+                });
+            }
+
+            var pedido = await _context.Pedidos
+                .Include(p => p.PedidoPagamento)
+                .FirstOrDefaultAsync(p => p.Id == pedidoId && p.ClienteId == clienteId);
+
+            if (pedido == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Pedido não encontrado."
+                });
+            }
+
+            if (pedido.PedidoPagamento == null || string.IsNullOrWhiteSpace(pedido.PedidoPagamento.GatewayPaymentId))
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Nenhuma cobrança PIX encontrada para este pedido."
+                });
+            }
+
+            var paymentId = pedido.PedidoPagamento.GatewayPaymentId;
+
+            var pagamentoAsaas = await ConsultarPagamentoAsaas(paymentId);
+
+            if (pagamentoAsaas == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Não foi possível consultar o pagamento no Asaas."
+                });
+            }
+
+            var novoStatus = MapearStatusAsaas(pagamentoAsaas.Status);
+            pedido.PedidoPagamento.Status = novoStatus;
+
+            if (novoStatus == EStatusPagamento.Received || novoStatus == EStatusPagamento.Confirmed)
+            {
+                pedido.Status = EPedidoStatus.Confirmado;
+                await _context.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Pagamento confirmado com sucesso.",
+                    redirectUrl = Url.Action("Index", "Home", new { confirmado = true })
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = false,
+                message = $"Pagamento ainda não confirmado. Status atual: Pendente"
+            });
+        }
+        catch (Exception ex)
+        {
+            Response.StatusCode = 500;
+
+            return Json(new
+            {
+                success = false,
+                message = "Erro interno ao consultar o pagamento.",
+                details = ex.Message
+            });
+        }
+    }    
     private async Task<string> CriarCliente(CriarClienteAsaasRequest request)
     {
         try
@@ -307,6 +406,29 @@ public class PagamentoController : Controller
         }
     }
 
+    private async Task<ConsultarPagamentoAsaasResponse?> ConsultarPagamentoAsaas(string paymentId)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"payments/{paymentId}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return JsonSerializer.Deserialize<ConsultarPagamentoAsaasResponse>(
+                content,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+        }
+        catch
+        {
+            return null;
+        }
+    }
+    
     #region Classes provisórias
 
     public class PagamentoPixViewModel
@@ -395,6 +517,40 @@ public class PagamentoController : Controller
         public string? Description { get; set; }
     }
 
+    #endregion
+
+    #region Consulta Pagamento
+    public class ConfirmarPagamentoRequest
+    {
+        public Guid PedidoId { get; set; }
+    }
+
+    public class ConsultarPagamentoAsaasResponse
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
+
+        [JsonPropertyName("billingType")]
+        public string? BillingType { get; set; }
+
+        [JsonPropertyName("value")]
+        public decimal Value { get; set; }
+
+        [JsonPropertyName("dueDate")]
+        public string? DueDate { get; set; }
+
+        [JsonPropertyName("paymentDate")]
+        public string? PaymentDate { get; set; }
+
+        [JsonPropertyName("clientPaymentDate")]
+        public string? ClientPaymentDate { get; set; }
+
+        [JsonPropertyName("invoiceUrl")]
+        public string? InvoiceUrl { get; set; }
+    }
     #endregion
 
     #region Communs

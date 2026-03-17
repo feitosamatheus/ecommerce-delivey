@@ -342,25 +342,6 @@
         copyText($("#pixChave").val(), document.getElementById("pixCopyMsg"));
     });
 
-    $(document).on("click", "#btnJaPaguei", function () {
-        $("#pixStatusBox").removeClass("d-none").html(`
-      <div class="alert alert-warning border-0 rounded-4 mb-0">
-        <i class="fa-regular fa-hourglass-half me-1"></i>
-        Verificando pagamento... aguarde.
-      </div>
-    `);
-
-        // DEMO: simula confirmação
-        setTimeout(() => {
-            $("#pixStatusBox").html(`
-        <div class="alert alert-success border-0 rounded-4 mb-0">
-          <i class="fa-solid fa-circle-check me-1"></i>
-          Pagamento confirmado (DEMO). Seu pedido foi reservado!
-        </div>
-      `);
-        }, 1500);
-    });
-
     function atualizarVisibilidadePagamento() {
         const metodo = $('#selectPagamento').val(); 
 
@@ -388,9 +369,10 @@
     });
 
     $(document).on("click", "#btnJaPaguei", function () {
+        debugger
         const $btn = $(this);
         const $statusBox = $("#pixStatusBox");
-        const pedidoId = $("#pixTxid").text().trim();
+        const pedidoId = $("#pixPedidoId").val();
 
         $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Processando...');
 
@@ -402,41 +384,40 @@
         `);
 
         $.ajax({
-            url: '/Pedido/ConfirmarPagamentoSinal', 
+            url: '/api/Pagamento/confirmar-pagamento',
             type: 'POST',
-            data: { pedidoId: pedidoId },
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ pedidoId: pedidoId }),
             success: function (response) {
+                debugger
                 if (response.success) {
                     $statusBox.html(`
-                    <div class="alert alert-success border-0 rounded-4 mb-0 animate__animated animate__fadeIn">
-                        <i class="fa-solid fa-circle-check me-1"></i>
-                        Pagamento confirmado! Seu pedido foi reservado com sucesso.
-                    </div>
-                `);
+                        <div class="alert alert-success border-0 rounded-4 mb-0 animate__animated animate__fadeIn">
+                            <i class="fa-solid fa-circle-check me-1"></i>
+                            Pagamento confirmado! Seu pedido foi reservado com sucesso.
+                        </div>
+                    `);
 
                     setTimeout(() => {
                         window.location.href = response.redirectUrl;
                     }, 2000);
-
                 } else {
-                 
                     $statusBox.html(`
-                    <div class="alert alert-danger border-0 rounded-4 mb-0">
-                        <i class="fa-solid fa-circle-xmark me-1"></i>
-                        ${response.message || "Pagamento não identificado. Tente novamente em instantes."}
-                    </div>
-                `);
+                        <div class="alert alert-danger border-0 rounded-4 mb-0">
+                            <i class="fa-solid fa-circle-xmark me-1"></i>
+                            ${response.message || "Pagamento não identificado. Tente novamente em instantes."}
+                        </div>
+                    `);
                     resetBtn($btn);
                 }
             },
             error: function () {
-                // 5. Estado de Erro de Conexão
                 $statusBox.html(`
-                <div class="alert alert-danger border-0 rounded-4 mb-0">
-                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
-                    Erro ao conectar com o servidor. Tente novamente.
-                </div>
-            `);
+                    <div class="alert alert-danger border-0 rounded-4 mb-0">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                        Erro ao conectar com o servidor. Tente novamente.
+                    </div>
+                `);
                 resetBtn($btn);
             }
         });
