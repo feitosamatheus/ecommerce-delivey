@@ -298,21 +298,27 @@
                     return;
                 }
 
-                $("#pixPedidoId").val(pedidoId);
-                $("#pixCopiaCola").val("");
-                $("#pixTxid").text("Gerando...");
-                $("#pixQrImg").attr("src", "");
-                $("#pixValorFinal").text(formatBRL(valor || 0));
-
-                $("#pixStatusBox").removeClass("d-none").html(`
-                    <div class="alert alert-warning border-0 rounded-4 mb-0">
-                        <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
-                        Gerando cobrança PIX...
-                    </div>
-                `);
-
                 try {
-                    await carregarPixPedido(pedidoId);
+                    const tipoPagamento = ($("#selectPagamento").val() || "pix").toLowerCase();
+
+                    if (tipoPagamento === "pix") {
+                        $("#pixPedidoId").val(pedidoId);
+                        $("#pixCopiaCola").val("");
+                        $("#pixTxid").text("Gerando...");
+                        $("#pixQrImg").attr("src", "");
+                        $("#pixValorFinal").text(formatBRL(valor || 0));
+
+                        $("#pixStatusBox").removeClass("d-none").html(`
+                            <div class="alert alert-warning border-0 rounded-4 mb-0">
+                                <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
+                                Gerando cobrança PIX...
+                            </div>
+                        `);
+
+                        await carregarPixPedido(pedidoId);
+                    } else if (tipoPagamento === "cartao") {
+                        await carregarCartaoPedido(pedidoId);
+                    }
 
                     uiNotify.toast.success("Pedido confirmado com sucesso! Agora finalize o pagamento.");
                     $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
@@ -429,6 +435,27 @@
     }
 
     //-----------------------------------------------------------
+    async function carregarCartaoPedido(pedidoId) {
+        const response = await fetch("/api/Pagamento/criar-cobranca-cartao", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                pedidoId: pedidoId,
+                description: "Pagamento do pedido"
+            })
+        });
+
+        const res = await response.json();
+
+        if (!response.ok || !res.sucesso) {
+            throw new Error(res.mensagem || "Não foi possível gerar a cobrança por cartão.");
+        }
+
+        return res;
+    }
+
     async function carregarPixPedido(pedidoId) {
         try {
             addLoading?.("Gerando PIX...");
@@ -449,6 +476,8 @@
             if (!response.ok || !res.sucesso) {
                 throw new Error(res.mensagem || "Não foi possível gerar o PIX.");
             }
+
+            iniciarConexaoPagamento(res.payment.id);
 
             preencherStepPix(res);
 
@@ -492,6 +521,106 @@
 
         if (res.pedidoPagamentoExistente) {
             uiNotify?.toast?.info?.("PIX já existente para este pedido. Reutilizando cobrança.");
+        }
+    }
+
+    let pagamentoConnection = null;
+
+    async function iniciarConexaoPagamento(pedidoId) {
+        console.log("[SignalR] iniciarConexaoPagamento chamado.", { pedidoId });
+
+        if (!pedidoId) {
+            console.warn("[SignalR] pedidoId não informado. Conexão não iniciada.");
+            return;
+        }
+
+        if (pagamentoConnection) {
+            console.log("[SignalR] Já existe uma conexão anterior. Encerrando conexão atual...");
+            try {
+                await pagamentoConnection.stop();
+                console.log("[SignalR] Conexão anterior encerrada com sucesso.");
+            } catch (error) {
+                console.error("[SignalR] Erro ao encerrar conexão anterior:", error);
+            }
+        }
+
+        console.log("[SignalR] Criando nova conexão com /hubs/pagamento ...");
+
+        pagamentoConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/pagamento")
+            .withAutomaticReconnect()
+            .build();
+
+        pagamentoConnection.onreconnecting((error) => {
+            console.warn("[SignalR] Reconectando...", error);
+        });
+
+        pagamentoConnection.onreconnected((connectionId) => {
+            console.log("[SignalR] Reconectado com sucesso.", { connectionId });
+        });
+
+        pagamentoConnection.onclose((error) => {
+            if (error) {
+                console.error("[SignalR] Conexão encerrada com erro:", error);
+            } else {
+                console.log("[SignalR] Conexão encerrada normalmente.");
+            }
+        });
+
+        pagamentoConnection.on("PagamentoConfirmado", function (data) {
+            console.log("[SignalR] Evento recebido: PagamentoConfirmado", data);
+
+            $("#pixStatusBox").removeClass("d-none").html(`
+            <div class="alert alert-success border-0 rounded-4 mb-0 animate__animated animate__fadeIn">
+                <i class="fa-solid fa-circle-check me-1"></i>
+                Pagamento confirmado! Seu pedido foi reservado com sucesso.
+            </div>
+        `);
+
+            $("#btnJaPaguei").prop("disabled", true);
+
+            setTimeout(() => {
+                if (data.redirectUrl) {
+                    console.log("[SignalR] Redirecionando usuário.", { redirectUrl: data.redirectUrl });
+                    window.location.href = data.redirectUrl;
+                } else {
+                    console.warn("[SignalR] redirectUrl não informado no evento PagamentoConfirmado.");
+                }
+            }, 2000);
+        });
+
+        pagamentoConnection.on("PagamentoPendente", function (data) {
+            console.log("[SignalR] Evento recebido: PagamentoPendente", data);
+
+            $("#pixStatusBox").removeClass("d-none").html(`
+            <div class="alert alert-warning border-0 rounded-4 mb-0">
+                <i class="fa-regular fa-hourglass-half me-1"></i>
+                Status do pagamento: ${data.status}
+            </div>
+        `);
+        });
+
+        pagamentoConnection.on("PagamentoRecusado", function (data) {
+            console.log("[SignalR] Evento recebido: PagamentoRecusado", data);
+
+            $("#pixStatusBox").removeClass("d-none").html(`
+            <div class="alert alert-danger border-0 rounded-4 mb-0">
+                <i class="fa-solid fa-circle-xmark me-1"></i>
+                O pagamento não foi confirmado. Status: ${data.status}
+            </div>
+        `);
+        });
+
+        try {
+            console.log("[SignalR] Iniciando conexão...");
+            await pagamentoConnection.start();
+            console.log("[SignalR] Conexão iniciada com sucesso.");
+
+            console.log("[SignalR] Entrando no grupo do pedido...", { pedidoId });
+            await pagamentoConnection.invoke("EntrarNoGrupoPedido", pedidoId);
+            console.log("[SignalR] Usuário conectado ao grupo do pedido com sucesso.", { pedidoId });
+        } catch (error) {
+            console.error("[SignalR] Erro ao iniciar conexão ou entrar no grupo:", error);
         }
     }
 

@@ -1,4 +1,5 @@
 using Ecommerce.MVC.Config;
+using Ecommerce.MVC.Hubs;
 using Ecommerce.MVC.Interfaces;
 using Ecommerce.MVC.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -58,6 +59,8 @@ builder.Services.AddHttpClient("Asaas", (sp, c) =>
     c.DefaultRequestHeaders.Accept.Add(
         new MediaTypeWithQualityHeaderValue("application/json"));
 });
+
+builder.Services.AddSignalR();
 
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
@@ -125,5 +128,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
 );
+
+app.MapHub<PagamentoHub>("/hubs/pagamento");
 
 app.Run();

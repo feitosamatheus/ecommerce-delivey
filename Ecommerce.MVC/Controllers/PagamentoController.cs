@@ -1,8 +1,10 @@
 ﻿using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Enums;
+using Ecommerce.MVC.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,15 +18,17 @@ public class PagamentoController : Controller
 {
     private readonly HttpClient _httpClient;
     private readonly DatabaseContext _context;
+    private readonly IHubContext<PagamentoHub> _hubContext;
 
-    public PagamentoController(IHttpClientFactory httpClientFactory, DatabaseContext context)
+    public PagamentoController(IHttpClientFactory httpClientFactory, DatabaseContext context, IHubContext<PagamentoHub> hubContext)
     {
         _httpClient = httpClientFactory.CreateClient("Asaas");
         _context = context;
+        _hubContext = hubContext;
     }
 
     [HttpPost("criar-cliente-cobranca-pix")]
-    public async Task<IActionResult> CriarClienteECobrancaPix([FromBody] PagamentoPixViewModel model)
+    public async Task<IActionResult> CriarClienteECobrancaPix([FromBody] PagamentoViewModel model)
     {
         try
         {
@@ -229,6 +233,167 @@ public class PagamentoController : Controller
         }
     }
 
+    [HttpPost("criar-cobranca-cartao")]
+    public async Task<IActionResult> CriarCobrancaCartaoPedido([FromBody] PagamentoViewModel model)
+    {
+        try
+        {
+            if (model == null || model.PedidoId == Guid.Empty)
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Dados inválidos."
+                });
+            }
+
+            var clienteIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(clienteIdClaim) || !Guid.TryParse(clienteIdClaim, out var clienteId))
+            {
+                Response.StatusCode = 401;
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Usuário não autenticado."
+                });
+            }
+
+            var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.Id == clienteId);
+
+            if (cliente == null)
+            {
+                Response.StatusCode = 404;
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Cliente não encontrado."
+                });
+            }
+
+            var pedido = await _context.Pedidos
+                .Include(p => p.PedidoPagamento)
+                .FirstOrDefaultAsync(p => p.Id == model.PedidoId && p.ClienteId == clienteId);
+
+            if (pedido == null)
+            {
+                Response.StatusCode = 404;
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Pedido não encontrado."
+                });
+            }
+
+            if (pedido.ValorEntrada < 5m)
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "O valor mínimo para gerar cobrança é de R$ 5,00."
+                });
+            }
+
+            if (pedido.PedidoPagamento != null)
+            {
+                return Json(new
+                {
+                    sucesso = true,
+                    pedidoPagamentoExistente = true,
+                    payment = new
+                    {
+                        id = pedido.PedidoPagamento.GatewayPaymentId,
+                        status = pedido.PedidoPagamento.Status.ToString(),
+                        value = pedido.PedidoPagamento.Valor,
+                        invoiceUrl = pedido.PedidoPagamento.InvoiceUrl,
+                        billingType = pedido.PedidoPagamento.TipoPagamento
+                    }
+                });
+            }
+
+            string customerId = cliente.IdClientePagamento;
+
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                customerId = await CriarCliente(new CriarClienteAsaasRequest
+                {
+                    Name = cliente.Nome,
+                    CpfCnpj = cliente.CPF
+                });
+
+                if (string.IsNullOrWhiteSpace(customerId))
+                {
+                    return Json(new
+                    {
+                        sucesso = false,
+                        mensagem = "Não foi possível criar o cliente no Asaas."
+                    });
+                }
+
+                cliente.IdClientePagamento = customerId;
+                await _context.SaveChangesAsync();
+            }
+
+            var pagamento = await CriarCobrancaCartao(
+                customerId,
+                pedido.ValorEntrada,
+                DateTime.UtcNow.AddDays(1),
+                ""
+            );
+
+            if (pagamento == null || string.IsNullOrWhiteSpace(pagamento.Id))
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Não foi possível gerar a cobrança por cartão."
+                });
+            }
+
+            var pedidoPagamento = new PedidoPagamento
+            {
+                PedidoId = pedido.Id,
+                Gateway = "ASAAS",
+                TipoPagamento = "CREDIT_CARD",
+                GatewayCustomerId = customerId,
+                GatewayPaymentId = pagamento.Id,
+                Valor = pagamento.Value,
+                Status = MapearStatusAsaas(pagamento.Status),
+                InvoiceUrl = pagamento.InvoiceUrl,
+                CriadoEmUtc = DateTime.UtcNow
+            };
+
+            _context.PedidoPagamentos.Add(pedidoPagamento);
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                sucesso = true,
+                pedidoPagamentoExistente = false,
+                payment = new
+                {
+                    id = pagamento.Id,
+                    status = pagamento.Status,
+                    value = pagamento.Value,
+                    dueDate = pagamento.DueDate,
+                    invoiceUrl = pagamento.InvoiceUrl,
+                    billingType = pagamento.BillingType
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Response.StatusCode = 500;
+
+            return Json(new
+            {
+                sucesso = false,
+                mensagem = "Erro interno ao processar a cobrança por cartão.",
+                detalhes = ex.Message
+            });
+        }
+    }
+
     [HttpPost("confirmar-pagamento")]
     public async Task<IActionResult> ConfirmarPagamentoSinal([FromBody] ConfirmarPagamentoRequest request)
     {
@@ -327,7 +492,44 @@ public class PagamentoController : Controller
                 details = ex.Message
             });
         }
-    }    
+    }
+
+    [HttpPost("webhook/asaas")]
+    public async Task<IActionResult> WebhookAsaas([FromBody] WebhookAsaasRequest request)
+    {
+        if (request?.Payment == null || string.IsNullOrWhiteSpace(request.Payment.Id))
+            return Ok();
+
+        var pedidoPagamento = await _context.PedidoPagamentos
+            .Include(pp => pp.Pedido)
+            .FirstOrDefaultAsync(pp => pp.GatewayPaymentId == request.Payment.Id);
+
+        if (pedidoPagamento == null)
+            return Ok();
+
+        var status = MapearStatusAsaas(request.Payment.Status);
+        pedidoPagamento.Status = status;
+
+        if (status == EStatusPagamento.Received || status == EStatusPagamento.Confirmed)
+        {
+            pedidoPagamento.Pedido.Status = EPedidoStatus.Confirmado;
+        }
+
+        await _context.SaveChangesAsync();
+
+        var redirectUrl = Url.Action("Index", "Home", new { confirmado = true });
+
+        await _hubContext.Clients.Group($"pedido-{pedidoPagamento.PedidoId}")
+            .SendAsync("PagamentoConfirmado", new
+            {
+                pedidoId = pedidoPagamento.PedidoId,
+                status = request.Payment.Status,
+                redirectUrl = redirectUrl
+            });
+
+        return Ok();
+    }
+
     private async Task<string> CriarCliente(CriarClienteAsaasRequest request)
     {
         try
@@ -431,12 +633,24 @@ public class PagamentoController : Controller
     
     #region Classes provisórias
 
-    public class PagamentoPixViewModel
+    public class PagamentoViewModel
     {
-        public string Name { get; set; } = string.Empty;
-        public string CpfCnpj { get; set; } = string.Empty;
         public Guid PedidoId { get; set; }
     }
+
+    #region webhook
+    public class WebhookAsaasRequest
+    {
+        public string? Event { get; set; }
+        public WebhookAsaasPayment? Payment { get; set; }
+    }
+
+    public class WebhookAsaasPayment
+    {
+        public string? Id { get; set; }
+        public string? Status { get; set; }
+    }
+    #endregion
 
     #region Cliente
 
@@ -498,6 +712,80 @@ public class PagamentoController : Controller
         public string? BillingType { get; set; }
     }
 
+    #endregion
+
+    #region Cobrança Cartão
+    private async Task<CriarCobrancaCartaoAsaasResponse?> CriarCobrancaCartao(
+    string customerId,
+    decimal value,
+    DateTime dueDate,
+    string? description = null)
+    {
+        try
+        {
+            var request = new CriarCobrancaCartaoAsaasRequest
+            {
+                Customer = customerId,
+                BillingType = "CREDIT_CARD",
+                Value = value,
+                DueDate = dueDate.ToString("yyyy-MM-dd"),
+                Description = description
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("payments", request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return JsonSerializer.Deserialize<CriarCobrancaCartaoAsaasResponse>(
+                content,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public class CriarCobrancaCartaoAsaasRequest
+    {
+        [JsonPropertyName("customer")]
+        public string Customer { get; set; } = string.Empty;
+
+        [JsonPropertyName("billingType")]
+        public string BillingType { get; set; } = "CREDIT_CARD";
+
+        [JsonPropertyName("value")]
+        public decimal Value { get; set; }
+
+        [JsonPropertyName("dueDate")]
+        public string DueDate { get; set; } = string.Empty;
+
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+    }
+
+    public class CriarCobrancaCartaoAsaasResponse
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
+
+        [JsonPropertyName("value")]
+        public decimal Value { get; set; }
+
+        [JsonPropertyName("dueDate")]
+        public string? DueDate { get; set; }
+
+        [JsonPropertyName("invoiceUrl")]
+        public string? InvoiceUrl { get; set; }
+
+        [JsonPropertyName("billingType")]
+        public string? BillingType { get; set; }
+    }
     #endregion
 
     #region QR Code Pix
