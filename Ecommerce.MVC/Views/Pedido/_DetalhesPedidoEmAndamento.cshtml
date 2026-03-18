@@ -115,10 +115,12 @@
                     <div class="d-flex justify-content-center my-3">
                         @if (!string.IsNullOrWhiteSpace(pagamento?.PixQrCodeUrl))
                         {
-                            <img src="@pagamento.PixQrCodeUrl"
-                                 alt="QR Code PIX"
-                                 class="img-fluid rounded-4 border"
-                                 style="max-width: 240px; background: #fff; padding: 10px;" />
+                            <div class="position-relative">
+                                <img src="data:image/png;base64,@pagamento.PixQrCodeUrl"
+                                     alt="QR Code PIX"
+                                     class="img-fluid rounded-4 border shadow-sm"
+                                     style="max-width: 240px; background: #fff; padding: 10px;" />
+                            </div>
                         }
                         else
                         {

@@ -225,9 +225,12 @@
     }
 }
 
+
+
 <div class="container-fluid px-2 px-lg-0" >
+
     <div class="container-fluid py-4 py-lg-5 bh-pedidos-em-andamento">
-        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-5">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-3">
             <div>
                 <h4 class="fw-bolder mb-1" style="color: var(--bc-brown);">
                     <i class="fa-solid fa-clock-rotate-left me-2"></i>Meus Pedidos
@@ -237,6 +240,36 @@
             <a href="/" class="btn btn-outline-brown rounded-pill px-4 fw-bold shadow-sm border-2">
                 <i class="fa-solid fa-utensils me-2"></i>Ir para o Cardápio
             </a>
+        </div>
+
+        <div class="mb-4">
+            <div class="d-flex align-items-center p-3 rounded-4 border-0 shadow-sm" 
+                 style="background: linear-gradient(90deg, #fffcf5 0%, #ffffff 100%); border-left: 4px solid #3c1e0a !important;">
+        
+                <div class="me-3 d-none d-md-block">
+                    <span class="rounded-circle bg-white d-flex align-items-center justify-content-center shadow-sm" 
+                          style="width: 45px; height: 45px; border: 1px solid #eee1d7;">
+                        <i class="fa-solid fa-hand-holding-dollar" style="color: #3c1e0a; font-size: 1.2rem;"></i>
+                    </span>
+                </div>
+
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-1" style="color: var(--bc-brown); font-size: 0.95rem;">
+                        Pagamentos Pendentes
+                    </h6>
+                    <p class="mb-0 text-muted" style="font-size: 0.85rem; line-height: 1.4;">
+                        Para a realização de pagamentos pendentes, você pode acessar o botão 
+                        <span class="badge border text-dark fw-bold" style="font-size: 0.75rem; background: #f8f9fa; vertical-align: middle;">
+                            <i class="fa-solid fa-receipt fa-xs me-1"></i>Detalhes
+                        </span> 
+                        no card do pedido e continuar com a transação (PIX ou Cartão).
+                    </p>
+                </div>
+
+                <div class="ms-2 d-none d-lg-block opacity-25">
+                    <i class="fa-solid fa-lock fa-2x" style="color: #3c1e0a;"></i>
+                </div>
+            </div>
         </div>
 
         <div class="filter-slim">
