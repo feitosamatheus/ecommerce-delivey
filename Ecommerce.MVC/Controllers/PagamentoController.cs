@@ -494,6 +494,117 @@ public class PagamentoController : Controller
         }
     }
 
+    [HttpPost("pagar-cartao")]
+    public async Task<IActionResult> PagarCartao([FromBody] PagarCartaoRequest request)
+    {
+        try
+        {
+            if (request == null || request.PedidoId == Guid.Empty || string.IsNullOrWhiteSpace(request.PaymentId))
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Dados inválidos para pagamento."
+                });
+            }
+
+            var clienteIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(clienteIdClaim) || !Guid.TryParse(clienteIdClaim, out var clienteId))
+            {
+                Response.StatusCode = 401;
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Usuário não autenticado."
+                });
+            }
+
+            var pedido = await _context.Pedidos
+                .Include(p => p.PedidoPagamento)
+                .FirstOrDefaultAsync(p => p.Id == request.PedidoId && p.ClienteId == clienteId);
+
+            if (pedido == null || pedido.PedidoPagamento == null)
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Pedido ou cobrança não encontrada."
+                });
+            }
+
+            if (pedido.PedidoPagamento.GatewayPaymentId != request.PaymentId)
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Cobrança inválida para este pedido."
+                });
+            }
+
+            var asaasRequest = new PayWithCreditCardAsaasRequest
+            {
+                CreditCard = new CreditCardAsaasRequest
+                {
+                    HolderName = request.CreditCard.HolderName,
+                    Number = request.CreditCard.Number,
+                    ExpiryMonth = request.CreditCard.ExpiryMonth,
+                    ExpiryYear = request.CreditCard.ExpiryYear,
+                    Ccv = request.CreditCard.Ccv
+                },
+                CreditCardHolderInfo = new CreditCardHolderInfoAsaasRequest
+                {
+                    Name = request.CreditCardHolderInfo.Name,
+                    Email = request.CreditCardHolderInfo.Email,
+                    CpfCnpj = request.CreditCardHolderInfo.CpfCnpj,
+                    PostalCode = request.CreditCardHolderInfo.PostalCode,
+                    AddressNumber = request.CreditCardHolderInfo.AddressNumber,
+                    AddressComplement = request.CreditCardHolderInfo.AddressComplement,
+                    Phone = request.CreditCardHolderInfo.Phone,
+                    MobilePhone = request.CreditCardHolderInfo.MobilePhone
+                }
+            };
+
+            var pagamentoAsaas = await PagarCobrancaComCartao(request.PaymentId, asaasRequest);
+
+            if (pagamentoAsaas == null)
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Não foi possível processar o pagamento com cartão."
+                });
+            }
+
+            var novoStatus = MapearStatusAsaas(pagamentoAsaas.Status);
+            pedido.PedidoPagamento.Status = novoStatus;
+
+            if (novoStatus == EStatusPagamento.Received || novoStatus == EStatusPagamento.Confirmed)
+            {
+                pedido.Status = EPedidoStatus.Confirmado;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                sucesso = true,
+                status = pagamentoAsaas.Status,
+                redirectUrl = Url.Action("Detalhes", "Pedido", new { id = pedido.Id })
+            });
+        }
+        catch (Exception ex)
+        {
+            Response.StatusCode = 500;
+            return Json(new
+            {
+                sucesso = false,
+                mensagem = "Erro interno ao processar pagamento com cartão.",
+                detalhes = ex.Message
+            });
+        }
+    }
+
     [HttpPost("webhook/asaas")]
     public async Task<IActionResult> WebhookAsaas([FromBody] WebhookAsaasRequest request)
     {
@@ -631,6 +742,28 @@ public class PagamentoController : Controller
         }
     }
     
+    private async Task<ConsultarPagamentoAsaasResponse?> PagarCobrancaComCartao(
+    string paymentId,
+    PayWithCreditCardAsaasRequest request)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync($"payments/{paymentId}/payWithCreditCard", request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return JsonSerializer.Deserialize<ConsultarPagamentoAsaasResponse>(
+                content,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     #region Classes provisórias
 
     public class PagamentoViewModel
@@ -785,6 +918,89 @@ public class PagamentoController : Controller
 
         [JsonPropertyName("billingType")]
         public string? BillingType { get; set; }
+    }
+    
+    public class PagarCartaoRequest
+    {
+        public Guid PedidoId { get; set; }
+        public string PaymentId { get; set; } = string.Empty;
+        public CreditCardDto CreditCard { get; set; } = new();
+        public CreditCardHolderInfoDto CreditCardHolderInfo { get; set; } = new();
+    }
+
+    public class CreditCardDto
+    {
+        public string HolderName { get; set; } = string.Empty;
+        public string Number { get; set; } = string.Empty;
+        public string ExpiryMonth { get; set; } = string.Empty;
+        public string ExpiryYear { get; set; } = string.Empty;
+        public string Ccv { get; set; } = string.Empty;
+    }
+
+    public class CreditCardHolderInfoDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string CpfCnpj { get; set; } = string.Empty;
+        public string PostalCode { get; set; } = string.Empty;
+        public string AddressNumber { get; set; } = string.Empty;
+        public string? AddressComplement { get; set; }
+        public string Phone { get; set; } = string.Empty;
+        public string? MobilePhone { get; set; }
+    }
+
+    public class PayWithCreditCardAsaasRequest
+    {
+        [JsonPropertyName("creditCard")]
+        public CreditCardAsaasRequest CreditCard { get; set; } = new();
+
+        [JsonPropertyName("creditCardHolderInfo")]
+        public CreditCardHolderInfoAsaasRequest CreditCardHolderInfo { get; set; } = new();
+    }
+
+    public class CreditCardAsaasRequest
+    {
+        [JsonPropertyName("holderName")]
+        public string HolderName { get; set; } = string.Empty;
+
+        [JsonPropertyName("number")]
+        public string Number { get; set; } = string.Empty;
+
+        [JsonPropertyName("expiryMonth")]
+        public string ExpiryMonth { get; set; } = string.Empty;
+
+        [JsonPropertyName("expiryYear")]
+        public string ExpiryYear { get; set; } = string.Empty;
+
+        [JsonPropertyName("ccv")]
+        public string Ccv { get; set; } = string.Empty;
+    }
+
+    public class CreditCardHolderInfoAsaasRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
+
+        [JsonPropertyName("cpfCnpj")]
+        public string CpfCnpj { get; set; } = string.Empty;
+
+        [JsonPropertyName("postalCode")]
+        public string PostalCode { get; set; } = string.Empty;
+
+        [JsonPropertyName("addressNumber")]
+        public string AddressNumber { get; set; } = string.Empty;
+
+        [JsonPropertyName("addressComplement")]
+        public string? AddressComplement { get; set; }
+
+        [JsonPropertyName("phone")]
+        public string Phone { get; set; } = string.Empty;
+
+        [JsonPropertyName("mobilePhone")]
+        public string? MobilePhone { get; set; }
     }
     #endregion
 

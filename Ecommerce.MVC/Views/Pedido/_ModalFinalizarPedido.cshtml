@@ -436,10 +436,27 @@
                                 Clique no botão abaixo para abrir nosso checkout seguro e realizar o pagamento do sinal com seu cartão de crédito.
                             </p>
 
+                            <input type="hidden" id="cartaoPedidoId" />
+
+                            <div id="cartaoStatusBox" class="d-none mb-3"></div>
+
+                            <div class="alert border-0 rounded-4 mb-4 text-start"
+                                style="background-color: #f5efff; border-left: 4px solid #6f42c1 !important;">
+                                <div class="d-flex align-items-start">
+                                    <i class="fa-solid fa-shield-check me-2 mt-1" style="color: #6f42c1;"></i>
+                                    <div style="font-size: 0.8rem; line-height: 1.4;">
+                                        O pagamento do sinal poderá ser realizado em até <strong>24 horas</strong>.
+                                        Após a aprovação da transação, o sistema identificará automaticamente a confirmação do pagamento.
+                                        Caso prefira, você pode fechar esta tela e acompanhar o status em
+                                        <strong>Acompanhar pedidos</strong>.
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="card bg-light border-0 rounded-4 p-3 mb-4 text-start">
                                 <div class="d-flex justify-content-between mb-2 small">
                                     <span>Sinal (Cartão)</span>
-                                    <span class="fw-bold">@Model.Carrinho.ValorSinal.ToString("C", pt)</span>
+                                    <span class="fw-bold" id="cartaoValorSinal">@Model.Carrinho.ValorSinal.ToString("C", pt)</span>
                                 </div>
                                 <div class="d-flex justify-content-between small text-muted">
                                     <span>Taxa de processamento</span>
@@ -447,8 +464,11 @@
                                 </div>
                             </div>
 
-                            <button type="button" class="btn btn-primary w-100 fw-bold rounded-4 py-3 shadow" id="btnJaPaguei" style="background-color: #6f42c1; border: none;">
-                                <i class="fa-solid fa-lock me-2"></i> Pagar com Cartão Agora
+                            <button type="button"
+                                    class="btn btn-primary w-100 fw-bold rounded-4 py-3 shadow"
+                                    id="btnAbrirCheckoutCartao"
+                                    style="background-color: #6f42c1; border: none;">
+                                <i class="fa-solid fa-lock me-2"></i> Abrir Checkout Seguro
                             </button>
                         </div>
                     </div>

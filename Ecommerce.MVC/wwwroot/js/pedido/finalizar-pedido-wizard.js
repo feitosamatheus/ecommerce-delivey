@@ -286,10 +286,12 @@
             success: async function (res) {
                 stopPixTimer();
                 showStep(3);
+                atualizarVisibilidadePagamento();
                 window._pedidoConfirmado = true;
 
                 const pedidoId = res.pedidoId;
                 const valor = res.valor;
+                const tipoPagamento = ($("#selectPagamento").val() || "pix").toLowerCase();
 
                 if (!pedidoId) {
                     uiNotify.alert.error("Pedido confirmado, mas o identificador do pedido não foi retornado.");
@@ -298,35 +300,82 @@
                     return;
                 }
 
-                try {
-                    const tipoPagamento = ($("#selectPagamento").val() || "pix").toLowerCase();
+                $("#pixPedidoId").val(pedidoId);
+                $("#cartaoPedidoId").val(pedidoId);
 
-                    if (tipoPagamento === "pix") {
-                        $("#pixPedidoId").val(pedidoId);
-                        $("#pixCopiaCola").val("");
-                        $("#pixTxid").text("Gerando...");
-                        $("#pixQrImg").attr("src", "");
-                        $("#pixValorFinal").text(formatBRL(valor || 0));
+                if (tipoPagamento === "pix") {
+                    $("#pixCopiaCola").val("");
+                    $("#pixTxid").text("Gerando...");
+                    $("#pixQrImg").attr("src", "");
+                    $("#pixValorFinal").text(formatBRL(valor || 0));
 
-                        $("#pixStatusBox").removeClass("d-none").html(`
-                            <div class="alert alert-warning border-0 rounded-4 mb-0">
-                                <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
-                                Gerando cobrança PIX...
+                    $("#pixStatusBox").removeClass("d-none").html(`
+                        <div class="alert alert-warning border-0 rounded-4 mb-0">
+                            <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
+                            Gerando cobrança PIX...
+                        </div>
+                    `);
+
+                    try {
+                        await carregarPixPedido(pedidoId);
+                        await iniciarConexaoPagamento(pedidoId);
+
+                        uiNotify.toast.success("Pedido confirmado com sucesso! Agora finalize o pagamento via PIX.");
+                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                    } catch (err) {
+                        uiNotify.alert.error(err.message || "Erro ao gerar cobrança PIX.");
+                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                    }
+
+                    removeLoading?.();
+                    return;
+                }
+
+                if (tipoPagamento === "cartao") {
+                    $("#cartaoValorSinal").text(formatBRL(valor || 0));
+                    $("#btnAbrirCheckoutCartao").data("invoice-url", "");
+                    $("#cartaoStatusBox").removeClass("d-none").html(`
+                        <div class="alert alert-warning border-0 rounded-4 mb-0">
+                            <i class="fa-regular fa-credit-card me-1 fa-spin"></i>
+                            Gerando cobrança no cartão...
+                        </div>
+                    `);
+
+                    try {
+                        const resCartao = await carregarCartaoPedido(pedidoId);
+
+                        if (!resCartao?.payment?.invoiceUrl) {
+                            throw new Error("A URL de pagamento não foi retornada.");
+                        }
+
+                        $("#btnAbrirCheckoutCartao").data("invoice-url", resCartao.payment.invoiceUrl);
+
+                        $("#cartaoStatusBox").html(`
+                            <div class="alert alert-success border-0 rounded-4 mb-0">
+                                <i class="fa-solid fa-circle-check me-1"></i>
+                                Cobrança gerada com sucesso. Clique no botão abaixo para abrir o checkout seguro.
                             </div>
                         `);
 
-                        await carregarPixPedido(pedidoId);
-                    } else if (tipoPagamento === "cartao") {
-                        await carregarCartaoPedido(pedidoId);
+                        uiNotify.toast.success("Pedido confirmado com sucesso! Agora finalize o pagamento com cartão.");
+                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                    } catch (err) {
+                        uiNotify.alert.error(err.message || "Erro ao gerar cobrança no cartão.");
+                        $("#cartaoStatusBox").html(`
+                            <div class="alert alert-danger border-0 rounded-4 mb-0">
+                                <i class="fa-solid fa-circle-xmark me-1"></i>
+                                ${err.message || "Erro ao gerar cobrança no cartão."}
+                            </div>
+                        `);
+                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
                     }
 
-                    uiNotify.toast.success("Pedido confirmado com sucesso! Agora finalize o pagamento.");
-                    $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
-                } catch (err) {
-                    uiNotify.alert.error(err.message || "Erro ao gerar cobrança PIX.");
-                    $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                    removeLoading?.();
+                    return;
                 }
 
+                uiNotify.alert.error("Forma de pagamento inválida.");
+                $btn.prop("disabled", false).text("Confirmar pedido");
                 removeLoading?.();
             },
             error: function (xhr) {
@@ -434,6 +483,133 @@
         $btn.prop('disabled', false).html('<i class="fa-solid fa-circle-check me-1"></i> Já paguei via PIX');
     }
 
+    async function pagarComCartao() {
+        const pedidoId = $("#cartaoPedidoId").val();
+        const paymentId = $("#cartaoPaymentId").val();
+
+        const payload = {
+            pedidoId: pedidoId,
+            paymentId: paymentId,
+            creditCard: {
+                holderName: $("#ccHolderName").val().trim(),
+                number: $("#ccNumber").val().trim(),
+                expiryMonth: $("#ccExpiryMonth").val().trim(),
+                expiryYear: $("#ccExpiryYear").val().trim(),
+                ccv: $("#ccCvv").val().trim()
+            },
+            creditCardHolderInfo: {
+                name: $("#holderName").val().trim(),
+                email: $("#holderEmail").val().trim(),
+                cpfCnpj: $("#holderCpfCnpj").val().trim(),
+                postalCode: $("#holderPostalCode").val().trim(),
+                addressNumber: $("#holderAddressNumber").val().trim(),
+                addressComplement: $("#holderAddressComplement").val().trim(),
+                phone: $("#holderPhone").val().trim(),
+                mobilePhone: $("#holderMobilePhone").val().trim()
+            }
+        };
+
+        const response = await fetch("/api/Pagamento/pagar-cartao", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (!response.ok || !res.sucesso) {
+            throw new Error(res.mensagem || "Não foi possível processar o pagamento com cartão.");
+        }
+
+        return res;
+    }
+
+    $(document).on("click", "#btnPagarCartaoAgora", async function () {
+        const $btn = $(this);
+        const $statusBox = $("#cartaoStatusBox");
+
+        $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-2"></span> Processando...');
+
+        $statusBox.removeClass("d-none").html(`
+            <div class="alert alert-warning border-0 rounded-4 mb-0">
+                <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
+                Processando pagamento no cartão...
+            </div>
+        `);
+
+        try {
+            const res = await pagarComCartao();
+
+            $statusBox.html(`
+                <div class="alert alert-success border-0 rounded-4 mb-0">
+                    <i class="fa-solid fa-circle-check me-1"></i>
+                    Pagamento processado com sucesso!
+                </div>
+            `);
+
+            setTimeout(() => {
+                if (res.redirectUrl) {
+                    window.location.href = res.redirectUrl;
+                }
+            }, 1500);
+        } catch (err) {
+            $statusBox.html(`
+                <div class="alert alert-danger border-0 rounded-4 mb-0">
+                    <i class="fa-solid fa-circle-xmark me-1"></i>
+                    ${err.message || "Erro ao processar pagamento."}
+                </div>
+            `);
+            $btn.prop("disabled", false).html('<i class="fa-solid fa-lock me-2"></i> Pagar com Cartão Agora');
+        }
+    });
+
+    const cardPatterns = {
+        visa: /^4[0-9]{12}(?:[0-9]{3})?$/,
+        mastercard: /^(5[1-5][0-9]{14}|2(22[1-9][0-9]{12}|2[3-9][0-9]{13}|[3-6][0-9]{14}|7[0-1][0-9]{13}|720[0-9]{12}))$/,
+        amex: /^3[47][0-9]{13}$/,
+        diners: /^3(?:0[0-5]|[68][0-9])[0-9]{11}$/,
+        elo: /^((431274|438935|451416|457393|457631|457632|504175|627780|636297|636368|650031|650033|650035|650038|650039|650040|650041|650042|650043|650044|650045|650046|650047|650048|650049|650050|650051|650405|650406|650407|650408|650409|650410|650411|650412|650413|650414|650415|650416|650417|650418|650419|650420|650421|650422|650423|650424|650425|650426|650427|650428|650429|650430|650431|650432|650433|650434|650435|650436|650437|650438|650439|650485|650486|650487|650488|650530|650531|650532|650533|650534|650535|650536|650537|650538|650539|650541|650542|650543|650544|650545|650546|650547|650548|650549|650598|650700|650701|650702|650703|650704|650705|650706|650707|650708|650709|650710|650711|650712|650713|650714|650715|650720|650721|650722|650723|650724|650725|650726|650727|650901|650902|650903|650904|650905|650906|650907|650908|650909|650910|650911|650912|650913|650914|650915|650916|650917|650918|650919|650920|650976|650977|650978|651652|651653|651654|655000|655001)\d*)$/,
+        hipercard: /^606282|^3841(0|4|6)0/,
+        jcb: /^(?:2131|1800|35\d{3})\d{11}$/
+    };
+
+    function identificarBandeira(numero) {
+        // Remove espaços e caracteres não numéricos
+        const cleanNumber = numero.replace(/\D/g, '');
+
+        for (let bandeira in cardPatterns) {
+            if (cardPatterns[bandeira].test(cleanNumber)) {
+                return bandeira;
+            }
+        }
+        return 'unknown';
+    }
+
+    // document.getElementById('ccNumber').addEventListener('input', function(e) {
+    //     let value = e.target.value;
+    //     let bandeira = identificarBandeira(value);
+        
+    //     // Elemento do ícone (ajuste o ID conforme seu HTML)
+    //     const iconContainer = document.getElementById('cardBrandIcon');
+        
+    //     // Mapeamento de ícones do FontAwesome
+    //     const icons = {
+    //         visa: 'fa-brands fa-cc-visa text-primary',
+    //         mastercard: 'fa-brands fa-cc-mastercard text-danger',
+    //         amex: 'fa-brands fa-cc-amex text-info',
+    //         diners: 'fa-brands fa-cc-diners-club text-secondary',
+    //         elo: 'fa-solid fa-credit-card text-warning', // Elo geralmente não tem ícone oficial no FA gratuito
+    //         hipercard: 'fa-solid fa-credit-card text-danger',
+    //         unknown: 'fa-solid fa-credit-card opacity-50'
+    //     };
+
+    //     // Atualiza a classe do ícone
+    //     iconContainer.innerHTML = `<i class="${icons[bandeira] || icons.unknown} fa-lg"></i>`;
+        
+    //     // Opcional: Salvar a bandeira num campo oculto para enviar ao backend
+    //     // document.getElementById('cartaoBandeira').value = bandeira;
+    // });
+
     //-----------------------------------------------------------
     async function carregarCartaoPedido(pedidoId) {
         const response = await fetch("/api/Pagamento/criar-cobranca-cartao", {
@@ -449,6 +625,8 @@
 
         const res = await response.json();
 
+        iniciarConexaoPagamento(res.payment.id);
+        
         if (!response.ok || !res.sucesso) {
             throw new Error(res.mensagem || "Não foi possível gerar a cobrança por cartão.");
         }
@@ -624,4 +802,14 @@
         }
     }
 
+    $(document).on("click", "#btnAbrirCheckoutCartao", function () {
+        const invoiceUrl = $(this).data("invoice-url");
+
+        if (!invoiceUrl) {
+            uiNotify.alert.error("A URL do checkout ainda não foi gerada.");
+            return;
+        }
+
+        window.open(invoiceUrl, "_blank");
+    });
 })();
