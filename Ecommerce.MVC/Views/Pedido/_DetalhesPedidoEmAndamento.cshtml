@@ -1,0 +1,299 @@
+﻿@using System.Globalization
+@using Ecommerce.MVC.Enums
+@using Ecommerce.MVC.Models.Pedidos
+@model PedidosEmAndamentoViewModel
+
+@{
+    var pt = new CultureInfo("pt-BR");
+    var pagamento = Model.Pagamento;
+    var tipoPagamento = pagamento?.TipoPagamento?.Trim();
+
+    bool ehPix = string.Equals(tipoPagamento, "PIX", StringComparison.OrdinalIgnoreCase);
+
+    bool ehCartao = !string.IsNullOrWhiteSpace(tipoPagamento)
+        && (tipoPagamento.Contains("cartao", StringComparison.OrdinalIgnoreCase)
+            || tipoPagamento.Contains("cartão", StringComparison.OrdinalIgnoreCase)
+            || tipoPagamento.Contains("credito", StringComparison.OrdinalIgnoreCase)
+            || tipoPagamento.Contains("crédito", StringComparison.OrdinalIgnoreCase)
+            || tipoPagamento.Contains("debito", StringComparison.OrdinalIgnoreCase)
+            || tipoPagamento.Contains("débito", StringComparison.OrdinalIgnoreCase)
+            || tipoPagamento.Contains("card", StringComparison.OrdinalIgnoreCase));
+
+    bool pagamentoConfirmado = pagamento != null &&
+        (pagamento.Status == EStatusPagamento.Received
+        || pagamento.Status == EStatusPagamento.Confirmed
+        || pagamento.Status == EStatusPagamento.ReceivedInCash);
+
+    string badgePagamentoClass = "bg-secondary";
+
+    if (pagamento != null)
+    {
+        if (pagamento.Status == EStatusPagamento.Received
+            || pagamento.Status == EStatusPagamento.Confirmed
+            || pagamento.Status == EStatusPagamento.ReceivedInCash)
+        {
+            badgePagamentoClass = "bg-success";
+        }
+        else if (pagamento.Status == EStatusPagamento.Pending
+            || pagamento.Status == EStatusPagamento.AwaitingRiskAnalysis
+            || pagamento.Status == EStatusPagamento.DunningRequested)
+        {
+            badgePagamentoClass = "bg-warning text-dark";
+        }
+        else if (pagamento.Status == EStatusPagamento.Overdue
+            || pagamento.Status == EStatusPagamento.Refunded
+            || pagamento.Status == EStatusPagamento.RefundRequested
+            || pagamento.Status == EStatusPagamento.RefundInProgress
+            || pagamento.Status == EStatusPagamento.ChargebackRequested
+            || pagamento.Status == EStatusPagamento.ChargebackDispute
+            || pagamento.Status == EStatusPagamento.AwaitingChargebackReversal)
+        {
+            badgePagamentoClass = "bg-danger";
+        }
+    }
+}
+
+<div class="p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h5 class="fw-bold mb-1" style="color: #3c1e0a;">Pedido #@Model.Codigo</h5>
+            <div class="small text-muted">
+                Criado em @Model.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+            </div>
+        </div>
+
+        <div class="text-md-center bg-light p-2 px-3 rounded-2 shadow-sm">
+            <span class="small text-muted d-block">Status do pagamento</span>
+            <span class="badge rounded-pill px-3 @badgePagamentoClass">
+                @(pagamento?.StatusPagamento ?? "Sem pagamento")
+            </span>
+        </div>
+    </div>
+
+    <div class="card bg-light border-0 rounded-4 p-3 mb-4">
+        <div class="d-flex justify-content-between mb-2 small">
+            <span>Subtotal</span>
+            <span class="fw-bold">@Model.Subtotal.ToString("C", pt)</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 small">
+            <span>Sinal para produção</span>
+            <span class="fw-bold text-success">@Model.ValorSinal.ToString("C", pt)</span>
+        </div>
+        <div class="d-flex justify-content-between small text-muted">
+            <span>Restante na retirada/entrega</span>
+            <span>@Model.ValorRestanteRetirada.ToString("C", pt)</span>
+        </div>
+        <hr class="my-3 opacity-25" />
+        <div class="d-flex justify-content-between">
+            <span class="fw-semibold">Total do pedido</span>
+            <span class="fw-bold fs-6">@Model.Total.ToString("C", pt)</span>
+        </div>
+    </div>
+
+    @if (ehPix)
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-lg-5">
+                <div class="bg-white p-3 rounded-4 border shadow-sm h-100">
+                    <div class="d-flex align-items-start justify-content-between mb-2">
+                        <div>
+                            <div class="fw-bold" style="color: var(--bh-primary);">Escaneie o QR Code</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">
+                                Abra o app do seu banco → PIX → QR Code
+                            </small>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(pagamento?.PixExpiraEm))
+                        {
+                            <span class="badge rounded-pill text-bg-light border" style="font-size: 0.75rem; color: var(--bh-primary);">
+                                <i class="fa-regular fa-clock me-1"></i>
+                                Expira em <b>@pagamento.PixExpiraEm</b>
+                            </span>
+                        }
+                    </div>
+
+                    <div class="d-flex justify-content-center my-3">
+                        @if (!string.IsNullOrWhiteSpace(pagamento?.PixQrCodeUrl))
+                        {
+                            <img src="@pagamento.PixQrCodeUrl"
+                                 alt="QR Code PIX"
+                                 class="img-fluid rounded-4 border"
+                                 style="max-width: 240px; background: #fff; padding: 10px;" />
+                        }
+                        else
+                        {
+                            <div class="w-100 text-center border rounded-4 py-5 bg-light text-muted small">
+                                QR Code indisponível no momento.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-7">
+                <div class="bg-white p-3 rounded-4 border shadow-sm h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div>
+                            <div class="fw-bold" style="color: var(--bh-primary);">Ou copie o código PIX</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">
+                                Cole no app do banco → PIX → Copia e Cola
+                            </small>
+                        </div>
+                        <i class="fa-brands fa-pix fs-3 opacity-25"></i>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">
+                            PIX copia e cola
+                        </label>
+                        <div class="input-group">
+                            <textarea id="pixCopiaCola_@Model.Codigo"
+                                      class="form-control border rounded-3"
+                                      rows="2"
+                                      readonly
+                                      style="font-size: 0.8rem; resize: none;">@pagamento?.PixCopiaCola</textarea>
+
+                            <button type="button"
+                                    class="btn btn-outline-dark fw-bold"
+                                    onclick="copyToClipboard('pixCopiaCola_@Model.Codigo')">
+                                <i class="fa-regular fa-copy me-1"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-4 mb-3" style="background:#f8f9fa; border: 1px dashed #ddd;">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">Identificador</span>
+                            <span class="small fw-bold">@pagamento?.PixIdentificador</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">Beneficiário</span>
+                            <span class="small fw-bold">@pagamento?.PixBeneficiario</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Valor</span>
+                            <span class="small fw-bold">@Model.ValorSinal.ToString("C", pt)</span>
+                        </div>
+                    </div>
+
+                    @if (pagamentoConfirmado)
+                    {
+                        <div class="alert alert-success border-0 rounded-4 mb-0">
+                            <i class="fa-solid fa-circle-check me-1"></i>
+                            Pagamento PIX confirmado com sucesso.
+                        </div>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-success fw-bold rounded-4 w-100">
+                            <i class="fa-solid fa-circle-check me-1"></i> Já paguei
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else if (ehCartao)
+    {
+        <div class="mb-4">
+            <div class="bg-white p-4 rounded-4 border shadow-sm text-center">
+                <i class="fa-solid fa-credit-card fa-3x mb-3" style="color: #6f42c1;"></i>
+                <h5 class="fw-bold">Pagamento Online</h5>
+                <p class="text-muted small px-lg-5">
+                    Clique no botão abaixo para abrir nosso checkout seguro e realizar o pagamento do sinal com seu cartão.
+                </p>
+
+                <div class="card bg-light border-0 rounded-4 p-3 mb-4 text-start">
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span>Sinal (Cartão)</span>
+                        <span class="fw-bold">@Model.ValorSinal.ToString("C", pt)</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Status</span>
+                        <span>@(pagamento?.StatusPagamento ?? "-")</span>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(pagamento?.Gateway))
+                    {
+                        <div class="d-flex justify-content-between small text-muted mt-2">
+                            <span>Gateway</span>
+                            <span>@pagamento.Gateway</span>
+                        </div>
+                    }
+                </div>
+
+                @if (pagamentoConfirmado)
+                {
+                    <div class="alert alert-success border-0 rounded-4 mb-0">
+                        <i class="fa-solid fa-circle-check me-1"></i>
+                        Pagamento confirmado com sucesso.
+                    </div>
+                }
+                else if (!string.IsNullOrWhiteSpace(pagamento?.InvoiceUrl))
+                {
+                    <a href="@pagamento.InvoiceUrl"
+                           target="_blank"
+                           class="btn btn-primary w-100 fw-bold rounded-4 py-3 shadow"
+                           style="background-color: #6f42c1; border: none;">
+                        <i class="fa-solid fa-lock me-2"></i> Abrir Checkout Seguro
+                    </a>
+                }
+                else
+                {
+                    <button type="button"
+                            class="btn btn-primary w-100 fw-bold rounded-4 py-3 shadow"
+                            style="background-color: #6f42c1; border: none;"
+                            disabled>
+                        <i class="fa-solid fa-lock me-2"></i> Checkout indisponível
+                    </button>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="card border shadow-sm rounded-4 mb-3" style="background: #a9a9a936;">
+        <div class="card-body p-4">
+            @if (Model.Itens == null || !Model.Itens.Any())
+            {
+                <div class="text-center py-3 text-muted small">Nenhum item encontrado.</div>
+            }
+            else
+            {
+                @foreach (var it in Model.Itens)
+                {
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark" style="font-size: 0.85rem;">
+                                @it.Quantidade x @it.ProdutoNome
+                            </span>
+                            <span class="fw-bold text-dark" style="font-size: 0.85rem;">
+                                @it.TotalLinha.ToString("C", pt)
+                            </span>
+                        </div>
+
+                        @if (it.Acompanhamentos?.Any() == true)
+                        {
+                            <div class="mt-1">
+                                @foreach (var ac in it.Acompanhamentos)
+                                {
+                                    <div class="d-flex justify-content-between text-muted ms-2" style="font-size: 0.75rem;">
+                                        <span>+ @ac.Nome.ToLower()</span>
+                                        <span>@ac.Preco.ToString("C", pt)</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="mb-2">
+        <span class="small text-muted fw-semibold">Observações</span>
+        <div class="small text-muted">
+            <i class="fa-regular fa-comment-dots me-1 opacity-50"></i>
+            @(string.IsNullOrWhiteSpace(Model.Observacao) ? "Nenhuma observação" : Model.Observacao)
+        </div>
+    </div>
+</div>

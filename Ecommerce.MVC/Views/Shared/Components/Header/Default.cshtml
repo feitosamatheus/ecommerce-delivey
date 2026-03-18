@@ -364,29 +364,37 @@
 
         $(document).on('click', '.btn-acompanhar-pedido-login', abrirModalConta);
 
-        $(document).on('click', '.btn-acompanhar-pedido', function () {
+        // $(document).on('click', '.btn-acompanhar-pedido', function () {
 
+        //     addLoading("Carregando...");
+
+        //     setTimeout(() => {
+        //         $.ajax({
+        //             url: '/Pedido/BuscarModalPedidosEmAndamento',
+        //             method: 'GET',
+        //             success: function (html) {
+        //                 $('#conteudo-dinamico').empty();
+        //                 $('#conteudo-dinamico').html(html);
+
+        //                 const el = document.getElementById('modalPedidosEmAndamento');
+        //                 bootstrap.Modal.getOrCreateInstance(el).show();
+
+        //                 removeLoading();
+        //             },
+        //             error: function (xhr) {
+        //                 alert(xhr.responseText || 'Erro ao carregar pedidos.');
+        //                 removeLoading();
+        //             }
+        //         });
+        //     }, 800); 
+        // });
+
+        $(document).on('click', '.btn-acompanhar-pedido', function () {
             addLoading("Carregando...");
 
             setTimeout(() => {
-                $.ajax({
-                    url: '/Pedido/BuscarModalPedidosEmAndamento',
-                    method: 'GET',
-                    success: function (html) {
-                        $('#conteudo-dinamico').empty();
-                        $('#conteudo-dinamico').html(html);
-
-                        const el = document.getElementById('modalPedidosEmAndamento');
-                        bootstrap.Modal.getOrCreateInstance(el).show();
-
-                        removeLoading();
-                    },
-                    error: function (xhr) {
-                        alert(xhr.responseText || 'Erro ao carregar pedidos.');
-                        removeLoading();
-                    }
-                });
-            }, 800); 
+                window.location.href = '/Pedido/EmAndamento';
+            }, 800);
         });
 
         document.addEventListener('click', async function (e) {

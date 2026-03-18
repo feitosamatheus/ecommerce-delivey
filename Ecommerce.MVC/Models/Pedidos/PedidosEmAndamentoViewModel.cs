@@ -17,15 +17,11 @@ public class PedidosEmAndamentoViewModel
     public string ClienteNome { get; set; }
     public string ClienteTelefone { get; set; }
 
-    public string StatusPagamento { get; set; }
-    public string PixCopiaCola { get; set; }
-    public string PixQrCodeUrl { get; set; }
-    public string PixExpiraEm { get; set; }
-    public string PixIdentificador { get; set; }
-    public string PixBeneficiario { get; set; }
-
     public decimal Subtotal { get; set; }
     public decimal ValorSinal { get; set; }
     public decimal ValorRestanteRetirada { get; set; }
+
+    public PedidoPagamentoViewModel? Pagamento { get; set; }
+
     public List<PedidosEmAndamentoItemViewModel> Itens { get; set; } = new();
 }

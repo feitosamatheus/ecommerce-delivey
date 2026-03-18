@@ -1,0 +1,123 @@
+﻿@using Ecommerce.MVC.Enums
+@using System.Globalization
+@using static Ecommerce.MVC.Controllers.PedidoController
+@model PedidosEmAndamentoPaginaViewModel
+
+@{
+    var pt = new CultureInfo("pt-BR");
+}
+
+@functions {
+    private string MapStatusBadgeClass(EPedidoStatus status)
+    {
+        return status switch
+        {
+            EPedidoStatus.Cancelado => "bg-danger-subtle text-danger",
+            EPedidoStatus.Concluido => "bg-success-subtle text-success",
+            EPedidoStatus.Pronto => "bg-primary-subtle text-primary",
+            EPedidoStatus.EmPreparo => "bg-warning-subtle text-warning-custom",
+            EPedidoStatus.Confirmado => "bg-info-subtle text-info",
+            EPedidoStatus.AguardandoPagamento => "bg-warning-subtle text-warning-custom",
+            _ => "bg-secondary-subtle text-secondary"
+        };
+    }
+}
+
+@if (Model.Pedidos == null || !Model.Pedidos.Any())
+{
+    <div class="text-center bg-white shadow-sm p-5 rounded-4 border">
+        @if (Model.IsFiltrado)
+        {
+            <div class="mb-4 text-muted opacity-50">
+                <i class="fa-solid fa-magnifying-glass fa-3x"></i>
+            </div>
+            <h5 class="fw-bold" style="color: var(--bc-brown);">Nenhum resultado encontrado</h5>
+            <p class="text-muted mb-4 small">
+                Não encontramos pedidos para o filtro: <strong>@(Model.StatusFiltro ?? "Todos")</strong>
+                @(string.IsNullOrEmpty(Model.CodigoFiltro) ? "" : $"e código #{Model.CodigoFiltro}")
+            </p>
+            <a href="javascript:void(0)" class="btn btn-detalhes-slim px-4 btn-resetar-filtros">
+                <i class="fa-solid fa-eraser me-2"></i>Limpar Filtros
+            </a>
+        }
+        else
+        {
+            <div class="mb-4" style="color: #eee1d7;">
+                <i class="fa-solid fa-utensils fa-4x"></i>
+            </div>
+            <h4 class="fw-bold" style="color: var(--bc-brown);">Nenhum pedido ativo</h4>
+            <p class="text-muted mb-4">Que tal dar uma olhada nas nossas tortas e caldos?</p>
+            <a href="/" class="btn btn-detalhes-slim px-5" style="background: var(--bc-brown); color: #fff;">
+                Ver Cardápio
+            </a>
+        }
+    </div>
+}
+else
+{
+    <div class="d-flex flex-column gap-1">
+        @foreach (var p in Model.Pedidos)
+        {
+            var badgeClass = MapStatusBadgeClass(p.Status);
+
+            <div class="card pedido-card-slim">
+                <div class="card-body p-2 p-lg-3">
+                    <div class="row align-items-center g-2 g-md-3">
+                        
+                        <div class="col-12 col-md-3">
+                            <div class="d-flex d-md-block align-items-center justify-content-between">
+                                <div class="text-label-slim">Pedido</div>
+                                <div class="text-content-slim">#@p.Codigo</div>
+                            </div>
+                            <div class="text-sub-slim d-none d-md-block">
+                                <i class="fa-regular fa-clock fa-xs me-1"></i>
+                                @p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-3">
+                            <div class="text-label-slim">Valor Total</div>
+                            <div class="text-content-slim">
+                                @p.Total.ToString("C", pt)
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-3 text-md-center">
+                            <div class="text-label-slim">Situação</div>
+                            <span class="badge @badgeClass badge-soft-slim shadow-none">
+                                @p.StatusTexto
+                            </span>
+                        </div>
+
+                        <div class="col-12 col-md-3 text-end mt-2 mt-md-0">
+                            <button type="button"
+                                    class="btn btn-detalhes-slim w-100 w-md-auto btn-ver-detalhes"
+                                    data-codigo="@p.Codigo">
+                                <i class="fa-solid fa-receipt fa-sm me-1"></i>Detalhes
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.TotalPaginas > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center">
+                @for (int i = 1; i <= Model.TotalPaginas; i++)
+                {
+                    <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                        <button class="page-link shadow-none btn-pagina-ajax"
+                                data-pagina="@i"
+                                style="@(i == Model.PaginaAtual ? "background-color: var(--bc-brown); border-color: var(--bc-brown); color:white;" : "color: var(--bc-brown);")">
+                            @i
+                        </button>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}

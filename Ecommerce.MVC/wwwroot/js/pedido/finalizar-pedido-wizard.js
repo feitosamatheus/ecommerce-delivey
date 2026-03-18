@@ -625,7 +625,7 @@
 
         const res = await response.json();
 
-        iniciarConexaoPagamento(res.payment.id);
+        await iniciarConexaoPagamento(res.payment.id);
         
         if (!response.ok || !res.sucesso) {
             throw new Error(res.mensagem || "Não foi possível gerar a cobrança por cartão.");
@@ -745,26 +745,40 @@
             }
         });
 
-        pagamentoConnection.on("PagamentoConfirmado", function (data) {
+        pagamentoConnection.on ("PagamentoConfirmado", function (data) {
             console.log("[SignalR] Evento recebido: PagamentoConfirmado", data);
 
+            const mensagemSucesso = "Pagamento confirmado! Seu pedido foi reservado com sucesso.";
+
             $("#pixStatusBox").removeClass("d-none").html(`
-            <div class="alert alert-success border-0 rounded-4 mb-0 animate__animated animate__fadeIn">
-                <i class="fa-solid fa-circle-check me-1"></i>
-                Pagamento confirmado! Seu pedido foi reservado com sucesso.
-            </div>
-        `);
+                <div class="alert alert-success border-0 rounded-4 mb-0 animate__animated animate__fadeIn">
+                    <i class="fa-solid fa-circle-check me-1"></i>
+                    ${mensagemSucesso}
+                </div>
+            `);
+
+                    $("#cartaoStatusBox").removeClass("d-none").html(`
+                <div class="alert alert-success border-0 rounded-4 mb-0 animate__animated animate__fadeIn">
+                    <i class="fa-solid fa-circle-check me-1"></i>
+                    ${mensagemSucesso}
+                </div>
+            `);
 
             $("#btnJaPaguei").prop("disabled", true);
+            $("#btnAbrirCheckoutCartao").prop("disabled", true);
+
+            try {
+                sessionStorage.setItem("pagamentoConfirmadoSucesso", "1");
+                sessionStorage.setItem("pagamentoConfirmadoMensagem", mensagemSucesso);
+            } catch (e) {
+                console.warn("[SignalR] Não foi possível gravar mensagem no sessionStorage.", e);
+            }
 
             setTimeout(() => {
-                if (data.redirectUrl) {
-                    console.log("[SignalR] Redirecionando usuário.", { redirectUrl: data.redirectUrl });
-                    window.location.href = data.redirectUrl;
-                } else {
-                    console.warn("[SignalR] redirectUrl não informado no evento PagamentoConfirmado.");
-                }
-            }, 2000);
+                const loginUrl = "/Cliente/Login?pagamento=sucesso";
+                console.log("[SignalR] Redirecionando para login.", { loginUrl });
+                window.location.href = loginUrl;
+            }, 1500);
         });
 
         pagamentoConnection.on("PagamentoPendente", function (data) {
@@ -782,11 +796,11 @@
             console.log("[SignalR] Evento recebido: PagamentoRecusado", data);
 
             $("#pixStatusBox").removeClass("d-none").html(`
-            <div class="alert alert-danger border-0 rounded-4 mb-0">
-                <i class="fa-solid fa-circle-xmark me-1"></i>
-                O pagamento não foi confirmado. Status: ${data.status}
-            </div>
-        `);
+                <div class="alert alert-danger border-0 rounded-4 mb-0">
+                    <i class="fa-solid fa-circle-xmark me-1"></i>
+                    O pagamento não foi confirmado. Status: ${data.status}
+                </div>
+            `);
         });
 
         try {

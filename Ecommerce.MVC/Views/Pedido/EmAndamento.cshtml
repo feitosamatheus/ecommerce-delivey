@@ -1,0 +1,397 @@
+﻿@using System.Globalization
+@using Ecommerce.MVC.Enums
+@using Ecommerce.MVC.Models.Pedidos
+@using static Ecommerce.MVC.Controllers.PedidoController
+@model PedidosEmAndamentoPaginaViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Pedidos em Andamento";
+    var pt = new CultureInfo("pt-BR");
+}
+
+<link rel="stylesheet" href="/css/pedido/acompanhamento-pedido.css" />
+<style>
+    :root {
+        --bc-brown: #3c1e0a;
+        --bc-brown-light: #6d4c41;
+        --bc-gray-light: #f8f9fa;
+        --bc-border: #f1f1f1;
+    }
+
+    /* Container ajustado conforme seu pedido */
+    .bh-pedidos-em-andamento {
+        background-color: #ffffff;
+        min-height: 100vh;
+        border-radius: 6px;
+        padding: 20px;
+    }
+
+    .pedido-card-slim {
+        border: 1px solid var(--bc-border) !important;
+        border-radius: 6px !important; /* Alinhado com o container de 6px */
+        background-color: #ffffff;
+        margin-bottom: 10px; /* Espaço reduzido entre os cards */
+        transition: all 0.2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+        .pedido-card-slim:hover {
+            border-color: #eee1d7 !important;
+            box-shadow: 0 3px 6px rgba(60, 30, 10, 0.03) !important;
+            background-color: var(--bc-bg-light); /* Destaque sutil ao passar o mouse */
+        }
+
+    /* Labels de apoio ultra pequenas (Slim) */
+    .text-label-slim {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #ac9c96; /* Marrom-acinzentado muito suave */
+        font-weight: 800;
+        margin-bottom: 1px;
+    }
+
+    /* Conteúdo Principal (IDs, Valores) */
+    .text-content-slim {
+        font-size: 0.95rem;
+        color: var(--bc-brown);
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+
+    /* Texto de apoio (Datas, Horas) */
+    .text-sub-slim {
+        font-size: 0.8rem;
+        color: #777;
+        margin-bottom: 0;
+    }
+
+    /* Botão "Detalhes" mais compacto */
+    .btn-detalhes-slim {
+        background-color: transparent;
+        border: 1px solid var(--bc-brown);
+        color: var(--bc-brown);
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 6px 14px;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+        .btn-detalhes-slim:hover {
+            background-color: var(--bc-brown);
+            color: #ffffff;
+        }
+
+    /* Badge de Status Suave (Slim) */
+    .badge-soft-slim {
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        letter-spacing: 0.3px;
+    }
+
+    /* Seção de filtro ultra fina */
+    .filter-slim {
+        background-color: #ffffff;
+        border-bottom: 1px solid #eee1d7; /* Apenas uma linha divisória sutil */
+        padding: 10px 0;
+        margin-bottom: 25px;
+    }
+
+    /* Labels menores e horizontais para economizar espaço vertical */
+    .filter-label-slim {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #8d6e63;
+        text-transform: uppercase;
+        margin-right: 10px;
+        white-space: nowrap;
+    }
+
+    /* Inputs menores (slim) */
+    .form-select-slim, .form-control-slim {
+        height: 35px; /* Altura reduzida */
+        font-size: 0.85rem;
+        border-radius: 6px !important;
+        border: 1px solid #e9ecef;
+        padding: 0 10px;
+        background-color: #fcfaf8;
+        color: #3c1e0a;
+    }
+
+        .form-select-slim:focus {
+            border-color: #3c1e0a;
+            box-shadow: none;
+            background-color: #fff;
+        }
+
+    /* Botão de limpar discreto */
+    .btn-link-clean {
+        font-size: 0.8rem;
+        color: #999;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+
+        .btn-link-clean:hover {
+            color: #dc3545;
+        }
+
+    /* Remove o aspecto pesado de botão e integra ao input */
+    .btn-search-slim {
+        background-color: #fcfaf8 !important; /* Mesma cor de fundo do input */
+        border: 1px solid #e9ecef !important;
+        border-left: none !important; /* Une visualmente ao input */
+        color: #ac9c96 !important; /* Cor sutil para o ícone */
+        transition: all 0.2s ease;
+        padding: 0 12px;
+    }
+
+        .btn-search-slim:hover {
+            color: var(--bc-brown) !important;
+            background-color: #f5f0ed !important;
+        }
+
+    /* Ajuste para o grupo não parecer separado */
+    .input-group-slim-container:focus-within .btn-search-slim {
+        border-color: var(--bc-brown) !important;
+        color: var(--bc-brown) !important;
+    }
+    
+    .input-group-slim-container:focus-within .form-control-slim {
+        border-color: var(--bc-brown) !important;
+    }
+
+    /* Fonte que se adapta: 0.9rem no mobile, cresce até 1.1rem no desktop */
+    .text-content-slim {
+        font-size: clamp(0.85rem, 2vw, 1rem); 
+        color: var(--bc-brown);
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    /* Ajuste específico para o Valor Total (Preço) */
+    .text-price-slim {
+        font-size: 1rem; /* Base mobile */
+        font-weight: 800;
+        color: var(--bc-brown);
+    }
+
+    /* Breakpoint para Desktop (Telas maiores que 768px) */
+    @@media (min-width: 768px) {
+        .text-price-slim {
+            font-size: 1.25rem; /* Equivale ao fs-5 no PC */
+        }
+        .text-content-slim {
+            font-size: 1.05rem;
+        }
+    }
+
+    .btn-outline-brown {
+        color: #3c1e0a !important;
+        border-color: #3c1e0a !important;
+        background-color: transparent;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-brown:hover {
+        background-color: #3c1e0a !important; /* Marrom em vez de preto */
+        color: #ffffff !important;           /* Texto branco no hover */
+        border-color: #3c1e0a !important;
+        transform: translateY(-1px);        /* Leve subida para dar sensação de clique */
+        shadow: 0 4px 8px rgba(60, 30, 10, 0.2);
+    }
+</style>
+
+@functions {
+    private string MapStatusBadgeClass(EPedidoStatus status)
+    {
+        return status switch
+        {
+            EPedidoStatus.Cancelado => "bg-danger-subtle text-danger",
+            EPedidoStatus.Concluido => "bg-success-subtle text-success",
+            EPedidoStatus.Pronto => "bg-primary-subtle text-primary",
+            EPedidoStatus.EmPreparo => "bg-warning-subtle text-warning-custom",
+            EPedidoStatus.Confirmado => "bg-info-subtle text-info",
+            EPedidoStatus.AguardandoPagamento => "bg-warning-subtle text-warning-custom",
+            EPedidoStatus.Rascunho => "bg-secondary-subtle text-secondary",
+            _ => "bg-secondary-subtle text-secondary"
+        };
+    }
+}
+
+<div class="container-fluid px-2 px-lg-0" >
+    <div class="container-fluid py-4 py-lg-5 bh-pedidos-em-andamento">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-5">
+            <div>
+                <h4 class="fw-bolder mb-1" style="color: var(--bc-brown);">
+                    <i class="fa-solid fa-clock-rotate-left me-2"></i>Meus Pedidos
+                </h4>
+                <p class="text-muted mb-0">Acompanhe suas delícias em tempo real.</p>
+            </div>
+            <a href="/" class="btn btn-outline-brown rounded-pill px-4 fw-bold shadow-sm border-2">
+                <i class="fa-solid fa-utensils me-2"></i>Ir para o Cardápio
+            </a>
+        </div>
+
+        <div class="filter-slim">
+            <form method="get" action="@Url.Action("EmAndamento", "Pedido")" id="formFiltro" class="container-fluid">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+            
+                    <div class="d-flex align-items-center col-12 col-md-4">
+                        <label class="filter-label-slim mb-0">Status:</label>
+                        <select name="status" id="filtroStatus" class="form-select form-select-slim me-2">
+                            <option value="">Todos</option>
+        
+                            @* Usamos o ToString() ou comparamos a string para garantir o "selected" *@
+                            <option value="AguardandoPagamento" selected="@(Model.StatusFiltro == "AguardandoPagamento")">Aguardando Pagamento</option>
+                            <option value="Confirmado" selected="@(Model.StatusFiltro == "Confirmado")">Confirmado / Pago</option>
+                            <option value="EmPreparo" selected="@(Model.StatusFiltro == "EmPreparo")">Em Preparo</option>
+                            <option value="Pronto" selected="@(Model.StatusFiltro == "Pronto")">Pronto para Entrega/Retirada</option>
+                            <option value="Concluido" selected="@(Model.StatusFiltro == "Concluido")">Concluído (Histórico)</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex align-items-center flex-grow-1 col-12 col-md-4" style="max-width: 300px;">
+                        <label class="filter-label-slim mb-0 me-2">Código:</label>
+                        <div class="input-group input-group-sm input-group-slim-container">
+                            <input type="text"
+                                   id="filtroCodigo"
+                                   name="codigo"
+                                   value="@Model.CodigoFiltro"
+                                   class="form-control form-control-slim border-end-0" @* Remove borda direita *@
+                                   placeholder="Ex: 123"
+                                   style="border-radius: 6px 0 0 6px !important;">
+        
+                            <button class="btn btn-search-slim" type="submit" style="border-radius: 0 6px 6px 0 !important;">
+                                <i class="fa-solid fa-magnifying-glass fa-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ms-auto">
+                        <a href="@Url.Action("EmAndamento", "Pedido")" class="btn-link-clean">
+                            <i class="fa-solid fa-rotate-left me-1"></i> Limpar filtros
+                        </a>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <div id="tabela-pedidos-container">
+            @await Html.PartialAsync("_ListaPedidos", Model)
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDetalhesPedido" tabindex="-1" aria-labelledby="modalDetalhesPedidoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="modalDetalhesPedidoLabel" style="color: #3c1e0a;">
+                    <i class="fa-solid fa-receipt me-2"></i>Detalhes do Pedido
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <div class="modal-body p-0" id="modalDetalhesPedidoBody">
+                <div class="p-4 text-center text-muted">
+                    Carregando...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        const $inputCodigo = $('#filtroCodigo');
+        const $selectStatus = $('#filtroStatus');
+        let valorOriginal = $inputCodigo.val();
+
+        // 1. FUNÇÃO CENTRAL AJAX
+        function carregarPedidos(pagina = 1) {
+            if (typeof addLoading === "function") addLoading("Atualizando lista...");
+
+            const dados = {
+                status: $selectStatus.val(),
+                codigo: $inputCodigo.val(),
+                pagina: pagina
+            };
+
+            $.ajax({
+                url: '@Url.Action("GetListaPedidos", "Pedido")', 
+                type: 'GET',
+                data: dados,
+                success: function (html) {
+                    $('#tabela-pedidos-container').html(html);
+                    valorOriginal = $inputCodigo.val(); // Atualiza referência
+                },
+                error: function () {
+                    console.error("Erro ao filtrar.");
+                },
+                complete: function () {
+                    // Se tiver função para remover o loading, chame aqui.
+                    removeLoading();
+                }
+            });
+        }
+
+        // 2. EVENTOS DE FILTRO
+        $selectStatus.on('change', function() { carregarPedidos(1); });
+
+        $inputCodigo.on('blur', function () {
+            if ($(this).val() !== valorOriginal) carregarPedidos(1);
+        });
+
+        $inputCodigo.on('keypress', function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                carregarPedidos(1);
+            }
+        });
+
+        // 3. PAGINAÇÃO E LIMPEZA (Delegação de Evento para elementos dinâmicos)
+        $(document).on('click', '.btn-pagina-ajax', function (e) {
+            e.preventDefault();
+            const pag = $(this).data('pagina');
+            carregarPedidos(pag);
+        });
+
+        $(document).on('click', '.btn-link-clean, .btn-resetar-filtros', function (e) {
+            e.preventDefault();
+            $inputCodigo.val('');
+            $selectStatus.val('');
+            carregarPedidos(1);
+        });
+
+        // 4. DETALHES (MODAL)
+        $(document).on('click', '.btn-ver-detalhes', function () {
+            const btn = $(this);
+            const codigo = btn.data('codigo');
+            const modalEl = document.getElementById('modalDetalhesPedido');
+            const modalBody = $('#modalDetalhesPedidoBody');
+
+            btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i>');
+
+            $.ajax({
+                url: '/Pedido/DetalhesEmAndamento',
+                type: 'GET',
+                data: { codigo: codigo },
+                success: function (html) {
+                    modalBody.html(html);
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                },
+                complete: function () {
+                    btn.prop('disabled', false).html('<i class="fa-solid fa-receipt fa-sm me-1"></i>Detalhes');
+                }
+            });
+        });
+    });
+</script>

@@ -605,6 +605,7 @@ public class PagamentoController : Controller
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("webhook/asaas")]
     public async Task<IActionResult> WebhookAsaas([FromBody] WebhookAsaasRequest request)
     {
