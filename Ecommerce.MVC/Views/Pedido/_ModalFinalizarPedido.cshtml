@@ -212,6 +212,17 @@
                         </select>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="fw-bold mb-2 small" style="color: var(--bh-primary)">Escolha como deseja pagar</label>
+                        <select id="selectTipoCobranca" class="form-select border-0 shadow-sm rounded-3 p-3">
+                            <option value="1" selected>Pagamento parcial (Sinal 50%)</option>
+                            <option value="2">Pagamento total</option>
+                        </select>
+                        <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
+                            Escolha se deseja pagar apenas o sinal agora ou quitar o pedido completo.
+                        </small>
+                    </div>
+
                     @* <div id="pix-warning-resumo" class="alert border-0 rounded-4 p-3 mb-4" style="background-color: #f0f7ff; border-left: 4px solid #007bff !important;">
                         <div class="d-flex align-items-start">
                             <i class="fa-solid fa-shield-check text-primary me-3 mt-1" style="font-size: 1.1rem;"></i>
@@ -234,13 +245,17 @@
                         <div class="d-flex align-items-start">
                             <i class="fa-solid fa-qrcode text-primary me-3 mt-1" style="font-size: 1.1rem;"></i>
                             <div>
-                                <p class="mb-1 fw-bold" style="color: #004a99; font-size: 0.85rem;">Confirmação via PIX</p>
-                                <p class="mb-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;">
+                                <p class="mb-1 fw-bold" style="color: #004a99; font-size: 0.85rem;" id="tituloMsgPix">
+                                    Confirmação via PIX
+                                </p>
+                                <p class="mb-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;" id="textoMsgPix">
                                     Ao confirmar, você visualizará o <b>QR Code</b>. O sinal de 50% é necessário para validar sua reserva.
                                 </p>
                                 <div class="d-flex align-items-center" style="font-size: 0.75rem; color: #bc8d05;">
                                     <i class="fa-regular fa-clock me-1"></i>
-                                    <span>Expira em 30 min. O pedido é cancelado se não houver pagamento.</span>
+                                    <span id="rodapeMsgPix">
+                                        Expira em 30 min. O pedido é cancelado se não houver pagamento.
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -250,13 +265,17 @@
                         <div class="d-flex align-items-start">
                             <i class="fa-solid fa-credit-card text-purple me-3 mt-1" style="font-size: 1.1rem; color: #6f42c1;"></i>
                             <div>
-                                <p class="mb-1 fw-bold" style="color: #4b2394; font-size: 0.85rem;">Pagamento via Cartão</p>
-                                <p class="mb-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;">
+                                <p class="mb-1 fw-bold" style="color: #4b2394; font-size: 0.85rem;" id="tituloMsgCartao">
+                                    Pagamento via Cartão
+                                </p>
+                                <p class="mb-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;" id="textoMsgCartao">
                                     Você será redirecionado para o nosso <b>ambiente seguro</b> de pagamentos para processar o sinal de 50%.
                                 </p>
                                 <div class="d-flex align-items-center" style="font-size: 0.75rem; color: #6f42c1;">
                                     <i class="fa-solid fa-lock me-1"></i>
-                                    <span>Sua transação é criptografada e 100% segura.</span>
+                                    <span id="rodapeMsgCartao">
+                                        Sua transação é criptografada e 100% segura.
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -265,23 +284,35 @@
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-end mb-3 px-1">
                             <div>
-                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 0.5px;">Pagar agora (Sinal 50%)</small>
-                                <div class="fs-2 fw-bold lh-1" style="color: #198754; letter-spacing: -1px;" id="resumoAdiantamento">
+                                <small id="labelResumoPagamentoAgora"
+                                       class="text-muted d-block text-uppercase fw-bold"
+                                       style="font-size: 0.6rem; letter-spacing: 0.5px;">
+                                    Pagar agora (Sinal 50%)
+                                </small>
+
+                                <div class="fs-2 fw-bold lh-1"
+                                     style="color: #198754; letter-spacing: -1px;"
+                                     id="resumoAdiantamento">
                                     @Model.Carrinho.ValorSinal.ToString("C", pt)
                                 </div>
                             </div>
+
                             <div class="text-end">
                                 <small class="text-muted d-block" style="font-size: 0.7rem;">Total do pedido</small>
-                                <span class="fw-semibold text-dark" style="font-size: 0.9rem;">@Model.Carrinho.Total.ToString("C", pt)</span>
+                                <span class="fw-semibold text-dark" style="font-size: 0.9rem;" id="resumoTotalPedido">
+                                    @Model.Carrinho.Total.ToString("C", pt)
+                                </span>
                             </div>
                         </div>
 
                         <div class="progress mb-3" style="height: 4px; background-color: #e9ecef;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 50%"></div>
+                            <div class="progress-bar bg-success" role="progressbar" id="barraResumoPagamento" style="width: 50%"></div>
                         </div>
 
                         <div class="p-3 rounded-4 mb-4 text-center" style="background-color: #f8f9fa; border: 1px dashed #ddd;">
-                            <span class="text-muted small">O restante (<b>@Model.Carrinho.ValorRestanteRetirada.ToString("C", pt)</b>) será pago no momento da retirada.</span>
+                            <span class="text-muted small" id="textoResumoRestante">
+                                O restante (<b>@Model.Carrinho.ValorRestanteRetirada.ToString("C", pt)</b>) será pago no momento da retirada.
+                            </span>
                         </div>
                     </div>
 
@@ -289,23 +320,30 @@
 
                 <!-- STEP 3 -->
                 <section class="wizard-step d-none" data-step="3">
-                    <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Pagamento do Sinal (50%)</h6>
+                    <h6 class="fw-bold mb-3" id="wizardTituloPagamento" style="color: var(--bh-primary)">
+                        Pagamento
+                    </h6>
+
                     <input type="hidden" id="pixPedidoId" />
+                    <input type="hidden" id="cartaoPedidoId" />
+                    <input type="hidden" id="wizardTipoCobranca" />
 
                     <div class="bg-white p-3 rounded-4 border shadow-sm mb-3">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Valor a pagar agora</small>
-                                <div class="fs-3 fw-bold lh-1 text-success">
-                                    @Model.Carrinho.ValorSinal.ToString("C", pt)
+                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">
+                                    Valor a pagar agora
+                                </small>
+                                <div class="fs-3 fw-bold lh-1 text-success" id="wizardValorPagarAgora">
+                                    R$ 0,00
                                 </div>
                                 <small class="text-muted" style="font-size: 0.75rem;">
-                                    Restante na retirada: <b>@Model.Carrinho.ValorRestanteRetirada.ToString("C", pt)</b>
+                                    Restante na retirada: <b id="wizardValorRestanteRetirada">R$ 0,00</b>
                                 </small>
                             </div>
                             <div class="text-end">
                                 <small class="text-muted d-block" style="font-size: 0.7rem;">Total do pedido</small>
-                                <span class="fw-semibold text-dark">@Model.Carrinho.Total.ToString("C", pt)</span>
+                                <span class="fw-semibold text-dark" id="wizardTotalPedido">R$ 0,00</span>
                             </div>
                         </div>
                     </div>
@@ -415,6 +453,17 @@
                                         </button>
                                     </div>
 
+                                    <div class="mt-3 p-3 rounded-4 text-start"
+                                         style="background: #f5fbff; border: 1px dashed #b9def7;">
+                                        <div class="small fw-bold mb-1" style="color: #0d6efd;">
+                                            <i class="fa-solid fa-circle-info me-1"></i> Já efetuou o pagamento?
+                                        </div>
+                                        <div class="small text-muted" style="line-height: 1.45;">
+                                            Se você já concluiu o pagamento do PIX e o status ainda não foi atualizado,
+                                            clique no botão acima para consultar novamente.
+                                        </div>
+                                    </div>
+
                                     <!-- STATUS (começa oculto) -->
                                     <div id="pixStatusBox" class="mt-3 d-none">
                                         <div class="alert alert-warning border-0 rounded-4 mb-0">
@@ -431,21 +480,23 @@
                     <div id="step3-cartao" class="d-none mb-5">
                         <div class="bg-white p-4 rounded-4 border shadow-sm text-center">
                             <i class="fa-solid fa-credit-card fa-3x mb-3" style="color: #6f42c1;"></i>
+
                             <h5 class="fw-bold">Pagamento Online</h5>
-                            <p class="text-muted small px-lg-5">
-                                Clique no botão abaixo para abrir nosso checkout seguro e realizar o pagamento do sinal com seu cartão de crédito.
+                            <p class="text-muted small px-lg-5" id="cartaoDescricaoPagamento">
+                                Clique no botão abaixo para abrir nosso checkout seguro e realizar o pagamento.
                             </p>
 
                             <input type="hidden" id="cartaoPedidoId" />
+                            <input type="hidden" id="cartaoTipoCobranca" />
 
                             <div id="cartaoStatusBox" class="d-none mb-3"></div>
 
                             <div class="alert border-0 rounded-4 mb-4 text-start"
-                                style="background-color: #f5efff; border-left: 4px solid #6f42c1 !important;">
+                                 style="background-color: #f5efff; border-left: 4px solid #6f42c1 !important;">
                                 <div class="d-flex align-items-start">
                                     <i class="fa-solid fa-shield-check me-2 mt-1" style="color: #6f42c1;"></i>
                                     <div style="font-size: 0.8rem; line-height: 1.4;">
-                                        O pagamento do sinal poderá ser realizado em até <strong>24 horas</strong>.
+                                        O pagamento poderá ser realizado em até <strong>24 horas</strong>.
                                         Após a aprovação da transação, o sistema identificará automaticamente a confirmação do pagamento.
                                         Caso prefira, você pode fechar esta tela e acompanhar o status em
                                         <strong>Acompanhar pedidos</strong>.
@@ -455,9 +506,20 @@
 
                             <div class="card bg-light border-0 rounded-4 p-3 mb-4 text-start">
                                 <div class="d-flex justify-content-between mb-2 small">
-                                    <span>Sinal (Cartão)</span>
-                                    <span class="fw-bold" id="cartaoValorSinal">@Model.Carrinho.ValorSinal.ToString("C", pt)</span>
+                                    <span id="cartaoLabelCobranca">Pagamento</span>
+                                    <span class="fw-bold" id="cartaoValorCobranca">R$ 0,00</span>
                                 </div>
+
+                                <div class="d-flex justify-content-between small text-muted mb-2">
+                                    <span>Total do pedido</span>
+                                    <span id="cartaoTotalPedido">R$ 0,00</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between small text-muted mb-2">
+                                    <span>Restante na retirada</span>
+                                    <span id="cartaoValorRestanteRetirada">R$ 0,00</span>
+                                </div>
+
                                 <div class="d-flex justify-content-between small text-muted">
                                     <span>Taxa de processamento</span>
                                     <span>R$ 0,00</span>
@@ -470,6 +532,24 @@
                                     style="background-color: #6f42c1; border: none;">
                                 <i class="fa-solid fa-lock me-2"></i> Abrir Checkout Seguro
                             </button>
+
+                            <div class="mt-3 p-3 rounded-4 text-start"
+                                 style="background: #faf7ff; border: 1px dashed #d9c9ff;">
+                                <div class="small fw-bold mb-1" style="color: #6f42c1;">
+                                    <i class="fa-solid fa-circle-info me-1"></i> Já efetuou o pagamento?
+                                </div>
+                                <div class="small text-muted mb-2" style="line-height: 1.45;">
+                                    Se você já concluiu o pagamento no checkout e o status ainda não foi atualizado,
+                                    clique no botão abaixo para consultar novamente.
+                                </div>
+
+                                <button type="button"
+                                        id="btnJaPagueiCartao"
+                                        class="btn btn-outline-primary w-100 rounded-4 fw-bold"
+                                        style="border-color: #6f42c1; color: #6f42c1;">
+                                    <i class="fa-solid fa-rotate-right me-1"></i> Já paguei / Atualizar status
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -497,4 +577,49 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
 <script src="~/js/pedido/finalizar-pedido-wizard.js" asp-append-version="true"></script>
+<script>
+    function brl(valor) {
+        return Number(valor || 0).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
 
+    function atualizarResumoTipoCobranca() {
+        const tipoCobranca = ($("#selectTipoCobranca").val() || "1").toString();
+
+        const total = Number(@Model.Carrinho.Total.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        const valorSinal = Number(@Model.Carrinho.ValorSinal.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        const valorRestante = Number(@Model.Carrinho.ValorRestanteRetirada.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+        const ehSinal = tipoCobranca === "1" || tipoCobranca.toLowerCase() === "sinal";
+
+        if (ehSinal) {
+            $("#labelResumoPagamentoAgora").text("Pagar agora (Sinal 50%)");
+            $("#resumoAdiantamento").text(brl(valorSinal));
+            $("#barraResumoPagamento").css("width", "50%");
+            $("#textoResumoRestante").html(`O restante (<b>${brl(valorRestante)}</b>) será pago no momento da retirada.`);
+
+            $("#textoMsgPix").html('Ao confirmar, você visualizará o <b>QR Code</b>. O sinal de 50% é necessário para validar sua reserva.');
+            $("#rodapeMsgPix").text('Expira em 30 min. O pedido é cancelado se não houver pagamento.');
+
+            $("#textoMsgCartao").html('Você será redirecionado para o nosso <b>ambiente seguro</b> de pagamentos para processar o sinal de 50%.');
+            $("#rodapeMsgCartao").text('Sua transação é criptografada e 100% segura.');
+        } else {
+            $("#labelResumoPagamentoAgora").text("Pagar agora (Pagamento total)");
+            $("#resumoAdiantamento").text(brl(total));
+            $("#barraResumoPagamento").css("width", "100%");
+            $("#textoResumoRestante").html(`O restante (<b>${brl(0)}</b>) será pago no momento da retirada.`);
+
+            $("#textoMsgPix").html('Ao confirmar, você visualizará o <b>QR Code</b> para quitar o valor total do pedido.');
+            $("#rodapeMsgPix").text('Expira em 30 min. O pedido será cancelado se o pagamento total não for concluído.');
+
+            $("#textoMsgCartao").html('Você será redirecionado para o nosso <b>ambiente seguro</b> de pagamentos para quitar o valor total do pedido.');
+            $("#rodapeMsgCartao").text('Sua transação é criptografada e 100% segura.');
+        }
+    }
+
+    $(document).on("change", "#selectTipoCobranca", function () {
+        atualizarResumoTipoCobranca();
+    });
+</script>

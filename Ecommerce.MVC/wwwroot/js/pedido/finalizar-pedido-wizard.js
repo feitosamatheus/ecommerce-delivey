@@ -478,6 +478,81 @@
         });
     });
 
+    $(document).on("click", "#btnJaPagueiCartao", function () {
+        const $btn = $(this);
+        const $statusBox = $("#cartaoStatusBox");
+        const pedidoId = $("#cartaoPedidoId").val() || $("#pixPedidoId").val();
+
+        if (!pedidoId) {
+            $statusBox.removeClass("d-none").html(`
+            <div class="alert alert-danger border-0 rounded-4 mb-0">
+                <i class="fa-solid fa-circle-xmark me-1"></i>
+                Não foi possível identificar o pedido para consultar o pagamento.
+            </div>
+        `);
+            return;
+        }
+
+        $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-2"></span> Consultando...');
+
+        $statusBox.removeClass("d-none").html(`
+        <div class="alert alert-warning border-0 rounded-4 mb-0">
+            <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
+            Verificando pagamento... aguarde.
+        </div>
+    `);
+
+        $.ajax({
+            url: "/api/Pagamento/confirmar-pagamento",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({ pedidoId: pedidoId }),
+            success: function (response) {
+                if (response.success) {
+                    $statusBox.html(`
+                    <div class="alert alert-success border-0 rounded-4 mb-0 animate__animated animate__fadeIn">
+                        <i class="fa-solid fa-circle-check me-1"></i>
+                        ${response.message || "Pagamento confirmado com sucesso."}
+                    </div>
+                `);
+
+                    $btn.prop("disabled", true).html('<i class="fa-solid fa-circle-check me-1"></i> Pagamento confirmado');
+
+                    if (response.redirectUrl) {
+                        setTimeout(() => {
+                            window.location.href = response.redirectUrl;
+                        }, 2000);
+                    }
+                } else {
+                    $statusBox.html(`
+                    <div class="alert alert-danger border-0 rounded-4 mb-0">
+                        <i class="fa-solid fa-circle-xmark me-1"></i>
+                        ${response.message || "Pagamento ainda não identificado. Tente novamente em instantes."}
+                    </div>
+                `);
+
+                    $btn.prop("disabled", false).html('<i class="fa-solid fa-rotate-right me-1"></i> Já paguei / Atualizar status');
+                }
+            },
+            error: function (xhr) {
+                let mensagem = "Erro ao conectar com o servidor. Tente novamente.";
+
+                if (xhr?.responseJSON?.message) {
+                    mensagem = xhr.responseJSON.message;
+                }
+
+                $statusBox.html(`
+                <div class="alert alert-danger border-0 rounded-4 mb-0">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                    ${mensagem}
+                </div>
+            `);
+
+                $btn.prop("disabled", false).html('<i class="fa-solid fa-rotate-right me-1"></i> Já paguei / Atualizar status');
+            }
+        });
+    });
+
     // Função auxiliar para resetar o botão caso o pagamento falhe
     function resetBtn($btn) {
         $btn.prop('disabled', false).html('<i class="fa-solid fa-circle-check me-1"></i> Já paguei via PIX');
@@ -585,33 +660,10 @@
         return 'unknown';
     }
 
-    // document.getElementById('ccNumber').addEventListener('input', function(e) {
-    //     let value = e.target.value;
-    //     let bandeira = identificarBandeira(value);
-        
-    //     // Elemento do ícone (ajuste o ID conforme seu HTML)
-    //     const iconContainer = document.getElementById('cardBrandIcon');
-        
-    //     // Mapeamento de ícones do FontAwesome
-    //     const icons = {
-    //         visa: 'fa-brands fa-cc-visa text-primary',
-    //         mastercard: 'fa-brands fa-cc-mastercard text-danger',
-    //         amex: 'fa-brands fa-cc-amex text-info',
-    //         diners: 'fa-brands fa-cc-diners-club text-secondary',
-    //         elo: 'fa-solid fa-credit-card text-warning', // Elo geralmente não tem ícone oficial no FA gratuito
-    //         hipercard: 'fa-solid fa-credit-card text-danger',
-    //         unknown: 'fa-solid fa-credit-card opacity-50'
-    //     };
-
-    //     // Atualiza a classe do ícone
-    //     iconContainer.innerHTML = `<i class="${icons[bandeira] || icons.unknown} fa-lg"></i>`;
-        
-    //     // Opcional: Salvar a bandeira num campo oculto para enviar ao backend
-    //     // document.getElementById('cartaoBandeira').value = bandeira;
-    // });
-
     //-----------------------------------------------------------
     async function carregarCartaoPedido(pedidoId) {
+        const tipoCobranca = Number($("#selectTipoCobranca").val() || 1);
+
         const response = await fetch("/api/Pagamento/criar-cobranca-cartao", {
             method: "POST",
             headers: {
@@ -619,12 +671,15 @@
             },
             body: JSON.stringify({
                 pedidoId: pedidoId,
+                tipoCobranca: tipoCobranca,
                 description: "Pagamento do pedido"
             })
         });
 
-        const res = await response.json();
 
+        const res = await response.json();
+        preencherResumoPagamentoPorCobranca(res);
+        preencherStepCartao(res);
         await iniciarConexaoPagamento(res.payment.id);
         
         if (!response.ok || !res.sucesso) {
@@ -638,6 +693,8 @@
         try {
             addLoading?.("Gerando PIX...");
 
+            const tipoCobranca = Number($("#selectTipoCobranca").val() || 1);
+
             const response = await fetch("/api/Pagamento/criar-cliente-cobranca-pix", {
                 method: "POST",
                 headers: {
@@ -645,6 +702,7 @@
                 },
                 body: JSON.stringify({
                     pedidoId: pedidoId,
+                    tipoCobranca: tipoCobranca,
                     description: "Pagamento do pedido " + pedidoId
                 })
             });
@@ -676,6 +734,8 @@
     }
 
     function preencherStepPix(res) {
+        preencherResumoPagamentoPorCobranca(res);
+
         const payment = res.payment || {};
         const pixQrCode = res.pixQrCode || {};
 
@@ -700,6 +760,34 @@
         if (res.pedidoPagamentoExistente) {
             uiNotify?.toast?.info?.("PIX já existente para este pedido. Reutilizando cobrança.");
         }
+    }
+
+    function preencherStepCartao(res) {
+        const payment = res?.payment || {};
+        const resumo = res?.resumoPedido || {};
+
+        const tipoCobranca = (resumo.tipoCobranca || payment.tipoCobranca || "Sinal").toString();
+        const valor = Number(payment.value || 0);
+        const totalPedido = Number(resumo.totalPedido || 0);
+        const valorRestanteRetirada = Number(resumo.valorRestanteRetirada || 0);
+
+        const ehSinal = tipoCobranca.toLowerCase() === "sinal";
+
+        $("#cartaoTipoCobranca").val(tipoCobranca);
+
+        $("#cartaoDescricaoPagamento").text(
+            ehSinal
+                ? "Clique no botão abaixo para abrir nosso checkout seguro e realizar o pagamento do sinal com seu cartão."
+                : "Clique no botão abaixo para abrir nosso checkout seguro e realizar o pagamento total com seu cartão."
+        );
+
+        $("#cartaoLabelCobranca").text(
+            ehSinal ? "Sinal (Cartão)" : "Pagamento (Cartão)"
+        );
+
+        $("#cartaoValorCobranca").text(formatBRL(valor));
+        $("#cartaoTotalPedido").text(formatBRL(totalPedido));
+        $("#cartaoValorRestanteRetirada").text(formatBRL(valorRestanteRetirada));
     }
 
     let pagamentoConnection = null;
@@ -826,4 +914,25 @@
 
         window.open(invoiceUrl, "_blank");
     });
+
+    function preencherResumoPagamentoPorCobranca(res) {
+        const payment = res?.payment || {};
+        const resumo = res?.resumoPedido || {};
+
+        const tipoCobranca = (resumo.tipoCobranca || payment.tipoCobranca || "Sinal").toString();
+        const tituloPagamento = resumo.tituloPagamento || (tipoCobranca.toLowerCase() === "sinal"
+            ? "Pagamento do Sinal (50%)"
+            : "Pagamento");
+
+        const valorPagarAgora = Number(payment.value || 0);
+        const totalPedido = Number(resumo.totalPedido || 0);
+        const valorRestanteRetirada = Number(resumo.valorRestanteRetirada || 0);
+
+        $("#wizardTipoCobranca").val(tipoCobranca);
+        $("#wizardTituloPagamento").text(tituloPagamento);
+        $("#wizardValorPagarAgora").text(formatBRL(valorPagarAgora));
+        $("#wizardValorRestanteRetirada").text(formatBRL(valorRestanteRetirada));
+        $("#wizardTotalPedido").text(formatBRL(totalPedido));
+    }
+
 })();

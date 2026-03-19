@@ -187,6 +187,7 @@ public class PedidoController : Controller
                         && p.Status != EPedidoStatus.Cancelado)
             .Select(p => new
             {
+                p.Id,
                 p.Codigo,
                 p.CriadoEmUtc,
                 p.Status,
@@ -195,17 +196,28 @@ public class PedidoController : Controller
                 p.Observacao,
                 p.Subtotal,
                 p.Total,
-                Pagamento = p.PedidoPagamento == null ? null : new
-                {
-                    p.PedidoPagamento.Gateway,
-                    p.PedidoPagamento.TipoPagamento,
-                    p.PedidoPagamento.Status,
-                    p.PedidoPagamento.PixPayload,
-                    p.PedidoPagamento.PixEncodedImage,
-                    p.PedidoPagamento.PixExpirationDate,
-                    p.PedidoPagamento.GatewayPaymentId,
-                    p.PedidoPagamento.InvoiceUrl
-                },
+
+                Pagamentos = p.Pagamentos
+                    .OrderBy(pg => pg.Sequencia)
+                    .Select(pg => new
+                    {
+                        pg.Id,
+                        pg.Gateway,
+                        pg.TipoPagamento,
+                        pg.Status,
+                        pg.Valor,
+                        pg.TipoCobranca,
+                        pg.Sequencia,
+                        pg.PixPayload,
+                        pg.PixEncodedImage,
+                        pg.PixExpirationDate,
+                        pg.GatewayPaymentId,
+                        pg.InvoiceUrl,
+                        pg.CriadoEmUtc,
+                        pg.PagoEmUtc
+                    })
+                    .ToList(),
+
                 Itens = p.Itens.Select(i => new
                 {
                     i.ProdutoNomeSnapshot,
@@ -224,8 +236,12 @@ public class PedidoController : Controller
         if (pedidoEntity == null)
             return NotFound("Pedido não encontrado.");
 
+        var valorSinal = Math.Round(pedidoEntity.Total * 0.50m, 2);
+        var valorRestante = pedidoEntity.Total - valorSinal;
+
         var pedido = new PedidosEmAndamentoViewModel
         {
+            Id = pedidoEntity.Id,
             Codigo = pedidoEntity.Codigo,
             CriadoEmUtc = pedidoEntity.CriadoEmUtc,
             Status = pedidoEntity.Status,
@@ -236,24 +252,30 @@ public class PedidoController : Controller
             Observacao = pedidoEntity.Observacao,
             Subtotal = pedidoEntity.Subtotal,
             Total = pedidoEntity.Total,
-            ValorSinal = Math.Round(pedidoEntity.Total * 0.50m, 2),
-            ValorRestanteRetirada = pedidoEntity.Total - Math.Round(pedidoEntity.Total * 0.50m, 2),
+            ValorSinal = valorSinal,
+            ValorRestanteRetirada = valorRestante,
 
-            Pagamento = pedidoEntity.Pagamento == null ? null : new PedidoPagamentoViewModel
+            Pagamentos = pedidoEntity.Pagamentos.Select(pg => new PedidoPagamentoViewModel
             {
-                Gateway = pedidoEntity.Pagamento.Gateway,
-                TipoPagamento = pedidoEntity.Pagamento.TipoPagamento,
-                Status = pedidoEntity.Pagamento.Status,
-                StatusPagamento = MapStatusPagamentoTexto(pedidoEntity.Pagamento.Status),
-                PixCopiaCola = pedidoEntity.Pagamento.PixPayload,
-                PixQrCodeUrl = pedidoEntity.Pagamento.PixEncodedImage,
-                PixExpiraEm = pedidoEntity.Pagamento.PixExpirationDate.HasValue
-                    ? pedidoEntity.Pagamento.PixExpirationDate.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                Gateway = pg.Gateway,
+                TipoPagamento = pg.TipoPagamento,
+                Status = pg.Status,
+                StatusPagamento = MapStatusPagamentoTexto(pg.Status),
+                Valor = pg.Valor,
+                TipoCobranca = pg.TipoCobranca,
+                TipoCobrancaTexto = MapTipoCobrancaTexto(pg.TipoCobranca),
+                Sequencia = pg.Sequencia,
+                PixCopiaCola = pg.PixPayload,
+                PixQrCodeUrl = pg.PixEncodedImage,
+                PixExpiraEm = pg.PixExpirationDate.HasValue
+                    ? pg.PixExpirationDate.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
                     : null,
-                PixIdentificador = pedidoEntity.Pagamento.GatewayPaymentId,
+                GatewayPaymentId = pg.GatewayPaymentId,
                 PixBeneficiario = "Barriga Cheia Ltda.",
-                InvoiceUrl = pedidoEntity.Pagamento.InvoiceUrl
-            },
+                InvoiceUrl = pg.InvoiceUrl,
+                CriadoEmUtc = pg.CriadoEmUtc,
+                PagoEmUtc = pg.PagoEmUtc
+            }).ToList(),
 
             Itens = pedidoEntity.Itens.Select(i => new PedidosEmAndamentoItemViewModel
             {
@@ -270,6 +292,18 @@ public class PedidoController : Controller
         };
 
         return PartialView("_DetalhesPedidoEmAndamento", pedido);
+    }
+
+    private string MapTipoCobrancaTexto(ETipoCobrancaPedido tipoCobranca)
+    {
+        return tipoCobranca switch
+        {
+            ETipoCobrancaPedido.Sinal => "Sinal",
+            ETipoCobrancaPedido.Saldo => "Saldo",
+            ETipoCobrancaPedido.Complemento => "Complemento",
+            ETipoCobrancaPedido.Ajuste => "Ajuste",
+            _ => "Cobrança"
+        };
     }
 
     private static string MapStatusTexto(EPedidoStatus status)

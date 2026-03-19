@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -39,9 +40,9 @@ public class PagamentoController : Controller
                     sucesso = false,
                     mensagem = "Dados inválidos."
                 });
-            }
+            } 
 
-            var clienteIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var clienteIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(clienteIdClaim) || !Guid.TryParse(clienteIdClaim, out var clienteId))
             {
@@ -53,7 +54,8 @@ public class PagamentoController : Controller
                 });
             }
 
-            var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.Id == clienteId);
+            var cliente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.Id == clienteId);
 
             if (cliente == null)
             {
@@ -66,7 +68,7 @@ public class PagamentoController : Controller
             }
 
             var pedido = await _context.Pedidos
-                .Include(p => p.PedidoPagamento)
+                .Include(p => p.Pagamentos)
                 .FirstOrDefaultAsync(p => p.Id == model.PedidoId && p.ClienteId == clienteId);
 
             if (pedido == null)
@@ -79,7 +81,25 @@ public class PagamentoController : Controller
                 });
             }
 
-            if (pedido.ValorEntrada < 5m)
+            var tipoCobranca = model.TipoCobranca; 
+
+            if (tipoCobranca != ETipoCobrancaPedido.Sinal && tipoCobranca != ETipoCobrancaPedido.Saldo)
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Tipo de cobrança inválido para este fluxo."
+                });
+            }
+
+            var valorCobranca = tipoCobranca switch
+            {
+                ETipoCobrancaPedido.Sinal => pedido.ValorEntrada,
+                ETipoCobrancaPedido.Saldo => pedido.Total,
+                _ => pedido.ValorEntrada
+            };
+
+            if (valorCobranca < 5m)
             {
                 return Json(new
                 {
@@ -88,27 +108,54 @@ public class PagamentoController : Controller
                 });
             }
 
-            if (pedido.PedidoPagamento != null)
+            var pagamentoExistente = pedido.Pagamentos
+    .OrderBy(p => p.Sequencia)
+    .FirstOrDefault(p =>
+        p.TipoCobranca == tipoCobranca &&
+        !string.IsNullOrWhiteSpace(p.GatewayPaymentId) &&
+        (p.Status == EStatusPagamento.Pending
+         || p.Status == EStatusPagamento.AwaitingRiskAnalysis
+         || p.Status == EStatusPagamento.DunningRequested
+         || p.Status == EStatusPagamento.Overdue
+         || p.Status == EStatusPagamento.Received
+         || p.Status == EStatusPagamento.Confirmed
+         || p.Status == EStatusPagamento.ReceivedInCash));
+
+            if (pagamentoExistente != null)
             {
                 return Json(new
                 {
                     sucesso = true,
                     pedidoPagamentoExistente = true,
-                    customerId = pedido.PedidoPagamento.GatewayCustomerId,
+                    customerId = pagamentoExistente.GatewayCustomerId,
                     payment = new
                     {
-                        id = pedido.PedidoPagamento.GatewayPaymentId,
-                        status = pedido.PedidoPagamento.Status.ToString(),
-                        value = pedido.PedidoPagamento.Valor,
-                        dueDate = pedido.PedidoPagamento.PixExpirationDate,
-                        invoiceUrl = pedido.PedidoPagamento.InvoiceUrl,
-                        billingType = pedido.PedidoPagamento.TipoPagamento
+                        id = pagamentoExistente.GatewayPaymentId,
+                        status = pagamentoExistente.Status.ToString(),
+                        value = pagamentoExistente.Valor,
+                        dueDate = pagamentoExistente.PixExpirationDate,
+                        invoiceUrl = pagamentoExistente.InvoiceUrl,
+                        billingType = pagamentoExistente.TipoPagamento,
+                        tipoCobranca = pagamentoExistente.TipoCobranca.ToString(),
+                        sequencia = pagamentoExistente.Sequencia
+                    },
+                    resumoPedido = new
+                    {
+                        totalPedido = pedido.Total,
+                        valorSinal = pedido.ValorEntrada,
+                        valorRestanteRetirada = tipoCobranca == ETipoCobrancaPedido.Saldo
+                            ? 0
+                            : (pedido.Total - pedido.ValorEntrada),
+                        tipoCobranca = tipoCobranca.ToString(),
+                        tituloPagamento = tipoCobranca == ETipoCobrancaPedido.Sinal
+                            ? "Pagamento do Sinal (50%)"
+                            : "Pagamento"
                     },
                     pixQrCode = new
                     {
-                        encodedImage = pedido.PedidoPagamento.PixEncodedImage,
-                        payload = pedido.PedidoPagamento.PixPayload,
-                        expirationDate = pedido.PedidoPagamento.PixExpirationDate,
+                        encodedImage = pagamentoExistente.PixEncodedImage,
+                        payload = pagamentoExistente.PixPayload,
+                        expirationDate = pagamentoExistente.PixExpirationDate,
                         description = "QR Code Pix já gerado para este pedido."
                     }
                 });
@@ -137,14 +184,14 @@ public class PagamentoController : Controller
                 await _context.SaveChangesAsync();
             }
 
-            var pagamento = await CriarCobrancaPix(
+            var pagamentoAsaas = await CriarCobrancaPix(
                 customerId,
-                pedido.ValorEntrada,
+                valorCobranca,
                 DateTime.UtcNow.AddHours(24),
                 ""
             );
 
-            if (pagamento == null || string.IsNullOrWhiteSpace(pagamento.Id))
+            if (pagamentoAsaas == null || string.IsNullOrWhiteSpace(pagamentoAsaas.Id))
             {
                 return Json(new
                 {
@@ -154,7 +201,7 @@ public class PagamentoController : Controller
                 });
             }
 
-            var qrCode = await ObterQrCodePix(pagamento.Id);
+            var qrCode = await ObterQrCodePix(pagamentoAsaas.Id);
 
             if (qrCode == null)
             {
@@ -163,8 +210,8 @@ public class PagamentoController : Controller
                     sucesso = false,
                     mensagem = "Cobrança criada, mas não foi possível obter o QR Code Pix.",
                     customerId = customerId,
-                    paymentId = pagamento.Id,
-                    payment = pagamento
+                    paymentId = pagamentoAsaas.Id,
+                    payment = pagamentoAsaas
                 });
             }
 
@@ -176,19 +223,25 @@ public class PagamentoController : Controller
                 expiracaoPixUtc = dto.UtcDateTime;
             }
 
+            var proximaSequencia = pedido.Pagamentos.Any()
+                ? pedido.Pagamentos.Max(p => p.Sequencia) + 1
+                : 1;
+
             var pedidoPagamento = new PedidoPagamento
             {
                 PedidoId = pedido.Id,
                 Gateway = "ASAAS",
                 TipoPagamento = "PIX",
                 GatewayCustomerId = customerId,
-                GatewayPaymentId = pagamento.Id,
-                Valor = pagamento.Value,
-                Status = MapearStatusAsaas(pagamento.Status),
+                GatewayPaymentId = pagamentoAsaas.Id,
+                Valor = pagamentoAsaas.Value,
+                Status = MapearStatusAsaas(pagamentoAsaas.Status),
+                TipoCobranca = tipoCobranca,
+                Sequencia = proximaSequencia,
                 PixPayload = qrCode.Payload,
                 PixEncodedImage = qrCode.EncodedImage,
                 PixExpirationDate = expiracaoPixUtc,
-                InvoiceUrl = pagamento.InvoiceUrl,
+                InvoiceUrl = pagamentoAsaas.InvoiceUrl,
                 CriadoEmUtc = DateTime.UtcNow
             };
 
@@ -204,17 +257,31 @@ public class PagamentoController : Controller
                 customerId = customerId,
                 payment = new
                 {
-                    id = pagamento.Id,
-                    status = pagamento.Status,
-                    value = pagamento.Value,
-                    dueDate = pagamento.DueDate,
-                    invoiceUrl = pagamento.InvoiceUrl,
-                    billingType = pagamento.BillingType
+                    id = pedidoPagamento.GatewayPaymentId,
+                    status = pagamentoAsaas.Status,
+                    value = pedidoPagamento.Valor,
+                    dueDate = pedidoPagamento.PixExpirationDate,
+                    invoiceUrl = pedidoPagamento.InvoiceUrl,
+                    billingType = pedidoPagamento.TipoPagamento,
+                    tipoCobranca = pedidoPagamento.TipoCobranca.ToString(),
+                    sequencia = pedidoPagamento.Sequencia
+                },
+                resumoPedido = new
+                {
+                    totalPedido = pedido.Total,
+                    valorSinal = pedido.ValorEntrada,
+                    valorRestanteRetirada = tipoCobranca == ETipoCobrancaPedido.Saldo
+                        ? 0
+                        : (pedido.Total - pedido.ValorEntrada),
+                    tipoCobranca = tipoCobranca.ToString(),
+                    tituloPagamento = tipoCobranca == ETipoCobrancaPedido.Sinal
+                        ? "Pagamento do Sinal (50%)"
+                        : "Pagamento"
                 },
                 pixQrCode = new
                 {
-                    encodedImage = qrCode.EncodedImage,
-                    payload = qrCode.Payload,
+                    encodedImage = pedidoPagamento.PixEncodedImage,
+                    payload = pedidoPagamento.PixPayload,
                     expirationDate = expiracaoVisualUtc,
                     description = qrCode.Description
                 }
@@ -247,7 +314,7 @@ public class PagamentoController : Controller
                 });
             }
 
-            var clienteIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var clienteIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(clienteIdClaim) || !Guid.TryParse(clienteIdClaim, out var clienteId))
             {
@@ -259,7 +326,8 @@ public class PagamentoController : Controller
                 });
             }
 
-            var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.Id == clienteId);
+            var cliente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.Id == clienteId);
 
             if (cliente == null)
             {
@@ -272,7 +340,7 @@ public class PagamentoController : Controller
             }
 
             var pedido = await _context.Pedidos
-                .Include(p => p.PedidoPagamento)
+                .Include(p => p.Pagamentos)
                 .FirstOrDefaultAsync(p => p.Id == model.PedidoId && p.ClienteId == clienteId);
 
             if (pedido == null)
@@ -285,7 +353,27 @@ public class PagamentoController : Controller
                 });
             }
 
-            if (pedido.ValorEntrada < 5m)
+            pedido.Pagamentos ??= new List<PedidoPagamento>();
+
+            var tipoCobranca = model.TipoCobranca;
+
+            if (tipoCobranca != ETipoCobrancaPedido.Sinal && tipoCobranca != ETipoCobrancaPedido.Saldo)
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Tipo de cobrança inválido para este fluxo."
+                });
+            }
+
+            var valorCobranca = tipoCobranca switch
+            {
+                ETipoCobrancaPedido.Sinal => pedido.ValorEntrada,
+                ETipoCobrancaPedido.Saldo => pedido.Total,
+                _ => pedido.ValorEntrada
+            };
+
+            if (valorCobranca < 5m)
             {
                 return Json(new
                 {
@@ -294,19 +382,48 @@ public class PagamentoController : Controller
                 });
             }
 
-            if (pedido.PedidoPagamento != null)
+            var pagamentoExistente = pedido.Pagamentos
+                .OrderBy(p => p.Sequencia)
+                .FirstOrDefault(p =>
+                    p.TipoCobranca == tipoCobranca &&
+                    !string.IsNullOrWhiteSpace(p.GatewayPaymentId) &&
+                    (p.Status == EStatusPagamento.Pending
+                     || p.Status == EStatusPagamento.AwaitingRiskAnalysis
+                     || p.Status == EStatusPagamento.DunningRequested
+                     || p.Status == EStatusPagamento.Overdue
+                     || p.Status == EStatusPagamento.Received
+                     || p.Status == EStatusPagamento.Confirmed
+                     || p.Status == EStatusPagamento.ReceivedInCash));
+
+            if (pagamentoExistente != null)
             {
                 return Json(new
                 {
                     sucesso = true,
                     pedidoPagamentoExistente = true,
+                    customerId = pagamentoExistente.GatewayCustomerId,
                     payment = new
                     {
-                        id = pedido.PedidoPagamento.GatewayPaymentId,
-                        status = pedido.PedidoPagamento.Status.ToString(),
-                        value = pedido.PedidoPagamento.Valor,
-                        invoiceUrl = pedido.PedidoPagamento.InvoiceUrl,
-                        billingType = pedido.PedidoPagamento.TipoPagamento
+                        id = pagamentoExistente.GatewayPaymentId,
+                        status = pagamentoExistente.Status.ToString(),
+                        value = pagamentoExistente.Valor,
+                        dueDate = (DateTime?)null,
+                        invoiceUrl = pagamentoExistente.InvoiceUrl,
+                        billingType = pagamentoExistente.TipoPagamento,
+                        tipoCobranca = pagamentoExistente.TipoCobranca.ToString(),
+                        sequencia = pagamentoExistente.Sequencia
+                    },
+                    resumoPedido = new
+                    {
+                        totalPedido = pedido.Total,
+                        valorSinal = pedido.ValorEntrada,
+                        valorRestanteRetirada = tipoCobranca == ETipoCobrancaPedido.Saldo
+                            ? 0
+                            : (pedido.Total - pedido.ValorEntrada),
+                        tipoCobranca = tipoCobranca.ToString(),
+                        tituloPagamento = tipoCobranca == ETipoCobrancaPedido.Sinal
+                            ? "Pagamento do Sinal (50%)"
+                            : "Pagamento"
                     }
                 });
             }
@@ -334,14 +451,14 @@ public class PagamentoController : Controller
                 await _context.SaveChangesAsync();
             }
 
-            var pagamento = await CriarCobrancaCartao(
+            var pagamentoAsaas = await CriarCobrancaCartao(
                 customerId,
-                pedido.ValorEntrada,
+                valorCobranca,
                 DateTime.UtcNow.AddDays(1),
                 ""
             );
 
-            if (pagamento == null || string.IsNullOrWhiteSpace(pagamento.Id))
+            if (pagamentoAsaas == null || string.IsNullOrWhiteSpace(pagamentoAsaas.Id))
             {
                 return Json(new
                 {
@@ -350,16 +467,22 @@ public class PagamentoController : Controller
                 });
             }
 
+            var proximaSequencia = pedido.Pagamentos.Any()
+                ? pedido.Pagamentos.Max(p => p.Sequencia) + 1
+                : 1;
+
             var pedidoPagamento = new PedidoPagamento
             {
                 PedidoId = pedido.Id,
                 Gateway = "ASAAS",
                 TipoPagamento = "CREDIT_CARD",
                 GatewayCustomerId = customerId,
-                GatewayPaymentId = pagamento.Id,
-                Valor = pagamento.Value,
-                Status = MapearStatusAsaas(pagamento.Status),
-                InvoiceUrl = pagamento.InvoiceUrl,
+                GatewayPaymentId = pagamentoAsaas.Id,
+                Valor = pagamentoAsaas.Value,
+                Status = MapearStatusAsaas(pagamentoAsaas.Status),
+                TipoCobranca = tipoCobranca,
+                Sequencia = proximaSequencia,
+                InvoiceUrl = pagamentoAsaas.InvoiceUrl,
                 CriadoEmUtc = DateTime.UtcNow
             };
 
@@ -370,14 +493,29 @@ public class PagamentoController : Controller
             {
                 sucesso = true,
                 pedidoPagamentoExistente = false,
+                customerId = customerId,
                 payment = new
                 {
-                    id = pagamento.Id,
-                    status = pagamento.Status,
-                    value = pagamento.Value,
-                    dueDate = pagamento.DueDate,
-                    invoiceUrl = pagamento.InvoiceUrl,
-                    billingType = pagamento.BillingType
+                    id = pedidoPagamento.GatewayPaymentId,
+                    status = pagamentoAsaas.Status,
+                    value = pedidoPagamento.Valor,
+                    dueDate = pagamentoAsaas.DueDate,
+                    invoiceUrl = pedidoPagamento.InvoiceUrl,
+                    billingType = pedidoPagamento.TipoPagamento,
+                    tipoCobranca = pedidoPagamento.TipoCobranca.ToString(),
+                    sequencia = pedidoPagamento.Sequencia
+                },
+                resumoPedido = new
+                {
+                    totalPedido = pedido.Total,
+                    valorSinal = pedido.ValorEntrada,
+                    valorRestanteRetirada = tipoCobranca == ETipoCobrancaPedido.Saldo
+                        ? 0
+                        : (pedido.Total - pedido.ValorEntrada),
+                    tipoCobranca = tipoCobranca.ToString(),
+                    tituloPagamento = tipoCobranca == ETipoCobrancaPedido.Sinal
+                        ? "Pagamento do Sinal (50%)"
+                        : "Pagamento"
                 }
             });
         }
@@ -408,9 +546,7 @@ public class PagamentoController : Controller
                 });
             }
 
-            var pedidoId = request.PedidoId;
-
-            var clienteIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var clienteIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(clienteIdClaim) || !Guid.TryParse(clienteIdClaim, out var clienteId))
             {
@@ -423,8 +559,8 @@ public class PagamentoController : Controller
             }
 
             var pedido = await _context.Pedidos
-                .Include(p => p.PedidoPagamento)
-                .FirstOrDefaultAsync(p => p.Id == pedidoId && p.ClienteId == clienteId);
+                .Include(p => p.Pagamentos)
+                .FirstOrDefaultAsync(p => p.Id == request.PedidoId && p.ClienteId == clienteId);
 
             if (pedido == null)
             {
@@ -435,18 +571,34 @@ public class PagamentoController : Controller
                 });
             }
 
-            if (pedido.PedidoPagamento == null || string.IsNullOrWhiteSpace(pedido.PedidoPagamento.GatewayPaymentId))
+            pedido.Pagamentos ??= new List<PedidoPagamento>();
+
+            var pagamentoAtual = pedido.Pagamentos
+                .OrderBy(p => p.Sequencia)
+                .FirstOrDefault(p =>
+                    !string.IsNullOrWhiteSpace(p.GatewayPaymentId) &&
+                    (p.Status == EStatusPagamento.Pending
+                     || p.Status == EStatusPagamento.AwaitingRiskAnalysis
+                     || p.Status == EStatusPagamento.DunningRequested
+                     || p.Status == EStatusPagamento.Overdue));
+
+            if (pagamentoAtual == null)
+            {
+                pagamentoAtual = pedido.Pagamentos
+                    .OrderByDescending(p => p.Sequencia)
+                    .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.GatewayPaymentId));
+            }
+
+            if (pagamentoAtual == null)
             {
                 return Json(new
                 {
                     success = false,
-                    message = "Nenhuma cobrança PIX encontrada para este pedido."
+                    message = "Nenhuma cobrança encontrada para este pedido."
                 });
             }
 
-            var paymentId = pedido.PedidoPagamento.GatewayPaymentId;
-
-            var pagamentoAsaas = await ConsultarPagamentoAsaas(paymentId);
+            var pagamentoAsaas = await ConsultarPagamentoAsaas(pagamentoAtual.GatewayPaymentId!);
 
             if (pagamentoAsaas == null)
             {
@@ -458,27 +610,42 @@ public class PagamentoController : Controller
             }
 
             var novoStatus = MapearStatusAsaas(pagamentoAsaas.Status);
-            pedido.PedidoPagamento.Status = novoStatus;
+            pagamentoAtual.Status = novoStatus;
 
-            if (novoStatus == EStatusPagamento.Received || novoStatus == EStatusPagamento.Confirmed)
+            if (novoStatus == EStatusPagamento.Received
+                || novoStatus == EStatusPagamento.Confirmed
+                || novoStatus == EStatusPagamento.ReceivedInCash)
             {
-                pedido.Status = EPedidoStatus.Confirmado;
-                await _context.SaveChangesAsync();
+                pagamentoAtual.PagoEmUtc = DateTime.UtcNow;
 
-                return Json(new
+                if (pedido.Status == EPedidoStatus.AguardandoPagamento)
                 {
-                    success = true,
-                    message = "Pagamento confirmado com sucesso.",
-                    redirectUrl = Url.Action("Index", "Home", new { confirmado = true })
-                });
+                    pedido.Status = EPedidoStatus.Confirmado;
+                }
             }
 
             await _context.SaveChangesAsync();
 
+            if (novoStatus == EStatusPagamento.Received
+                || novoStatus == EStatusPagamento.Confirmed
+                || novoStatus == EStatusPagamento.ReceivedInCash)
+            {
+                return Json(new
+                {
+                    success = true,
+                    message = pagamentoAtual.TipoCobranca == ETipoCobrancaPedido.Sinal
+                        ? "Pagamento do sinal confirmado com sucesso."
+                        : "Pagamento confirmado com sucesso.",
+                    tipoCobranca = pagamentoAtual.TipoCobranca.ToString(),
+                    redirectUrl = Url.Action("EmAndamento", "Pedido", new { confirmado = true })
+                });
+            }
+
             return Json(new
             {
                 success = false,
-                message = $"Pagamento ainda não confirmado. Status atual: Pendente"
+                message = $"Pagamento ainda não confirmado. Status atual: {pagamentoAsaas.Status}",
+                tipoCobranca = pagamentoAtual.TipoCobranca.ToString()
             });
         }
         catch (Exception ex)
@@ -508,7 +675,7 @@ public class PagamentoController : Controller
                 });
             }
 
-            var clienteIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var clienteIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(clienteIdClaim) || !Guid.TryParse(clienteIdClaim, out var clienteId))
             {
@@ -521,24 +688,27 @@ public class PagamentoController : Controller
             }
 
             var pedido = await _context.Pedidos
-                .Include(p => p.PedidoPagamento)
+                .Include(p => p.Pagamentos)
                 .FirstOrDefaultAsync(p => p.Id == request.PedidoId && p.ClienteId == clienteId);
 
-            if (pedido == null || pedido.PedidoPagamento == null)
+            if (pedido == null)
             {
                 return Json(new
                 {
                     sucesso = false,
-                    mensagem = "Pedido ou cobrança não encontrada."
+                    mensagem = "Pedido não encontrado."
                 });
             }
 
-            if (pedido.PedidoPagamento.GatewayPaymentId != request.PaymentId)
+            var pedidoPagamento = pedido.Pagamentos
+                .FirstOrDefault(p => p.GatewayPaymentId == request.PaymentId);
+
+            if (pedidoPagamento == null)
             {
                 return Json(new
                 {
                     sucesso = false,
-                    mensagem = "Cobrança inválida para este pedido."
+                    mensagem = "Cobrança não encontrada para este pedido."
                 });
             }
 
@@ -577,11 +747,18 @@ public class PagamentoController : Controller
             }
 
             var novoStatus = MapearStatusAsaas(pagamentoAsaas.Status);
-            pedido.PedidoPagamento.Status = novoStatus;
+            pedidoPagamento.Status = novoStatus;
 
-            if (novoStatus == EStatusPagamento.Received || novoStatus == EStatusPagamento.Confirmed)
+            if (novoStatus == EStatusPagamento.Received
+                || novoStatus == EStatusPagamento.Confirmed
+                || novoStatus == EStatusPagamento.ReceivedInCash)
             {
-                pedido.Status = EPedidoStatus.Confirmado;
+                pedidoPagamento.PagoEmUtc = DateTime.UtcNow;
+
+                if (pedidoPagamento.TipoCobranca == ETipoCobrancaPedido.Sinal)
+                {
+                    pedido.Status = EPedidoStatus.Confirmado;
+                }
             }
 
             await _context.SaveChangesAsync();
@@ -622,9 +799,16 @@ public class PagamentoController : Controller
         var status = MapearStatusAsaas(request.Payment.Status);
         pedidoPagamento.Status = status;
 
-        if (status == EStatusPagamento.Received || status == EStatusPagamento.Confirmed)
+        if (status == EStatusPagamento.Received
+            || status == EStatusPagamento.Confirmed
+            || status == EStatusPagamento.ReceivedInCash)
         {
-            pedidoPagamento.Pedido.Status = EPedidoStatus.Confirmado;
+            pedidoPagamento.PagoEmUtc = DateTime.UtcNow;
+
+            if (pedidoPagamento.TipoCobranca == ETipoCobrancaPedido.Sinal)
+            {
+                pedidoPagamento.Pedido.Status = EPedidoStatus.Confirmado;
+            }
         }
 
         await _context.SaveChangesAsync();
@@ -635,6 +819,8 @@ public class PagamentoController : Controller
             .SendAsync("PagamentoConfirmado", new
             {
                 pedidoId = pedidoPagamento.PedidoId,
+                gatewayPaymentId = pedidoPagamento.GatewayPaymentId,
+                tipoCobranca = pedidoPagamento.TipoCobranca.ToString(),
                 status = request.Payment.Status,
                 redirectUrl = redirectUrl
             });
@@ -770,6 +956,7 @@ public class PagamentoController : Controller
     public class PagamentoViewModel
     {
         public Guid PedidoId { get; set; }
+        public ETipoCobrancaPedido TipoCobranca { get; set; } = ETipoCobrancaPedido.Saldo;
     }
 
     #region webhook

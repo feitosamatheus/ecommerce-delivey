@@ -31,13 +31,24 @@ public class DatabaseContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Pedido>()
-            .HasOne(p => p.PedidoPagamento)
+            .HasMany(p => p.Pagamentos)
             .WithOne(pp => pp.Pedido)
-            .HasForeignKey<PedidoPagamento>(pp => pp.PedidoId)
+            .HasForeignKey(pp => pp.PedidoId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<PedidoPagamento>()
-            .HasIndex(pp => pp.PedidoId)
-            .IsUnique();
+            .HasIndex(pp => pp.PedidoId);
+
+        modelBuilder.Entity<PedidoPagamento>()
+            .Property(pp => pp.Status)
+            .HasConversion<int>();
+
+        modelBuilder.Entity<PedidoPagamento>()
+            .Property(pp => pp.TipoCobranca)
+            .HasConversion<int>();
+
+        modelBuilder.Entity<Pedido>()
+            .Property(p => p.Status)
+            .HasConversion<int>();
     }
 }

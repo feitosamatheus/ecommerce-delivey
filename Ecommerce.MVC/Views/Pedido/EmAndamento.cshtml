@@ -341,15 +341,245 @@
         </div>
     </div>
 </div>
+<div class="modal fade modal-barriga-cheia" id="modalSucessoPedido" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered px-4">
+        <div class="modal-content shadow-lg">
+            <div class="modal-body text-center p-4">
 
+                <div class="circle-check mb-4 animate__animated animate__bounceIn">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+
+                <h2 class="text-titulo mb-3">Pedido Confirmado!</h2>
+
+                <p class="text-muted px-2">
+                    Seu pagamento foi identificado e sua reserva foi feita com sucesso.
+                </p>
+
+                <div class="info-box p-3 my-4 d-flex align-items-center text-start">
+                    <i class="fa-solid fa-circle-info fa-2x me-3" style="color: #B26528;"></i>
+                    <span class="small">
+                        Você pode acompanhar o andamento deste pedido nesta tela.
+                    </span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
+                        Ver Meus Pedidos
+                    </button>
+                    <a href="@Url.Action("Index", "Home")"
+                       class="btn btn-link text-brown fw-bold mt-2"
+                       style="color: #4A321F; text-decoration: none;">
+                        Continuar comprando
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
 <script>
     $(document).ready(function () {
         const $inputCodigo = $('#filtroCodigo');
         const $selectStatus = $('#filtroStatus');
+        const modalEl = document.getElementById('modalDetalhesPedido');
+        const modalBody = $('#modalDetalhesPedidoBody');
+        let paginaAtual = 1;
+
         let valorOriginal = $inputCodigo.val();
 
+        // =========================================================
+        // CONTROLE DA CONEXÃO SIGNALR DOS DETALHES
+        // =========================================================
+        let detalhesConnection = null;
+        let detalhesPedidoCodigoAtual = null;
+
+        async function encerrarConexaoDetalhes() {
+            console.log("[SignalR][Detalhes] Encerrar conexão solicitado.", {
+                codigoAtual: detalhesPedidoCodigoAtual
+            });
+
+            if (detalhesConnection) {
+                try {
+                    await detalhesConnection.stop();
+                    console.log("[SignalR][Detalhes] Conexão encerrada com sucesso.");
+                } catch (error) {
+                    console.error("[SignalR][Detalhes] Erro ao encerrar conexão:", error);
+                }
+            }
+
+            detalhesConnection = null;
+            detalhesPedidoCodigoAtual = null;
+        }
+
+        async function iniciarConexaoDetalhes(gatewayPaymentId) {
+            console.log("[SignalR][Detalhes] iniciarConexaoDetalhes chamado.", { gatewayPaymentId });
+
+            if (!gatewayPaymentId) {
+                console.warn("[SignalR][Detalhes] gatewayPaymentId não informado. Conexão não iniciada.");
+                return;
+            }
+
+            if (typeof signalR === "undefined") {
+                console.error("[SignalR][Detalhes] Biblioteca signalR não carregada.");
+                return;
+            }
+
+            if (detalhesConnection) {
+                console.log("[SignalR][Detalhes] Já existe uma conexão anterior. Encerrando...");
+                try {
+                    await detalhesConnection.stop();
+                    console.log("[SignalR][Detalhes] Conexão anterior encerrada com sucesso.");
+                } catch (error) {
+                    console.error("[SignalR][Detalhes] Erro ao encerrar conexão anterior:", error);
+                }
+            }
+
+            detalhesPedidoCodigoAtual = gatewayPaymentId;
+
+            console.log("[SignalR][Detalhes] Criando nova conexão com /hubs/pagamento ...");
+
+            detalhesConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/pagamento")
+                .withAutomaticReconnect()
+                .build();
+
+            detalhesConnection.onreconnecting((error) => {
+                console.warn("[SignalR][Detalhes] Reconectando...", error);
+            });
+
+            detalhesConnection.onreconnected((connectionId) => {
+                console.log("[SignalR][Detalhes] Reconectado com sucesso.", { connectionId });
+
+                if (detalhesPedidoCodigoAtual) {
+                    detalhesConnection.invoke("EntrarNoGrupoPedido", detalhesPedidoCodigoAtual)
+                        .then(() => {
+                            console.log("[SignalR][Detalhes] Reentrou no grupo após reconexão.", {
+                                gatewayPaymentId: detalhesPedidoCodigoAtual
+                            });
+                        })
+                        .catch((error) => {
+                            console.error("[SignalR][Detalhes] Erro ao reentrar no grupo:", error);
+                        });
+                }
+            });
+
+            detalhesConnection.onclose((error) => {
+                if (error) {
+                    console.error("[SignalR][Detalhes] Conexão encerrada com erro:", error);
+                } else {
+                    console.log("[SignalR][Detalhes] Conexão encerrada normalmente.");
+                }
+            });
+
+            detalhesConnection.on("PedidoAtualizado", function (data) {
+                console.log("[SignalR][Detalhes] Evento recebido: PedidoAtualizado", data);
+
+                if (data.statusDescricao && $("#detalhe-status-pedido").length) {
+                    $("#detalhe-status-pedido").text(data.statusDescricao);
+                }
+
+                if (data.statusClasse && $("#detalhe-status-pedido").length) {
+                    $("#detalhe-status-pedido")
+                        .removeClass()
+                        .addClass(`badge ${data.statusClasse}`);
+                }
+
+                if (data.htmlPagamento && $("#detalhe-container-pagamento").length) {
+                    $("#detalhe-container-pagamento").html(data.htmlPagamento);
+                }
+
+                if (data.mensagem && $("#detalhe-mensagem-status").length) {
+                    $("#detalhe-mensagem-status").html(data.mensagem);
+                }
+
+                agendarRecargaListaPedidos();
+            });
+
+            detalhesConnection.on("PagamentoConfirmado", function (data) {
+                console.log("[SignalR][Detalhes] Evento recebido: PagamentoConfirmado", data);
+
+                if ($("#detalhe-container-pagamento").length) {
+                    $("#detalhe-container-pagamento").prepend(`
+                        <div class="alert alert-success border-0 rounded-4 mb-3 animate__animated animate__fadeIn">
+                            <i class="fa-solid fa-circle-check me-1"></i>
+                            Pagamento confirmado com sucesso.
+                        </div>
+                    `);
+                }
+
+                if ($("#detalhe-status-pedido").length && data.statusDescricao) {
+                    $("#detalhe-status-pedido").text(data.statusDescricao);
+                }
+
+                agendarRecargaListaPedidos();
+            });
+
+            detalhesConnection.on("PagamentoPendente", function (data) {
+                console.log("[SignalR][Detalhes] Evento recebido: PagamentoPendente", data);
+
+                if ($("#detalhe-container-pagamento").length) {
+                    $("#detalhe-container-pagamento").prepend(`
+                        <div class="alert alert-warning border-0 rounded-4 mb-3">
+                            <i class="fa-regular fa-hourglass-half me-1"></i>
+                            Status do pagamento: ${data.status ?? 'Pendente'}
+                        </div>
+                    `);
+                }
+
+                agendarRecargaListaPedidos();
+            });
+
+            detalhesConnection.on("PagamentoRecusado", function (data) {
+                console.log("[SignalR][Detalhes] Evento recebido: PagamentoRecusado", data);
+
+                if ($("#detalhe-container-pagamento").length) {
+                    $("#detalhe-container-pagamento").prepend(`
+                        <div class="alert alert-danger border-0 rounded-4 mb-3">
+                            <i class="fa-solid fa-circle-xmark me-1"></i>
+                            O pagamento não foi confirmado. Status: ${data.status ?? 'Recusado'}
+                        </div>
+                    `);
+                }
+
+                agendarRecargaListaPedidos();
+            });
+
+            try {
+                console.log("[SignalR][Detalhes] Iniciando conexão...");
+                await detalhesConnection.start();
+                console.log("[SignalR][Detalhes] Conexão iniciada com sucesso.");
+
+                console.log("[SignalR][Detalhes] Entrando no grupo do pagamento...", { gatewayPaymentId });
+                await detalhesConnection.invoke("EntrarNoGrupoPedido", gatewayPaymentId);
+                console.log("[SignalR][Detalhes] Usuário conectado ao grupo com sucesso.", { gatewayPaymentId });
+            } catch (error) {
+                console.error("[SignalR][Detalhes] Erro ao iniciar conexão ou entrar no grupo:", error);
+            }
+        }
+
+        // =========================================================
+        // AO FECHAR O MODAL, ENCERRA A CONEXÃO
+        // =========================================================
+        modalEl.addEventListener('hidden.bs.modal', async function () {
+            console.log("[Modal][Detalhes] Modal fechado. Encerrando conexão...");
+
+            await encerrarConexaoDetalhes();
+
+            modalBody.html(`
+                <div class="p-4 text-center text-muted">
+                    Carregando...
+                </div>
+            `);
+        });
+
+        // =========================================================
         // 1. FUNÇÃO CENTRAL AJAX
+        // =========================================================
         function carregarPedidos(pagina = 1) {
+            paginaAtual = pagina;
+
             if (typeof addLoading === "function") addLoading("Atualizando lista...");
 
             const dados = {
@@ -359,28 +589,39 @@
             };
 
             $.ajax({
-                url: '@Url.Action("GetListaPedidos", "Pedido")', 
+                url: '@Url.Action("GetListaPedidos", "Pedido")',
                 type: 'GET',
                 data: dados,
                 success: function (html) {
                     $('#tabela-pedidos-container').html(html);
-                    valorOriginal = $inputCodigo.val(); // Atualiza referência
+                    valorOriginal = $inputCodigo.val();
                 },
                 error: function () {
                     console.error("Erro ao filtrar.");
                 },
                 complete: function () {
-                    // Se tiver função para remover o loading, chame aqui.
-                    removeLoading();
+                    if (typeof removeLoading === "function") {
+                        removeLoading();
+                    }
                 }
             });
         }
 
+        function recarregarListaAtual() {
+            carregarPedidos(paginaAtual || 1);
+        }
+
+        // =========================================================
         // 2. EVENTOS DE FILTRO
-        $selectStatus.on('change', function() { carregarPedidos(1); });
+        // =========================================================
+        $selectStatus.on('change', function () {
+            carregarPedidos(1);
+        });
 
         $inputCodigo.on('blur', function () {
-            if ($(this).val() !== valorOriginal) carregarPedidos(1);
+            if ($(this).val() !== valorOriginal) {
+                carregarPedidos(1);
+            }
         });
 
         $inputCodigo.on('keypress', function (e) {
@@ -390,10 +631,13 @@
             }
         });
 
-        // 3. PAGINAÇÃO E LIMPEZA (Delegação de Evento para elementos dinâmicos)
+        // =========================================================
+        // 3. PAGINAÇÃO E LIMPEZA
+        // =========================================================
         $(document).on('click', '.btn-pagina-ajax', function (e) {
             e.preventDefault();
             const pag = $(this).data('pagina');
+            paginaAtual = pag;
             carregarPedidos(pag);
         });
 
@@ -404,12 +648,12 @@
             carregarPedidos(1);
         });
 
-        // 4. DETALHES (MODAL)
+        // =========================================================
+        // 4. DETALHES (MODAL + SIGNALR)
+        // =========================================================
         $(document).on('click', '.btn-ver-detalhes', function () {
             const btn = $(this);
             const codigo = btn.data('codigo');
-            const modalEl = document.getElementById('modalDetalhesPedido');
-            const modalBody = $('#modalDetalhesPedidoBody');
 
             btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i>');
 
@@ -417,14 +661,163 @@
                 url: '/Pedido/DetalhesEmAndamento',
                 type: 'GET',
                 data: { codigo: codigo },
-                success: function (html) {
-                    modalBody.html(html);
-                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                success: async function (html) {
+                    try {
+                        await encerrarConexaoDetalhes();
+
+                        modalBody.html(html);
+
+                        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.show();
+
+                        const gatewayPaymentId = $('#modalDetalhesPedidoBody').find('#gatewayPaymentId').val();
+
+                        console.log("[Modal][Detalhes] GatewayPaymentId encontrado no HTML:", { gatewayPaymentId });
+
+                        if (gatewayPaymentId) {
+                            await iniciarConexaoDetalhes(gatewayPaymentId);
+                        } else {
+                            console.warn("[Modal][Detalhes] GatewayPaymentId não encontrado. Modal aberto sem conexão em tempo real.");
+                        }
+                    } catch (error) {
+                        console.error("[Modal][Detalhes] Erro ao abrir detalhes com conexão:", error);
+                    }
+                },
+                error: function () {
+                    modalBody.html(`
+                        <div class="p-4 text-center text-danger">
+                            Ocorreu um erro ao carregar os detalhes do pedido.
+                        </div>
+                    `);
+
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
                 },
                 complete: function () {
                     btn.prop('disabled', false).html('<i class="fa-solid fa-receipt fa-sm me-1"></i>Detalhes');
                 }
             });
         });
+
+        $(document).on("click", "#btnJaPaguei", function () {
+            const $btn = $(this);
+            const $statusBox = $("#pixStatusBox");
+            const pedidoId = $("#pixPedidoId").val();
+
+            consultarPagamentoPedido({
+                pedidoId: pedidoId,
+                $btn: $btn,
+                $statusBox: $statusBox,
+                textoBotaoOriginal: '<i class="fa-solid fa-circle-check me-1"></i> Já paguei'
+            });
+        });
+
+        $(document).on("click", "#btnJaPagueiCartao", function () {
+            const $btn = $(this);
+            const $statusBox = $("#cartaoStatusBox");
+            const pedidoId = $("#pixPedidoId").val();
+
+            consultarPagamentoPedido({
+                pedidoId: pedidoId,
+                $btn: $btn,
+                $statusBox: $statusBox,
+                textoBotaoOriginal: '<i class="fa-solid fa-rotate-right me-1"></i> Já paguei / Atualizar status'
+            });
+        });
+
+        async function tratarPagamentoConfirmadoNoModal(response, mensagemPadrao) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+            await encerrarConexaoDetalhes();
+
+            modal.hide();
+
+            recarregarListaAtual();
+
+            if (typeof Swal !== "undefined") {
+                Swal.fire({
+                    icon: "success",
+                    title: "Pagamento confirmado",
+                    text: response.message || mensagemPadrao || "Seu pagamento foi confirmado com sucesso.",
+                    confirmButtonText: "OK",
+                    confirmButtonColor: "#3c1e0a"
+                });
+            }
+        }
+
+        function consultarPagamentoPedido({ pedidoId, $btn, $statusBox, textoBotaoOriginal }) {
+            if (!pedidoId) {
+                $statusBox.removeClass("d-none").html(`
+                    <div class="alert alert-danger border-0 rounded-4 mb-0">
+                        <i class="fa-solid fa-circle-xmark me-1"></i>
+                        Não foi possível identificar o pedido para consultar o pagamento.
+                    </div>
+                `);
+                return;
+            }
+
+            $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-2"></span> Consultando...');
+
+            $statusBox.removeClass("d-none").html(`
+                <div class="alert alert-warning border-0 rounded-4 mb-0">
+                    <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
+                    Verificando pagamento... aguarde.
+                </div>
+            `);
+
+            $.ajax({
+                url: "/api/Pagamento/confirmar-pagamento",
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ pedidoId: pedidoId }),
+                success: async function (response) {
+                    if (response.success) {
+                        $statusBox.html(`
+                            <div class="alert alert-success border-0 rounded-4 mb-0 animate__animated animate__fadeIn">
+                                <i class="fa-solid fa-circle-check me-1"></i>
+                                ${response.message || "Pagamento confirmado com sucesso."}
+                            </div>
+                        `);
+
+                        $btn.prop("disabled", true).html('<i class="fa-solid fa-circle-check me-1"></i> Pagamento confirmado');
+
+                        await tratarPagamentoConfirmadoNoModal(
+                            response,
+                            "Seu pagamento foi confirmado e a lista de pedidos foi atualizada."
+                        );
+                    } else {
+                        $statusBox.html(`
+                            <div class="alert alert-danger border-0 rounded-4 mb-0">
+                                <i class="fa-solid fa-circle-xmark me-1"></i>
+                                ${response.message || "Pagamento ainda não identificado. Tente novamente em instantes."}
+                            </div>
+                        `);
+
+                        $btn.prop("disabled", false).html(textoBotaoOriginal);
+                    }
+                },
+                error: function (xhr) {
+                    let mensagem = "Erro ao conectar com o servidor. Tente novamente.";
+
+                    if (xhr?.responseJSON?.message) {
+                        mensagem = xhr.responseJSON.message;
+                    }
+
+                    $statusBox.html(`
+                        <div class="alert alert-danger border-0 rounded-4 mb-0">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                            ${mensagem}
+                        </div>
+                    `);
+
+                    $btn.prop("disabled", false).html(textoBotaoOriginal);
+                }
+            });
+        }
+
+        if (urlParams.has('confirmado')) {
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalSucessoPedido')).show();
+            limparUrl();
+        }
     });
 </script>

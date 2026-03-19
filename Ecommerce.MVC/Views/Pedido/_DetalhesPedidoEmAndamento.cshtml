@@ -5,7 +5,15 @@
 
 @{
     var pt = new CultureInfo("pt-BR");
-    var pagamento = Model.Pagamento;
+
+    var pagamentos = Model.Pagamentos ?? new List<PedidoPagamentoViewModel>();
+
+    // REGRA PEDIDA:
+    // se pedido estiver aguardando pagamento, pega o primeiro pagamento gerado
+    var pagamento = Model.Status == EPedidoStatus.AguardandoPagamento
+        ? pagamentos.OrderBy(p => p.Sequencia).FirstOrDefault()
+        : pagamentos.OrderBy(p => p.Sequencia).FirstOrDefault();
+
     var tipoPagamento = pagamento?.TipoPagamento?.Trim();
 
     bool ehPix = string.Equals(tipoPagamento, "PIX", StringComparison.OrdinalIgnoreCase);
@@ -23,6 +31,23 @@
         (pagamento.Status == EStatusPagamento.Received
         || pagamento.Status == EStatusPagamento.Confirmed
         || pagamento.Status == EStatusPagamento.ReceivedInCash);
+
+    bool ehPagamentoSinal = pagamento != null && pagamento.TipoCobranca == ETipoCobrancaPedido.Sinal;
+    bool ehPagamentoTotal = pagamento != null &&
+        (pagamento.TipoCobranca == ETipoCobrancaPedido.Saldo
+         || pagamento.TipoCobranca == ETipoCobrancaPedido.Complemento
+         || pagamento.TipoCobranca == ETipoCobrancaPedido.Ajuste);
+
+    var valorEmExibicao = pagamento?.Valor ?? Model.ValorSinal;
+    var valorRetiradaExibicao = ehPagamentoTotal ? 0 : Model.ValorRestanteRetirada;
+
+    string tituloPagamentoPendente = ehPagamentoSinal
+        ? "Aguardando pagamento do sinal"
+        : "Aguardando pagamento";
+
+    string subtituloPagamentoPendente = ehPagamentoSinal
+        ? $"Seu sinal de {valorEmExibicao.ToString("C", pt)} ainda não foi confirmado."
+        : $"Seu pagamento de {valorEmExibicao.ToString("C", pt)} ainda não foi confirmado.";
 
     string badgePagamentoClass = "bg-secondary";
 
@@ -53,6 +78,17 @@
     }
 }
 
+<input type="hidden" id="pixPedidoId" value="@Model.Id" />
+
+@if (pagamento != null && !string.IsNullOrWhiteSpace(pagamento.GatewayPaymentId))
+{
+    <input type="hidden" id="gatewayPaymentId" value="@pagamento.GatewayPaymentId" />
+}
+else
+{
+    <input type="hidden" id="gatewayPaymentId" value="" />
+}
+
 <div class="p-4">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
@@ -75,14 +111,30 @@
             <span>Subtotal</span>
             <span class="fw-bold">@Model.Subtotal.ToString("C", pt)</span>
         </div>
-        <div class="d-flex justify-content-between mb-2 small">
-            <span>Sinal para produção</span>
-            <span class="fw-bold text-success">@Model.ValorSinal.ToString("C", pt)</span>
-        </div>
-        <div class="d-flex justify-content-between small text-muted">
-            <span>Restante na retirada/entrega</span>
-            <span>@Model.ValorRestanteRetirada.ToString("C", pt)</span>
-        </div>
+
+        @if (ehPagamentoSinal)
+        {
+            <div class="d-flex justify-content-between mb-2 small">
+                <span>Sinal para produção</span>
+                <span class="fw-bold text-success">@valorEmExibicao.ToString("C", pt)</span>
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+                <span>Restante na retirada</span>
+                <span>@valorRetiradaExibicao.ToString("C", pt)</span>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex justify-content-between mb-2 small">
+                <span>Pagamento atual</span>
+                <span class="fw-bold text-success">@valorEmExibicao.ToString("C", pt)</span>
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+                <span>Restante na retirada</span>
+                <span>@valorRetiradaExibicao.ToString("C", pt)</span>
+            </div>
+        }
+
         <hr class="my-3 opacity-25" />
         <div class="d-flex justify-content-between">
             <span class="fw-semibold">Total do pedido</span>
@@ -90,8 +142,66 @@
         </div>
     </div>
 
-    @if (ehPix)
+    @if (pagamentoConfirmado)
     {
+        <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden">
+            <div class="card-body p-0">
+                <div class="p-4 text-center" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-circle-check fa-4x animate__animated animate__bounceIn"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Pagamento Confirmado!</h4>
+                    <p class="mb-0 opacity-75">
+                        @if (ehPagamentoSinal)
+                        {
+                            <text>Seu sinal de @valorEmExibicao.ToString("C", pt) foi recebido.</text>
+                        }
+                        else
+                        {
+                            <text>Seu pagamento de @valorEmExibicao.ToString("C", pt) foi recebido.</text>
+                        }
+                    </p>
+                </div>
+
+                <div class="p-4 bg-white">
+                    <div class="row align-items-center g-3">
+                        <div class="col-12 col-md-8">
+                            <h6 class="fw-bold mb-2" style="color: #3c1e0a;">O que acontece agora?</h6>
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li class="mb-2">
+                                    <i class="fa-solid fa-utensils me-2 text-success"></i>
+                                    Já recebemos seu pedido e o enviamos para a cozinha.
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa-solid fa-fire-burner me-2 text-success"></i>
+                                    Iniciaremos o preparo em instantes para que você receba tudo fresquinho.
+                                </li>
+                                <li>
+                                    <i class="fa-solid fa-store me-2 text-success"></i>
+                                    <strong>Avisaremos você por aqui assim que o pedido estiver pronto para retirada.</strong>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-12 col-md-4 text-center border-start d-none d-md-block">
+                            <div class="text-label-slim mb-1">Total a pagar na retirada</div>
+                            <div class="fs-4 fw-bold text-dark">@valorRetiradaExibicao.ToString("C", pt)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (ehPix)
+    {
+        <div class="card border-0 rounded-4 shadow-sm mb-3 overflow-hidden">
+            <div class="card-body p-0">
+                <div class="p-3 text-center" style="background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%); color: #664d03;">
+                    <h5 class="fw-bold mb-1">@tituloPagamentoPendente</h5>
+                    <p class="mb-0 small">@subtituloPagamentoPendente</p>
+                </div>
+            </div>
+        </div>
+
         <div class="row g-3 mb-4">
             <div class="col-12 col-lg-5">
                 <div class="bg-white p-3 rounded-4 border shadow-sm h-100">
@@ -165,54 +275,80 @@
 
                     <div class="p-3 rounded-4 mb-3" style="background:#f8f9fa; border: 1px dashed #ddd;">
                         <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">Tipo de cobrança</span>
+                            <span class="small fw-bold">@pagamento?.TipoCobrancaTexto</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted small">Identificador</span>
-                            <span class="small fw-bold">@pagamento?.PixIdentificador</span>
+                            <span class="small fw-bold">@pagamento?.GatewayPaymentId</span>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted small">Beneficiário</span>
                             <span class="small fw-bold">@pagamento?.PixBeneficiario</span>
                         </div>
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted small">Valor</span>
-                            <span class="small fw-bold">@Model.ValorSinal.ToString("C", pt)</span>
+                            <span class="small fw-bold">@valorEmExibicao.ToString("C", pt)</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Retirada</span>
+                            <span class="small fw-bold">@valorRetiradaExibicao.ToString("C", pt)</span>
                         </div>
                     </div>
 
-                    @if (pagamentoConfirmado)
-                    {
-                        <div class="alert alert-success border-0 rounded-4 mb-0">
-                            <i class="fa-solid fa-circle-check me-1"></i>
-                            Pagamento PIX confirmado com sucesso.
+                    <button type="button" id="btnJaPaguei" class="btn btn-success fw-bold rounded-4 w-100">
+                        <i class="fa-solid fa-circle-check me-1"></i> Já paguei
+                    </button>
+
+                    <div class="mt-3 p-3 rounded-4 text-start"
+                         style="background: #f5fbff; border: 1px dashed #b9def7;">
+                        <div class="small fw-bold mb-1" style="color: #0d6efd;">
+                            <i class="fa-solid fa-circle-info me-1"></i> Já efetuou o pagamento?
                         </div>
-                    }
-                    else
-                    {
-                        <button type="button" class="btn btn-success fw-bold rounded-4 w-100">
-                            <i class="fa-solid fa-circle-check me-1"></i> Já paguei
-                        </button>
-                    }
+                        <div class="small text-muted" style="line-height: 1.45;">
+                            Se você já concluiu o pagamento do PIX e o status ainda não foi atualizado,
+                            clique no botão acima para consultar novamente.
+                        </div>
+                    </div>
+
+                    <div id="pixStatusBox" class="d-none mt-3"></div>
+
+                    <div id="pixStatusBox" class="d-none mt-3"></div>
                 </div>
             </div>
         </div>
     }
     else if (ehCartao)
     {
+        <div class="card border-0 rounded-4 shadow-sm mb-3 overflow-hidden">
+            <div class="card-body p-0">
+                <div class="p-3 text-center" style="background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%); color: #664d03;">
+                    <h5 class="fw-bold mb-1">@tituloPagamentoPendente</h5>
+                    <p class="mb-0 small">@subtituloPagamentoPendente</p>
+                </div>
+            </div>
+        </div>
+
         <div class="mb-4">
             <div class="bg-white p-4 rounded-4 border shadow-sm text-center">
                 <i class="fa-solid fa-credit-card fa-3x mb-3" style="color: #6f42c1;"></i>
                 <h5 class="fw-bold">Pagamento Online</h5>
                 <p class="text-muted small px-lg-5">
-                    Clique no botão abaixo para abrir nosso checkout seguro e realizar o pagamento do sinal com seu cartão.
+                    Clique no botão abaixo para abrir nosso checkout seguro e realizar o pagamento da cobrança atual.
                 </p>
 
                 <div class="card bg-light border-0 rounded-4 p-3 mb-4 text-start">
                     <div class="d-flex justify-content-between mb-2 small">
-                        <span>Sinal (Cartão)</span>
-                        <span class="fw-bold">@Model.ValorSinal.ToString("C", pt)</span>
+                        <span>@(ehPagamentoSinal ? "Sinal" : "Pagamento")</span>
+                        <span class="fw-bold">@valorEmExibicao.ToString("C", pt)</span>
                     </div>
                     <div class="d-flex justify-content-between small text-muted">
                         <span>Status</span>
                         <span>@(pagamento?.StatusPagamento ?? "-")</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mt-2">
+                        <span>Retirada</span>
+                        <span>@valorRetiradaExibicao.ToString("C", pt)</span>
                     </div>
 
                     @if (!string.IsNullOrWhiteSpace(pagamento?.Gateway))
@@ -222,19 +358,21 @@
                             <span>@pagamento.Gateway</span>
                         </div>
                     }
+
+                    @if (!string.IsNullOrWhiteSpace(pagamento?.TipoCobrancaTexto))
+                    {
+                        <div class="d-flex justify-content-between small text-muted mt-2">
+                            <span>Tipo de cobrança</span>
+                            <span>@pagamento.TipoCobrancaTexto</span>
+                        </div>
+                    }
                 </div>
 
-                @if (pagamentoConfirmado)
-                {
-                    <div class="alert alert-success border-0 rounded-4 mb-0">
-                        <i class="fa-solid fa-circle-check me-1"></i>
-                        Pagamento confirmado com sucesso.
-                    </div>
-                }
-                else if (!string.IsNullOrWhiteSpace(pagamento?.InvoiceUrl))
+                @if (!string.IsNullOrWhiteSpace(pagamento?.InvoiceUrl))
                 {
                     <a href="@pagamento.InvoiceUrl"
                            target="_blank"
+                           id="btnAbrirCheckoutCartao"
                            class="btn btn-primary w-100 fw-bold rounded-4 py-3 shadow"
                            style="background-color: #6f42c1; border: none;">
                         <i class="fa-solid fa-lock me-2"></i> Abrir Checkout Seguro
@@ -243,12 +381,33 @@
                 else
                 {
                     <button type="button"
+                            id="btnAbrirCheckoutCartao"
                             class="btn btn-primary w-100 fw-bold rounded-4 py-3 shadow"
                             style="background-color: #6f42c1; border: none;"
                             disabled>
                         <i class="fa-solid fa-lock me-2"></i> Checkout indisponível
                     </button>
                 }
+
+                <div class="mt-3 p-3 rounded-4 text-start"
+                     style="background: #faf7ff; border: 1px dashed #d9c9ff;">
+                    <div class="small fw-bold mb-1" style="color: #6f42c1;">
+                        <i class="fa-solid fa-circle-info me-1"></i> Já efetuou o pagamento?
+                    </div>
+                    <div class="small text-muted mb-2" style="line-height: 1.45;">
+                        Se você já concluiu o pagamento no checkout e o status ainda não foi atualizado,
+                        clique no botão abaixo para consultar novamente.
+                    </div>
+
+                    <button type="button"
+                            id="btnJaPagueiCartao"
+                            class="btn btn-outline-primary w-100 rounded-4 fw-bold"
+                            style="border-color: #6f42c1; color: #6f42c1;">
+                        <i class="fa-solid fa-rotate-right me-1"></i> Já paguei / Atualizar status
+                    </button>
+                </div>
+
+                <div id="cartaoStatusBox" class="d-none mt-3"></div>
             </div>
         </div>
     }

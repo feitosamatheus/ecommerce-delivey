@@ -5,6 +5,7 @@ namespace Ecommerce.MVC.Models.Pedidos;
 
 public class PedidosEmAndamentoViewModel
 {
+    public Guid Id { get; set; }
     public string Codigo { get; set; } = default!;
     public DateTime CriadoEmUtc { get; set; }
     public EPedidoStatus Status { get; set; }
@@ -21,7 +22,7 @@ public class PedidosEmAndamentoViewModel
     public decimal ValorSinal { get; set; }
     public decimal ValorRestanteRetirada { get; set; }
 
-    public PedidoPagamentoViewModel? Pagamento { get; set; }
+    public List<PedidoPagamentoViewModel> Pagamentos { get; set; } = new();
 
     public List<PedidosEmAndamentoItemViewModel> Itens { get; set; } = new();
 }
