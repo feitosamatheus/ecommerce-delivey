@@ -1,5 +1,9 @@
 @using Ecommerce.MVC.Enums
 @model Ecommerce.MVC.Entities.Pedido
+@using System.Globalization
+@{
+    var pt = new CultureInfo("pt-BR");
+}
 
 <style>
     .modal-content-clean {
@@ -145,7 +149,7 @@
                                         <td class="text-center">
                                             <span class="badge bg-light text-secondary border">@item.Quantidade</span>
                                         </td>
-                                        <td class="text-end fw-medium">@item.TotalLinha.ToString("C")</td>
+                                        <td class="text-end fw-medium">@item.TotalLinha.ToString("C", pt)</td>
                                     </tr>
                                 }
                             </tbody>
@@ -157,15 +161,11 @@
                             <div class="col-md-5">
                                 <div class="d-flex justify-content-between mb-1">
                                     <span class="form-label mb-0">Subtotal</span>
-                                    <span class="fw-medium">@Model.Subtotal.ToString("C")</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="form-label mb-0">Taxa entrega</span>
-                                    <span class="fw-medium text-success">+ @Model.TaxaEntrega.ToString("C")</span>
+                                    <span class="fw-medium">@Model.Subtotal.ToString("C", pt)</span>
                                 </div>
                                 <div class="d-flex justify-content-between pt-2 border-top">
                                     <span class="fw-bold text-dark">TOTAL</span>
-                                    <span class="fw-bold text-primary fs-5">@Model.Total.ToString("C")</span>
+                                    <span class="fw-bold text-primary fs-5">@Model.Total.ToString("C", pt)</span>
                                 </div>
                             </div>
                         </div>

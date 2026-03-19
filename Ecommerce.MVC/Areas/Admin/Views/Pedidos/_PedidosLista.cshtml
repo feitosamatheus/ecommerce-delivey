@@ -1,5 +1,8 @@
 @model Ecommerce.MVC.Models.Admin.Pedidos.PedidosIndexViewModel
+@using System.Globalization
 @{
+    var pt = new CultureInfo("pt-BR");
+
     string IconeOrdenacao(string coluna)
     {
         if (Model.SortColumn != coluna)
@@ -138,7 +141,7 @@
                                     </div>
                                 </td>
                                 <td>@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy")</td>
-                                <td class="text-end fw-bold text-primary">@p.Total.ToString("C")</td>
+                                <td class="text-end fw-bold text-primary">@p.Total.ToString("C", pt)</td>
                                 <td class="text-center">
                                     <span class="badge border badge-pill-custom @statusClass pedido-status-texto">
                                         @p.Status
