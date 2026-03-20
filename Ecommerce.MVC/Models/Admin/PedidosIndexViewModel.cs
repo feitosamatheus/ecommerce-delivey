@@ -18,4 +18,15 @@ public class PedidosIndexViewModel
 
     public string SortColumn { get; set; } = "CriadoEmUtc";
     public string SortDirection { get; set; } = "desc";
+
+    public decimal ResumoTotalPedidos { get; set; }
+    public decimal ResumoTotalPago { get; set; }
+    public decimal ResumoTotalEmAberto { get; set; }
+    public int ResumoQtdAguardandoPagamento { get; set; }
+    public int ResumoQtdQuitados { get; set; }
+
+    public int ResumoQtdConfirmados { get; set; }
+    public int ResumoQtdEmPreparo { get; set; }
+    public int ResumoQtdProntos { get; set; }
+    public int ResumoQtdCancelados { get; set; }
 }

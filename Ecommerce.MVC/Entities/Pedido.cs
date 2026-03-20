@@ -33,22 +33,28 @@ public class Pedido
     [NotMapped]
     public decimal ValorEntrada => Math.Round(Total * 0.5m, 2);
 
-    [NotMapped]
+   [NotMapped]
     public bool SinalPago =>
-    Pagamentos.Any(p =>
-        p.TipoCobranca == ETipoCobrancaPedido.Sinal &&
-        (p.Status == EStatusPagamento.Received ||
-         p.Status == EStatusPagamento.Confirmed ||
-         p.Status == EStatusPagamento.ReceivedInCash));
+        Pagamentos.Any(p =>
+        (
+            p.TipoCobranca == ETipoCobrancaPedido.Sinal ||
+            p.TipoCobranca == ETipoCobrancaPedido.Saldo
+        ) &&
+        (
+            p.Status == EStatusPagamento.Received ||
+            p.Status == EStatusPagamento.Confirmed ||
+            p.Status == EStatusPagamento.ReceivedInCash
+        ));
 
     [NotMapped]
     public bool SaldoPago =>
-        Pagamentos
-            .Where(p => p.TipoCobranca == ETipoCobrancaPedido.Saldo)
-            .All(p =>
-                p.Status == EStatusPagamento.Received ||
-                p.Status == EStatusPagamento.Confirmed ||
-                p.Status == EStatusPagamento.ReceivedInCash);
+        Pagamentos.Any(p =>
+        p.TipoCobranca == ETipoCobrancaPedido.Saldo &&
+        (
+            p.Status == EStatusPagamento.Received ||
+            p.Status == EStatusPagamento.Confirmed ||
+            p.Status == EStatusPagamento.ReceivedInCash
+        ));
 
     [NotMapped]
     public decimal ValorPago =>

@@ -1,5 +1,6 @@
-@model Ecommerce.MVC.Models.Admin.Pedidos.PedidosIndexViewModel
+@* @model Ecommerce.MVC.Models.Admin.Pedidos.PedidosIndexViewModel
 @using System.Globalization
+@using Ecommerce.MVC.Enums
 @{
     var pt = new CultureInfo("pt-BR");
 
@@ -11,6 +12,35 @@
         return Model.SortDirection == "asc"
             ? "fas fa-sort-up text-primary"
             : "fas fa-sort-down text-primary";
+    }
+    
+    var pedidos = Model.Itens ?? Enumerable.Empty<dynamic>();
+
+    decimal totalPedidos = 0m;
+    decimal totalPago = 0m;
+    decimal totalEmAberto = 0m;
+
+    int qtdAguardandoPagamento = 0;
+    int qtdConfirmados = 0;
+    int qtdEmPreparo = 0;
+    int qtdProntos = 0;
+    int qtdConcluidos = 0;
+    int qtdCancelados = 0;
+    int qtdQuitados = 0;
+
+    if (Model.Itens != null && Model.Itens.Any())
+    {
+        totalPedidos = Model.Itens.Sum(p => p.Total);
+        totalPago = Model.Itens.Sum(p => p.ValorPago);
+        totalEmAberto = Model.Itens.Sum(p => p.ValorEmAberto);
+
+        qtdAguardandoPagamento = Model.Itens.Count(p => p.Status == EPedidoStatus.AguardandoPagamento);
+        qtdConfirmados = Model.Itens.Count(p => p.Status == EPedidoStatus.Confirmado);
+        qtdEmPreparo = Model.Itens.Count(p => p.Status == EPedidoStatus.EmPreparo);
+        qtdProntos = Model.Itens.Count(p => p.Status == EPedidoStatus.Pronto);
+        qtdConcluidos = Model.Itens.Count(p => p.Status == EPedidoStatus.Concluido);
+        qtdCancelados = Model.Itens.Count(p => p.Status == EPedidoStatus.Cancelado);
+        qtdQuitados = Model.Itens.Count(p => p.PedidoQuitado);
     }
 }
 <style>
@@ -48,6 +78,38 @@
     .pagination-clean .page-link i {
         font-size: 0.75rem;
     }
+
+    .summary-box {
+        border: 1px solid #e2e8f0;
+        border-radius: .85rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .summary-box .label {
+        display: block;
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #64748b;
+        margin-bottom: .35rem;
+        font-weight: 600;
+    }
+
+    .summary-box .value {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .summary-box .value.money {
+        font-size: 1.3rem;
+    }
+
+    .finance-grid {
+        padding: 1rem 1rem 0 1rem;
+    }
 </style>
 <div class="card card-table-clean mt-4">
     <div class="card-header d-flex align-items-center justify-content-between row">
@@ -83,6 +145,90 @@
     </div>
 
     <div class="card-body p-0">
+        <div class="px-3 pt-3">
+            <div class="row g-3 mb-3 finance-grid">
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Total em pedidos</span>
+                        <div class="value money">@totalPedidos.ToString("C", pt)</div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Total pago</span>
+                        <div class="value money text-success">@totalPago.ToString("C", pt)</div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Em aberto</span>
+                        <div class="value money text-danger">@totalEmAberto.ToString("C", pt)</div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Aguardando pag.</span>
+                        <div class="value">@qtdAguardandoPagamento</div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Quitados</span>
+                        <div class="value text-success">@qtdQuitados</div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Concluídos</span>
+                        <div class="value text-primary">@qtdConcluidos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3 finance-grid">
+                <div class="col-6 col-md-3 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Confirmados</span>
+                        <div class="value">@qtdConfirmados</div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Em preparo</span>
+                        <div class="value">@qtdEmPreparo</div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Prontos</span>
+                        <div class="value">@qtdProntos</div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-2">
+                    <div class="summary-box">
+                        <span class="label">Cancelados</span>
+                        <div class="value text-danger">@qtdCancelados</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-4">
+                    <div class="summary-box">
+                        <span class="label">Resumo geral</span>
+                        <div class="value" style="font-size: .95rem;">
+                            @Model.TotalRegistros pedido(s) listado(s)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="table-responsive d-none d-md-block">
             <table class="table table-clean mb-0">
                 <thead>
@@ -194,6 +340,392 @@
                             <div>
                                 <span class="d-block text-secondary" style="font-size: 0.9rem;">@(p.Cliente?.Nome ?? "-")</span>
                                 <span class="fw-bold text-primary">@p.Total.ToString("C")</span>
+                            </div>
+
+                            <a href="javascript:void(0);"
+                               class="btn btn-sm btn-light border px-3 btn-ver-pedido"
+                               data-url="@Url.Action("DetailsModal", "Pedidos", new { area = "Admin", id = p.Id })">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        @if (Model.Itens == null || !Model.Itens.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-inbox d-block mb-2 fa-2x opacity-25"></i>
+                Nenhum pedido encontrado.
+            </div>
+        }
+
+        @if (Model.TotalPaginas > 1)
+        {
+            <div class="d-flex justify-content-between align-items-center p-3 border-top bg-white flex-wrap gap-2">
+                <div class="text-muted small">
+                    Exibindo @(((Model.PaginaAtual - 1) * Model.TamanhoPagina) + 1)
+                    até @(Math.Min(Model.PaginaAtual * Model.TamanhoPagina, Model.TotalRegistros))
+                    de @Model.TotalRegistros registros
+                </div>
+
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination pagination-sm pagination-clean mb-0">
+                        <li class="page-item @(Model.PaginaAtual == 1 ? "disabled" : "")">
+                            <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual - 1)" aria-label="Anterior">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPaginas; i++)
+                        {
+                            @if (i == 1 || i == Model.TotalPaginas || (i >= Model.PaginaAtual - 2 && i <= Model.PaginaAtual + 2))
+                            {
+                                <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                    <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@i">@i</a>
+                                </li>
+                            }
+                            else if (i == Model.PaginaAtual - 3 || i == Model.PaginaAtual + 3)
+                            {
+                                <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+                            }
+                        }
+
+                        <li class="page-item @(Model.PaginaAtual == Model.TotalPaginas ? "disabled" : "")">
+                            <a class="page-link paginacao-pedido" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual + 1)" aria-label="Próximo">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div> *@
+
+@model Ecommerce.MVC.Models.Admin.Pedidos.PedidosIndexViewModel
+@using System.Globalization
+@{
+    var pt = new CultureInfo("pt-BR");
+
+    string IconeOrdenacao(string coluna)
+    {
+        if (Model.SortColumn != coluna)
+            return "fas fa-sort text-muted opacity-50";
+
+        return Model.SortDirection == "asc"
+            ? "fas fa-sort-up text-primary"
+            : "fas fa-sort-down text-primary";
+    }
+}
+<style>
+    .pagination-clean .page-link {
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        margin: 0 2px;
+        border-radius: 0.5rem !important;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .pagination-clean .page-link:hover {
+        background-color: #f8fafc;
+        color: #334155;
+        border-color: #cbd5e1;
+    }
+
+    .pagination-clean .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #fff;
+        color: #fff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .pagination-clean .page-item.disabled .page-link {
+        background-color: #f8fafc;
+        border-color: #f1f5f9;
+        color: #cbd5e1;
+    }
+
+    .pagination-clean .page-link i {
+        font-size: 0.75rem;
+    }
+
+    .summary-box {
+        border: 1px solid #e2e8f0;
+        border-radius: .85rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .summary-box .label {
+        display: block;
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #64748b;
+        margin-bottom: .35rem;
+        font-weight: 600;
+    }
+
+    .summary-box .value {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .summary-box .value.money {
+        font-size: 1.3rem;
+    }
+
+    .finance-grid {
+        padding: 0;
+    }
+</style>
+
+<div class="card card-table-clean mt-4">
+    <div class="card-header d-flex align-items-center justify-content-between row">
+        <h3 class="card-title mb-0 col-md-4">
+            <i class="fas fa-shopping-cart me-2 text-primary"></i>
+            Lista de Pedidos
+        </h3>
+
+        <div class="col-md-8">
+            <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap">
+                @if (Model.Itens != null && Model.Itens.Any())
+                {
+                    <span class="badge rounded-pill bg-light text-primary border">
+                        @Model.TotalRegistros <span class="d-none d-sm-inline">Pedidos</span>
+                    </span>
+                }
+
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select form-select-sm"
+                            id="tamanhoPagina"
+                            name="tamanhoPagina"
+                            form="formFiltroPedidos"
+                            style="width: 90px;">
+                        <option value="5" selected="@(Model.TamanhoPagina == 5)">5</option>
+                        <option value="10" selected="@(Model.TamanhoPagina == 10)">10</option>
+                        <option value="20" selected="@(Model.TamanhoPagina == 20)">20</option>
+                        <option value="50" selected="@(Model.TamanhoPagina == 50)">50</option>
+                        <option value="100" selected="@(Model.TamanhoPagina == 100)">100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-3 pt-3">
+        <div class="row g-3 mb-3 finance-grid">
+            <div class="col-6 col-md-3">
+                <div class="summary-box">
+                    <span class="label">Total em pedidos</span>
+                    <div class="value money">@Model.ResumoTotalPedidos.ToString("C", pt)</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="summary-box">
+                    <span class="label">Total pago</span>
+                    <div class="value money text-success">@Model.ResumoTotalPago.ToString("C", pt)</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="summary-box">
+                    <span class="label">Em aberto</span>
+                    <div class="value money text-danger">@Model.ResumoTotalEmAberto.ToString("C", pt)</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="summary-box">
+                    <span class="label">Aguardando pag.</span>
+                    <div class="value">@Model.ResumoQtdAguardandoPagamento</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-clean mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="Codigo">
+                                Código <i class="@IconeOrdenacao("Codigo") ms-1"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="Cliente">
+                                Cliente <i class="@IconeOrdenacao("Cliente") ms-1"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="CriadoEmUtc">
+                                Data <i class="@IconeOrdenacao("CriadoEmUtc") ms-1"></i>
+                            </a>
+                        </th>
+                        <th class="text-end">
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="Total">
+                                Total <i class="@IconeOrdenacao("Total") ms-1"></i>
+                            </a>
+                        </th>
+                        <th class="text-center">Pagamento</th>
+                        <th class="text-center">
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-pedido" data-coluna="Status">
+                                Status <i class="@IconeOrdenacao("Status") ms-1"></i>
+                            </a>
+                        </th>
+                        <th class="text-center pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Itens != null && Model.Itens.Any())
+                    {
+                        @foreach (var p in Model.Itens)
+                        {
+                            var statusClass = p.Status.ToString() switch
+                            {
+                                "Rascunho" => "bg-secondary-subtle text-secondary-emphasis border-secondary-subtle",
+                                "AguardandoPagamento" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
+                                "Confirmado" => "bg-info-subtle text-info-emphasis border-info-subtle",
+                                "EmPreparo" => "bg-primary-subtle text-primary-emphasis border-primary-subtle",
+                                "Pronto" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                                "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                                "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
+                                _ => "bg-light text-dark border"
+                            };
+
+                            var statusPagamentoTexto = "Em aberto";
+                            var statusPagamentoClass = "bg-light text-dark border";
+
+                            if (p.PedidoQuitado)
+                            {
+                                statusPagamentoTexto = "Quitado";
+                                statusPagamentoClass = "bg-success-subtle text-success-emphasis border-success-subtle";
+                            }
+                            else if (p.ValorPago > 0)
+                            {
+                                statusPagamentoTexto = "Pagamento parcial";
+                                statusPagamentoClass = "bg-info-subtle text-info-emphasis border-info-subtle";
+                            }
+                            else if (p.SinalPago)
+                            {
+                                statusPagamentoTexto = "Sinal pago";
+                                statusPagamentoClass = "bg-primary-subtle text-primary-emphasis border-primary-subtle";
+                            }
+                            else if (p.Status.ToString() == "AguardandoPagamento")
+                            {
+                                statusPagamentoTexto = "Aguardando sinal";
+                                statusPagamentoClass = "bg-warning-subtle text-warning-emphasis border-warning-subtle";
+                            }
+
+                            <tr data-pedido-id="@p.Id">
+                                <td class="ps-4 fw-bold text-dark">#@p.Codigo</td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span>@(p.Cliente?.Nome ?? "-")</span>
+                                        <small class="text-muted" style="font-size: 0.75rem;">Consumidor Final</small>
+                                    </div>
+                                </td>
+                                <td>@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                                <td class="text-end fw-bold text-primary">@p.Total.ToString("C", pt)</td>
+
+                                <td class="text-center">
+                                    <span class="badge border badge-pill-custom @statusPagamentoClass">
+                                        @statusPagamentoTexto
+                                    </span>
+                                </td>
+
+                                <td class="text-center">
+                                    <span class="badge border badge-pill-custom @statusClass pedido-status-texto">
+                                        @p.Status
+                                    </span>
+                                </td>
+
+                                <td class="text-center pe-4">
+                                    <a href="javascript:void(0);"
+                                       class="btn btn-sm btn-light border btn-action btn-ver-pedido"
+                                       data-url="@Url.Action("DetailsModal", "Pedidos", new { area = "Admin", id = p.Id })">
+                                        <i class="fas fa-eye text-muted me-1"></i> Abrir
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-md-none">
+            @if (Model.Itens != null && Model.Itens.Any())
+            {
+                @foreach (var p in Model.Itens)
+                {
+                    var statusClassMob = p.Status.ToString() switch
+                    {
+                        "Rascunho" => "bg-secondary-subtle text-secondary-emphasis border-secondary-subtle",
+                        "AguardandoPagamento" => "bg-warning-subtle text-warning-emphasis border-warning-subtle",
+                        "Confirmado" => "bg-info-subtle text-info-emphasis border-info-subtle",
+                        "EmPreparo" => "bg-primary-subtle text-primary-emphasis border-primary-subtle",
+                        "Pronto" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                        "Concluido" => "bg-success-subtle text-success-emphasis border-success-subtle",
+                        "Cancelado" => "bg-danger-subtle text-danger-emphasis border-danger-subtle",
+                        _ => "bg-light text-dark border"
+                    };
+
+                    var statusPagamentoTextoMob = "Em aberto";
+                    var statusPagamentoClassMob = "bg-light text-dark border";
+
+                    if (p.PedidoQuitado)
+                    {
+                        statusPagamentoTextoMob = "Quitado";
+                        statusPagamentoClassMob = "bg-success-subtle text-success-emphasis border-success-subtle";
+                    }
+                    else if (p.ValorPago > 0)
+                    {
+                        statusPagamentoTextoMob = "Pagamento parcial";
+                        statusPagamentoClassMob = "bg-info-subtle text-info-emphasis border-info-subtle";
+                    }
+                    else if (p.SinalPago)
+                    {
+                        statusPagamentoTextoMob = "Sinal pago";
+                        statusPagamentoClassMob = "bg-primary-subtle text-primary-emphasis border-primary-subtle";
+                    }
+                    else if (p.Status.ToString() == "AguardandoPagamento")
+                    {
+                        statusPagamentoTextoMob = "Aguardando sinal";
+                        statusPagamentoClassMob = "bg-warning-subtle text-warning-emphasis border-warning-subtle";
+                    }
+
+                    <div class="mobile-order-item" data-pedido-id="@p.Id">
+                        <div class="mobile-order-header">
+                            <div>
+                                <span class="fw-bold text-dark d-block">#@p.Codigo</span>
+                                <small class="text-muted">@p.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+
+                            <span class="badge border badge-pill-custom @statusClassMob pedido-status-texto" style="font-size: 0.7rem;">
+                                @p.Status
+                            </span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div>
+                                <span class="d-block text-secondary" style="font-size: 0.9rem;">@(p.Cliente?.Nome ?? "-")</span>
+                                <span class="fw-bold text-primary">@p.Total.ToString("C", pt)</span>
+
+                                <div class="mt-2">
+                                    <span class="badge border badge-pill-custom @statusPagamentoClassMob" style="font-size: 0.7rem;">
+                                        @statusPagamentoTextoMob
+                                    </span>
+                                </div>
                             </div>
 
                             <a href="javascript:void(0);"

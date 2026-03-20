@@ -47,6 +47,7 @@ public class PedidosController : Controller
         var query = _db.Pedidos
             .AsNoTracking()
             .Include(p => p.Cliente)
+            .Include(p => p.Pagamentos)
             .AsQueryable();
 
         var inicioLocal = dataInicio.Value.Date;
@@ -62,6 +63,14 @@ public class PedidosController : Controller
 
         if (!string.IsNullOrWhiteSpace(status))
             query = query.Where(p => p.Status.ToString() == status);
+
+        var pedidosFiltrados = await query.ToListAsync();
+
+        var resumoTotalPedidos = pedidosFiltrados.Sum(p => p.Total);
+        var resumoTotalPago = pedidosFiltrados.Sum(p => p.ValorPago);
+        var resumoTotalEmAberto = pedidosFiltrados.Sum(p => p.ValorEmAberto);
+        var resumoQtdAguardandoPagamento = pedidosFiltrados.Count(p => p.Status == EPedidoStatus.AguardandoPagamento);
+        var resumoQtdQuitados = pedidosFiltrados.Count(p => p.PedidoQuitado);
 
         query = (sortColumn, sortDirection.ToLower()) switch
         {
@@ -102,7 +111,14 @@ public class PedidosController : Controller
             Status = status,
             TipoData = tipoData,
             SortColumn = sortColumn,
-            SortDirection = sortDirection
+            SortDirection = sortDirection,
+
+            ResumoTotalPedidos = resumoTotalPedidos,
+            ResumoTotalPago = resumoTotalPago,
+            ResumoTotalEmAberto = resumoTotalEmAberto,
+            ResumoQtdAguardandoPagamento = resumoQtdAguardandoPagamento,
+            ResumoQtdQuitados = resumoQtdQuitados
+            
         };
 
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -118,6 +134,7 @@ public class PedidosController : Controller
             .Include(p => p.Cliente)
             .Include(p => p.Itens)
                 .ThenInclude(i => i.Acompanhamentos)
+            .Include(p => p.Pagamentos)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (pedido == null)
