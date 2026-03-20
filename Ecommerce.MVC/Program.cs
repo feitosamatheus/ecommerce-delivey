@@ -1,3 +1,4 @@
+using Ecommerce.MVC.Areas.Admin.Services;
 using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Hubs;
 using Ecommerce.MVC.Interfaces;
@@ -67,6 +68,7 @@ builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<ICarrinhoService, CarrinhoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
+builder.Services.AddScoped<IPedidoExportService, PedidoExportService>();
 
 builder.Services.AddRateLimiter(options =>
 {

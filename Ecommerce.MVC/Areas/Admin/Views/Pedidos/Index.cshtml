@@ -245,7 +245,7 @@
                         Limpar
                     </a>
 
-                    <button type="submit" id="btnPesquisarPedidos" class="btn btn-filter-action btn-primary shadow-sm">
+                    <button type="submit" id="btnPesquisarPedidos" class="btn btn-filter-action btn-secondary shadow-sm">
                         <i class="fas fa-search"></i>
                         Aplicar Filtros
                     </button>
@@ -287,6 +287,7 @@
                 url += "&tamanhoPagina=" + ($("#tamanhoPagina").val() || 5);
 
                 $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Pesquisando');
+                window.addLoading("Buscando pedidos...");
 
                 $.ajax({
                     url: url,
@@ -303,6 +304,7 @@
                     },
                     complete: function () {
                         $btn.prop("disabled", false).html('<i class="fas fa-search"></i> Aplicar Filtros');
+                        window.removeLoading();
                     }
                 });
             });
@@ -317,10 +319,11 @@
                 $form[0].reset();
                 $form.find("#pagina").val(1);
                 $("#tamanhoPagina").val(10);
-
+                debugger
                 const url = urlBase + "?" + $form.serialize() + "&tamanhoPagina=" + $("#tamanhoPagina").val();
 
                 $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Pesquisando');
+                addLoading("Buscando pedidos...");
 
                 $.ajax({
                     url: url,
@@ -337,6 +340,7 @@
                     },
                     complete: function () {
                         $btn.prop("disabled", false).html('<i class="fas fa-search"></i> Aplicar Filtros');
+                        removeLoading();
                     }
                 });
             });

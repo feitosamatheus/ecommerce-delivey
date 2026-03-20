@@ -50,5 +50,7 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<Pedido>()
             .Property(p => p.Status)
             .HasConversion<int>();
+
+        modelBuilder.Entity<Produto>().HasQueryFilter(p => p.Ativo);
     }
 }

@@ -1,52 +1,257 @@
-@model IEnumerable<Ecommerce.MVC.Entities.Produto>
+@model Ecommerce.MVC.Models.Admin.ProdutosIndexViewModel
 
 @{
-    ViewData["Title"] = "Produtos - Admin";
+    ViewData["Title"] = "Produtos";
+    ViewData["Description"] = "Gerencie o catálogo de produtos, preços e categorias.";
 }
 
-<div class="container my-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h4 mb-0">Produtos</h2>
-        <a asp-area="Admin" asp-controller="Produtos" asp-action="Create" class="btn btn-primary">
-            <i class="fa-solid fa-plus me-1"></i> Novo produto
-        </a>
+<style>
+    /* Reaproveitando seu design system de Pedidos */
+    .card-filter-clean {
+        border: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05) !important;
+        border-radius: 0.75rem !important;
+        background-color: #ffffff;
+    }
+
+        .card-filter-clean .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 1rem 1.25rem;
+        }
+
+        .card-filter-clean .form-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-filter-clean .form-control,
+        .card-filter-clean .form-select {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+    .btn-filter-action {
+        border-radius: 0.5rem;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-filter-outline {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+    }
+
+    /* Estilo da Tabela */
+    .card-table-clean {
+        border: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+        border-radius: 0.75rem !important;
+        overflow: hidden;
+    }
+
+    .table-clean thead th {
+        background-color: #f8fafc !important;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.025em;
+        font-weight: 700;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem 0.75rem !important;
+    }
+
+    .table-clean tbody td {
+        padding: 1rem 0.75rem !important;
+        vertical-align: middle;
+        color: #475569;
+    }
+
+    .btn-tool {
+        transition: all 0.2s ease-in-out;
+    }
+
+        .btn-tool i {
+            /* Evita que o ícone pisque ao trocar de classe */
+            display: inline-block;
+            width: 14px;
+            text-align: center;
+        }
+</style>
+
+<div class="container-fluid px-0">
+    <div class="card card-filter-clean mb-4">
+        <div class="card-header d-flex align-items-center py-2">
+            <h3 class="card-title fs-6 mb-0">
+                <i class="fas fa-filter me-2 text-muted"></i> Filtros de Pesquisa
+            </h3>
+
+            <div class="card-tools ms-auto d-flex align-items-center gap-2">
+        
+                <a asp-area="Admin" asp-controller="Produtos" asp-action="Create"
+                       class="btn btn-primary btn-sm shadow-sm btn-filter-action">
+                    <i class="fas fa-plus"></i> Novo Produto
+                </a>
+
+                <button type="button"
+                        class="btn btn-tool"
+                        data-lte-toggle="card-collapse"
+                        title="Recolher/Expandir">
+                    <i class="fas fa-minus"></i>
+                </button>
+        
+            </div>
+        </div>
+
+        <div class="card-body">
+            <form id="formFiltroProdutos" method="get" action="@Url.Action("Index", "Produtos", new { area = "Admin" })">
+                <input type="hidden" id="pagina" name="pagina" value="@Model.PaginaAtual" />
+                
+                <div class="row g-3">
+                    <div class="col-xl-5">
+                        <label for="busca" class="form-label">Nome do Produto</label>
+                        <input type="text" class="form-control" id="busca" name="busca"
+                               placeholder="Ex: Pizza Calabresa..." value="@Context.Request.Query["busca"]">
+                    </div>
+
+                    <div class="col-xl-4">
+                        <label for="categoriaId" class="form-label">Categoria</label>
+                        <select class="form-select" id="categoriaId" name="categoriaId">
+                            <option value="">Todas as categorias</option>
+                            @foreach (var cat in Model.Categorias)
+                            {
+                                <option value="@cat.Value" selected="@(Context.Request.Query["categoriaId"] == cat.Value)">
+                                    @cat.Text
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-xl-12">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="@Url.Action("Index", "Produtos", new { area = "Admin" })" class="btn btn-filter-outline ">
+                                <i class="fas fa-eraser opacity-50"></i> Limpar
+                            </a>
+                            <button type="submit" class="btn btn-secondary shadow-sm">
+                                <i class="fas fa-search"></i>
+                                Aplicar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div class="table-responsive bg-white rounded-3 shadow-sm">
-        <table class="table table-sm align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Nome</th>
-                    <th>Categoria</th>
-                    <th class="text-end">Preço</th>
-                    <th class="text-center">Preparo (min)</th>
-                    <th style="width: 1%;"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in Model)
-                {
-                    <tr>
-                        <td>@p.Nome</td>
-                        <td>@p.Categoria?.Nome</td>
-                        <td class="text-end">@p.Preco.ToString("C")</td>
-                        <td class="text-center">@p.TempoPreparoMinutos</td>
-                        <td class="text-end">
-                            <div class="btn-group btn-group-sm">
-                                <a asp-area="Admin" asp-controller="Produtos" asp-action="Edit" asp-route-id="@p.Id" class="btn btn-outline-secondary">
-                                    Editar
-                                </a>
-                                <form asp-area="Admin" asp-controller="Produtos" asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Deseja realmente excluir este produto?');">
-                                        Excluir
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div id="resultadoProdutos">
+        @await Html.PartialAsync("_ProdutosLista", Model)
     </div>
 </div>
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(function () {
+            // Lógica AJAX idêntica à de Pedidos para manter consistência
+            $("#formFiltroProdutos").on("submit", function (e, manterPagina) {
+                e.preventDefault();
+                const $form = $(this);
+                const $btn = $form.find("button[type='submit']");
 
+                if (!manterPagina) { $form.find("#pagina").val(1); }
+
+                let url = $form.attr("action") + "?" + $form.serialize();
+                $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                addLoading("Buscando produtos...");
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    success: function (html) {
+                        $("#resultadoProdutos").html(html);
+                        window.history.replaceState({}, "", url);
+                    },
+                    error: function () {
+                        Swal.fire("Erro", "Não foi possível carregar os produtos.", "error");
+                    },
+                    complete: function () {
+                        $btn.prop("disabled", false).html('<i class="fas fa-search"></i> Aplicar Filtros');
+
+                        removeLoading();
+                    }
+                });
+            });
+
+            // Exclusão com SweetAlert2 (conforme o padrão que você iniciou)
+            $(document).on("submit", ".form-excluir-produto", function (e) {
+                e.preventDefault(); // Impede o envio imediato
+                const form = this;
+
+                // Chama o SweetAlert2 diretamente aqui
+                Swal.fire({
+                    title: 'Remover Produto?',
+                    text: "O item será desativado e não aparecerá mais no catálogo.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2c180d', // Cor do Barriga Cheia
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sim, desativar!',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Chama o loading antes de enviar
+                        if (typeof window.addLoading === "function") {
+                            window.addLoading("Desativando produto...");
+                        }
+            
+                        // Envia o formulário manualmente
+                        form.submit();
+                    }
+                });
+            });
+
+            $(document).on("click", ".paginacao-produto", function (e) {
+                e.preventDefault();
+                const pagina = $(this).data("pagina");
+    
+                if (pagina) {
+                    $("#pagina").val(pagina); // Atualiza o hidden input
+                    // Disparamos o submit do form passando 'true' para o parâmetro 'manterPagina'
+                    $("#formFiltroProdutos").trigger("submit", [true]);
+                }
+            });
+
+            // Captura a mudança no select de tamanho da página
+            $(document).on("change", "#tamanhoPagina", function() {
+                $("#pagina").val(1); // Reseta para a página 1 ao mudar o tamanho
+                $("#formFiltroProdutos").submit();
+            });
+
+            $(".btn-tool").on("click", function () {
+                const $card = $(this).closest(".card");
+                const $icon = $(this).find("i");
+                const vaiFechar = !$card.hasClass("collapsed-card");
+
+                $icon.attr("class", `fas fa-${vaiFechar ? "plus" : "minus"}`);
+            });
+
+        });
+    </script>
+}

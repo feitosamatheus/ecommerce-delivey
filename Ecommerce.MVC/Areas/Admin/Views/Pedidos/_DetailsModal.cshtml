@@ -97,15 +97,15 @@
         background: #fff;
     }
 
-    .card-clean .card-header {
-        background: #fff;
-        border-bottom: 1px solid #f1f5f9;
-        padding: 1rem 1.25rem;
-    }
+        .card-clean .card-header {
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 1rem 1.25rem;
+        }
 
-    .card-clean .card-body {
-        padding: 1.25rem;
-    }
+        .card-clean .card-body {
+            padding: 1.25rem;
+        }
 
     .summary-box {
         border: 1px solid #e2e8f0;
@@ -115,21 +115,21 @@
         height: 100%;
     }
 
-    .summary-box .label {
-        display: block;
-        font-size: .75rem;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        color: #64748b;
-        margin-bottom: .35rem;
-        font-weight: 600;
-    }
+        .summary-box .label {
+            display: block;
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #64748b;
+            margin-bottom: .35rem;
+            font-weight: 600;
+        }
 
-    .summary-box .value {
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: #0f172a;
-    }
+        .summary-box .value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
 
     .section-title {
         font-size: 0.75rem !important;
@@ -184,6 +184,11 @@
 
     .finance-grid .summary-box .value.money {
         font-size: 1.3rem;
+    }
+
+    /* AJUSTE DO BACKDROP */
+    .modal-backdrop.show {
+        opacity: 0.2 !important;
     }
 </style>
 
@@ -551,9 +556,19 @@
     </div>
 
     <div class="modal-footer bg-white border-top-0 pb-4">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
-        <button type="button" class="btn btn-primary shadow-sm" onclick="window.print();">
-            <i class="fas fa-print me-1"></i> Imprimir
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Fechar
         </button>
+
+        <a href="@Url.Action("ExportarPdf", "Pedidos", new { area = "Admin", id = Model.Id })"
+               target="_blank"
+               class="btn btn-danger shadow-sm">
+            <i class="fas fa-file-pdf me-1"></i> PDF
+        </a>
+
+        <a href="@Url.Action("ExportarExcel", "Pedidos", new { area = "Admin", id = Model.Id })"
+               class="btn btn-success shadow-sm">
+            <i class="fas fa-file-excel me-1"></i> Excel
+        </a>
     </div>
 </div>

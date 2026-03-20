@@ -1,0 +1,53 @@
+<style>
+    /* Usamos IDs para ganhar de qualquer CSS do AdminLTE */
+    #global-loader-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 999999 !important; /* Valor altíssimo para ficar acima de modais */
+        display: none; /* Escondido por padrão */
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Quando o body tem a classe loading, mostramos o container */
+    body.loading #global-loader-container {
+        display: flex !important;
+    }
+
+    .loader-circle-custom {
+        width: 60px;
+        height: 60px;
+        border: 6px solid rgba(255, 255, 255, 0.2);
+        border-top: 6px solid #ffffff; /* Branco para destacar no fundo escuro */
+        border-radius: 50%;
+        animation: spin-global 1s linear infinite !important;
+    }
+
+    .text-spinner {
+        margin-top: 20px;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    @@keyframes spin-global {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Previne o scroll */
+    body.loading {
+        overflow: hidden !important;
+    }
+</style>
+
+<div id="global-loader-container">
+    <div class="loader-circle-custom"></div>
+    <div class="text-spinner">Carregando...</div>
+</div>

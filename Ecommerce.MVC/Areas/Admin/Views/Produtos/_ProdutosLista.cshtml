@@ -1,0 +1,249 @@
+﻿@model Ecommerce.MVC.Models.Admin.ProdutosIndexViewModel
+@using System.Globalization
+@{
+    var pt = new CultureInfo("pt-BR");
+
+    string IconeOrdenacao(string coluna)
+    {
+        // Se você ainda não implementou SortColumn no ViewModel de Produtos,
+        // ele usará o padrão. Se implementou, ele funcionará como em Pedidos.
+        if (Model.SortColumn != coluna)
+            return "fas fa-sort text-muted opacity-50";
+
+        return Model.SortDirection == "asc"
+            ? "fas fa-sort-up text-primary"
+            : "fas fa-sort-down text-primary";
+    }
+}
+<style>
+    .pagination-clean .page-link {
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        margin: 0 2px;
+        border-radius: 0.5rem !important;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        padding: 0.4rem 0.8rem;
+    }
+
+        .pagination-clean .page-link:hover {
+            background-color: #f8fafc;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+
+    .pagination-clean .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #fff;
+        color: #fff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .pagination-clean .page-item.disabled .page-link {
+        background-color: #f8fafc;
+        border-color: #f1f5f9;
+        color: #cbd5e1;
+    }
+
+    .pagination-clean .page-link i {
+        font-size: 0.75rem;
+    }
+
+    /* Estilo para a imagem miniatura do produto */
+    .img-product-thumb {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .card-table-clean .card-title {
+        font-weight: 600;
+        color: #334155;
+    }
+</style>
+
+<div class="card card-table-clean mt-4">
+    <div class="card-header d-flex align-items-center justify-content-between row">
+        <h3 class="card-title mb-0 col-6">
+            <i class="fas fa-hamburger me-2 text-muted"></i>
+            Lista de Produtos
+        </h3>
+
+        <div class="col-6">
+            <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap">
+                @if (Model.Produtos != null && Model.Produtos.Any())
+                {
+                    <span class="badge rounded-pill bg-light text-primary border">
+                        @Model.TotalItens <span class="d-none d-sm-inline">Produtos</span>
+                    </span>
+                }
+
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select form-select-sm"
+                            id="tamanhoPagina"
+                            name="tamanhoPagina"
+                            form="formFiltroProdutos"
+                            style="width: 90px;">
+                        <option value="5" selected="@(Model.TamanhoPagina == 5)">5</option>
+                        <option value="10" selected="@(Model.TamanhoPagina == 10)">10</option>
+                        <option value="20" selected="@(Model.TamanhoPagina == 20)">20</option>
+                        <option value="50" selected="@(Model.TamanhoPagina == 50)">50</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-clean mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4" style="width: 60px;"></th>
+                        <th>
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-produto" data-coluna="Nome">
+                                Produto <i class="@IconeOrdenacao("Nome") ms-1"></i>
+                            </a>
+                        </th>
+                        <th>Categoria</th>
+                        <th class="text-end">
+                            <a href="javascript:void(0)" class="text-decoration-none text-reset ordenacao-produto" data-coluna="Preco">
+                                Preço <i class="@IconeOrdenacao("Preco") ms-1"></i>
+                            </a>
+                        </th>
+                        <th class="text-center">Preparo</th>
+                        <th class="text-center pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Produtos != null && Model.Produtos.Any())
+                    {
+                        @foreach (var p in Model.Produtos)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <img src="@(string.IsNullOrEmpty(p.ImagemUrl) ? "/img/no-image.png" : p.ImagemUrl)"
+                                         class="img-product-thumb" alt="@p.Nome" />
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-dark">@p.Nome</span>
+                                        @if (!string.IsNullOrEmpty(p.Descricao))
+                                        {
+                                            <small class="text-muted text-truncate" style="max-width: 250px;">@p.Descricao</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge border bg-light text-secondary badge-pill-custom">
+                                        @(p.Categoria?.Nome ?? "Sem Categoria")
+                                    </span>
+                                </td>
+                                <td class="text-end fw-bold text-primary">@p.Preco.ToString("C", pt)</td>
+                                <td class="text-center">
+                                    <span class="text-muted small">
+                                        <i class="far fa-clock me-1"></i> @p.TempoPreparoMinutos min
+                                    </span>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-light border btn-action" title="Editar">
+                                            <i class="fas fa-edit text-muted"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline form-excluir-produto">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-light border btn-action" title="Excluir">
+                                                <i class="fas fa-trash text-danger"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* Versão Mobile *@
+        <div class="d-md-none">
+            @if (Model.Produtos != null && Model.Produtos.Any())
+            {
+                @foreach (var p in Model.Produtos)
+                {
+                    <div class="mobile-order-item p-3 border-bottom">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="@(string.IsNullOrEmpty(p.ImagemUrl) ? "/img/no-image.png" : p.ImagemUrl)"
+                                 class="img-product-thumb" alt="@p.Nome" />
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold text-dark">@p.Nome</span>
+                                    <span class="fw-bold text-primary">@p.Preco.ToString("C", pt)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-muted">@(p.Categoria?.Nome ?? "Geral")</small>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-light border">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        @if (Model.Produtos == null || !Model.Produtos.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-box-open d-block mb-2 fa-2x opacity-25"></i>
+                Nenhum produto encontrado.
+            </div>
+        }
+
+        @if (Model.TotalPaginas > 1)
+        {
+            <div class="d-flex justify-content-between align-items-center p-3 border-top bg-white flex-wrap gap-2">
+                <div class="text-muted small">
+                    Exibindo @(((Model.PaginaAtual - 1) * Model.TamanhoPagina) + 1)
+                    até @(Math.Min(Model.PaginaAtual * Model.TamanhoPagina, Model.TotalItens))
+                    de @Model.TotalItens produtos
+                </div>
+
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination pagination-sm pagination-clean mb-0">
+                        <li class="page-item @(Model.PaginaAtual == 1 ? "disabled" : "")">
+                            <a class="page-link paginacao-produto" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual - 1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPaginas; i++)
+                        {
+                            @if (i == 1 || i == Model.TotalPaginas || (i >= Model.PaginaAtual - 2 && i <= Model.PaginaAtual + 2))
+                            {
+                                <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                    <a class="page-link paginacao-produto" href="javascript:void(0)" data-pagina="@i">@i</a>
+                                </li>
+                            }
+                            else if (i == Model.PaginaAtual - 3 || i == Model.PaginaAtual + 3)
+                            {
+                                <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+                            }
+                        }
+
+                        <li class="page-item @(Model.PaginaAtual == Model.TotalPaginas ? "disabled" : "")">
+                            <a class="page-link paginacao-produto" href="javascript:void(0)" data-pagina="@(Model.PaginaAtual + 1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>

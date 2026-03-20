@@ -33,5 +33,7 @@ public class Produto
     [ForeignKey("CategoriaId")]
     public Categoria Categoria { get; set; }
 
+    public bool Ativo { get; set; } = true;
+
     public ICollection<ProdutoAcompanhamentoCategoria> AcompanhamentoCategorias { get; set; } = new List<ProdutoAcompanhamentoCategoria>();
 }

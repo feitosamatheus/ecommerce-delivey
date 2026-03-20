@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Ecommerce.MVC.Areas.Admin.Services;
 using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Enums;
@@ -16,10 +17,12 @@ namespace Ecommerce.MVC.Areas.Admin.Controllers;
 public class PedidosController : Controller
 {
     private readonly DatabaseContext _db;
+    private readonly IPedidoExportService _pedidoExportService;
 
-    public PedidosController(DatabaseContext db)
+    public PedidosController(DatabaseContext db, IPedidoExportService pedidoExportService)
     {
         _db = db;
+        _pedidoExportService = pedidoExportService;
     }
 
     public async Task<IActionResult> Index(
@@ -177,6 +180,50 @@ public class PedidosController : Controller
             status = pedido.Status.ToString(),
             id = pedido.Id
         });
+    }
+
+    //--------------------------------------------------------------------------------
+
+    [HttpGet("ExportarPdf/{id:guid}")]
+    public async Task<IActionResult> ExportarPdf(Guid id, CancellationToken ct)
+    {
+        var pedido = await ObterPedidoCompleto(id, ct);
+
+        if (pedido == null)
+            return NotFound();
+
+        var arquivo = _pedidoExportService.GerarPdf(pedido);
+
+        return File(
+            arquivo,
+            "application/pdf",
+            $"pedido-{pedido.Codigo}.pdf");
+    }
+
+    [HttpGet("ExportarExcel/{id:guid}")]
+    public async Task<IActionResult> ExportarExcel(Guid id, CancellationToken ct)
+    {
+        var pedido = await ObterPedidoCompleto(id, ct);
+
+        if (pedido == null)
+            return NotFound();
+
+        var arquivo = _pedidoExportService.GerarExcel(pedido);
+
+        return File(
+            arquivo,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            $"pedido-{pedido.Codigo}.xlsx");
+    }
+
+    private async Task<Ecommerce.MVC.Entities.Pedido?> ObterPedidoCompleto(Guid id, CancellationToken ct)
+    {
+        return await _db.Pedidos
+            .Include(p => p.Cliente)
+            .Include(p => p.Pagamentos)
+            .Include(p => p.Itens)
+                .ThenInclude(i => i.Acompanhamentos)
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
     }
 }
 

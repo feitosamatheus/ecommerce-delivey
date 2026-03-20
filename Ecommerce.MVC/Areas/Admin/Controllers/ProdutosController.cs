@@ -6,6 +6,7 @@ using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Models.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.MVC.Areas.Admin.Controllers;
@@ -21,16 +22,67 @@ public class ProdutosController : Controller
         _db = db;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string busca, Guid? categoriaId, int pagina = 1, int tamanhoPagina = 5)
     {
-        var produtos = await _db.Produtos
+        var query = _db.Produtos
             .AsNoTracking()
             .Include(p => p.Categoria)
-            .OrderBy(p => p.Nome)
+            .AsQueryable();
+
+        // Aplicar Filtros
+        if (!string.IsNullOrWhiteSpace(busca))
+        {
+            query = query.Where(p => p.Nome.Contains(busca) || p.Descricao.Contains(busca));
+        }
+
+        if (categoriaId.HasValue)
+        {
+            query = query.Where(p => p.CategoriaId == categoriaId.Value);
+        }
+
+        // Ordenação Padrão (Pode ser expandida depois)
+        query = query.OrderBy(p => p.Nome);
+
+        // Paginação
+        var totalItens = await query.CountAsync();
+        var produtos = await query
+            .Skip((pagina - 1) * tamanhoPagina)
+            .Take(tamanhoPagina)
             .ToListAsync();
 
-        return View(produtos);
+        // Preparar ViewModel
+        var model = new ProdutosIndexViewModel
+        {
+            Produtos = produtos,
+            Categorias = await _db.Categorias
+                .AsNoTracking()
+                .OrderBy(c => c.Nome)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Nome,
+                    Selected = c.Id == categoriaId
+                })
+                .ToListAsync(),
+            PaginaAtual = pagina,
+            TotalPaginas = (int)Math.Ceiling(totalItens / (double)tamanhoPagina),
+            TotalItens = totalItens,
+            TamanhoPagina = tamanhoPagina,
+            Busca = busca,
+            CategoriaId = categoriaId
+        };
+
+        // Lógica AJAX: Se for uma requisição do script, retorna apenas a tabela
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        {
+            return PartialView("_ProdutosLista", model);
+        }
+
+        return View(model);
     }
+
+    // O restante do seu código (Create, Edit, Delete) permanece igual, 
+    // apenas certifique-se de que os métodos auxiliares continuem funcionando.
 
     public async Task<IActionResult> Create()
     {
@@ -116,10 +168,17 @@ public class ProdutosController : Controller
     public async Task<IActionResult> Delete(Guid id)
     {
         var produto = await _db.Produtos.FirstOrDefaultAsync(p => p.Id == id);
+
         if (produto == null) return NotFound();
 
-        _db.Produtos.Remove(produto);
+        // Deleção Lógica
+        produto.Ativo = false;
+
+        _db.Produtos.Update(produto);
         await _db.SaveChangesAsync();
+
+        // Se estiver usando AJAX, você pode retornar um Json
+        // return Json(new { success = true }); 
 
         return RedirectToAction(nameof(Index));
     }
@@ -134,4 +193,3 @@ public class ProdutosController : Controller
         ViewBag.Categorias = categorias;
     }
 }
-
