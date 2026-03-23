@@ -14,7 +14,7 @@ namespace Ecommerce.MVC.Models.Admin
         public string? Descricao { get; set; }
 
         [Required(ErrorMessage = "Informe o preço.")]
-        public decimal Preco { get; set; }
+        public string Preco { get; set; } = string.Empty;
 
         public int TempoPreparoMinutos { get; set; }
 

@@ -6,7 +6,7 @@
 }
 
 <style>
-    /* Reaproveitando seu design system de Pedidos */
+    /* Design System - Barriga Cheia */
     .card-filter-clean {
         border: none !important;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05) !important;
@@ -52,9 +52,9 @@
         background: #fff;
         border: 1px solid #e2e8f0;
         color: #64748b;
+        text-decoration: none;
     }
 
-    /* Estilo da Tabela */
     .card-table-clean {
         border: none !important;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
@@ -79,39 +79,45 @@
         color: #475569;
     }
 
+    .badge-status {
+        font-weight: 600;
+        padding: 0.35em 0.65em;
+        border-radius: 0.375rem;
+    }
+
     .btn-tool {
         transition: all 0.2s ease-in-out;
     }
-
-        .btn-tool i {
-            /* Evita que o ícone pisque ao trocar de classe */
-            display: inline-block;
-            width: 14px;
-            text-align: center;
-        }
 </style>
 
 <div class="container-fluid px-0">
-    <div class="w-100 d-flex justify-content-end mb-2">
-        <a asp-area="Admin" asp-controller="Produtos" asp-action="Create"
-            class="btn btn-primary btn-sm shadow-sm btn-filter-action">
-            <i class="fas fa-plus"></i> Novo Produto
-        </a>
+    <div class="w-100 d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fs-4 fw-bold mb-0 text-dark">Gestão de Produtos</h2>
+        <div class="d-flex gap-2">
+            <a asp-area="Admin" asp-controller="Produtos" asp-action="Create"
+                   class="btn btn-primary btn-sm shadow-sm btn-filter-action">
+                <i class="fas fa-plus"></i> Novo Produto
+            </a>
+        </div>
     </div>
+    @* Mensagens de Feedback *@
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm mb-4">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger border-0 shadow-sm mb-4">@TempData["Error"]</div>
+    }
     <div class="card card-filter-clean mb-4">
         <div class="card-header d-flex align-items-center py-2">
             <h3 class="card-title fs-6 mb-0">
                 <i class="fas fa-filter me-2 text-muted"></i> Filtros de Pesquisa
             </h3>
-
-            <div class="card-tools ms-auto d-flex align-items-center gap-2">
-                <button type="button"
-                        class="btn btn-tool"
-                        data-lte-toggle="card-collapse"
-                        title="Recolher/Expandir">
+            <div class="card-tools ms-auto">
+                <button type="button" class="btn btn-link btn-sm text-muted btn-tool" data-lte-toggle="card-collapse">
                     <i class="fas fa-minus"></i>
                 </button>
-        
             </div>
         </div>
 
@@ -139,119 +145,103 @@
                         </select>
                     </div>
 
-                    <div class="col-xl-12">
-                        <label class="form-label">&nbsp;</label>
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="@Url.Action("Index", "Produtos", new { area = "Admin" })" class="btn btn-filter-outline ">
-                                <i class="fas fa-eraser opacity-50"></i> Limpar
-                            </a>
-                            <button type="submit" class="btn btn-secondary shadow-sm">
-                                <i class="fas fa-search"></i>
-                                Aplicar Filtros
-                            </button>
-                        </div>
+                    <div class="col-xl-3 d-flex align-items-end justify-content-end gap-2">
+                        <a href="@Url.Action("Index", "Produtos", new { area = "Admin" })" class="btn btn-filter-outline btn-filter-action">
+                            <i class="fas fa-eraser opacity-50"></i> Limpar
+                        </a>
+                        <button type="submit" class="btn btn-secondary shadow-sm btn-filter-action">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="resultadoProdutos">
-        @await Html.PartialAsync("_ProdutosLista", Model)
+    <div class="card card-table-clean">
+        <div id="resultadoProdutos" class="card-body table-responsive p-0">
+            @await Html.PartialAsync("_ProdutosLista", Model)
+        </div>
     </div>
 </div>
+
 @section Scripts {
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(function () {
-            // Lógica AJAX idêntica à de Pedidos para manter consistência
-            $("#formFiltroProdutos").on("submit", function (e, manterPagina) {
-                e.preventDefault();
-                const $form = $(this);
-                const $btn = $form.find("button[type='submit']");
+        // Lógica AJAX para Filtro e Paginação
+        $("#formFiltroProdutos").on("submit", function (e, manterPagina) {
+        e.preventDefault();
+        const $form = $(this);
+        const $btn = $form.find("button[type='submit']");
 
-                if (!manterPagina) { $form.find("#pagina").val(1); }
+        if (!manterPagina) { $form.find("#pagina").val(1); }
 
-                let url = $form.attr("action") + "?" + $form.serialize();
-                $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i>');
+        let url = $form.attr("action") + "?" + $form.serialize();
+        $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Aguarde...');
 
-                addLoading("Buscando produtos...");
+        if (typeof window.addLoading === "function") window.addLoading("Buscando produtos...");
 
-                $.ajax({
-                    url: url,
-                    type: "GET",
-                    headers: { "X-Requested-With": "XMLHttpRequest" },
-                    success: function (html) {
-                        $("#resultadoProdutos").html(html);
-                        window.history.replaceState({}, "", url);
-                    },
-                    error: function () {
-                        Swal.fire("Erro", "Não foi possível carregar os produtos.", "error");
-                    },
-                    complete: function () {
-                        $btn.prop("disabled", false).html('<i class="fas fa-search"></i> Aplicar Filtros');
+        $.ajax({
+        url: url,
+        type: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        success: function (html) {
+        $("#resultadoProdutos").html(html);
+        window.history.replaceState({}, "", url);
+        },
+        error: function () {
+        Swal.fire("Erro", "Não foi possível carregar os produtos.", "error");
+        },
+        complete: function () {
+        $btn.prop("disabled", false).html('<i class="fas fa-search"></i> Filtrar');
+        if (typeof window.removeLoading === "function") window.removeLoading();
+        }
+        });
+        });
 
-                        removeLoading();
-                    }
-                });
-            });
+        // Exclusão com SweetAlert2
+        $(document).on("click", ".btn-excluir-produto", function () {
+        const id = $(this).data("id");
+                
+        Swal.fire({
+        title: 'Remover Produto?',
+        text: "O item será desativado e não aparecerá mais no catálogo.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#2c180d',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sim, desativar!',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+        }).then((result) => {
+        if (result.isConfirmed) {
+        if (typeof window.addLoading === "function") {
+        window.addLoading("Desativando produto...");
+        }
+        $(`#form-delete-${id}`).submit();
+        }
+        });
+        });
 
-            // Exclusão com SweetAlert2 (conforme o padrão que você iniciou)
-            $(document).on("submit", ".form-excluir-produto", function (e) {
-                e.preventDefault(); // Impede o envio imediato
-                const form = this;
+        // Paginação
+        $(document).on("click", ".paginacao-produto", function (e) {
+        e.preventDefault();
+        const pagina = $(this).data("pagina");
+        if (pagina) {
+        $("#pagina").val(pagina);
+        $("#formFiltroProdutos").trigger("submit", [true]);
+        }
+        });
 
-                // Chama o SweetAlert2 diretamente aqui
-                Swal.fire({
-                    title: 'Remover Produto?',
-                    text: "O item será desativado e não aparecerá mais no catálogo.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#2c180d', // Cor do Barriga Cheia
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sim, desativar!',
-                    cancelButtonText: 'Cancelar',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Chama o loading antes de enviar
-                        if (typeof window.addLoading === "function") {
-                            window.addLoading("Desativando produto...");
-                        }
-            
-                        // Envia o formulário manualmente
-                        form.submit();
-                    }
-                });
-            });
-
-            $(document).on("click", ".paginacao-produto", function (e) {
-                e.preventDefault();
-                const pagina = $(this).data("pagina");
-    
-                if (pagina) {
-                    $("#pagina").val(pagina); // Atualiza o hidden input
-                    // Disparamos o submit do form passando 'true' para o parâmetro 'manterPagina'
-                    $("#formFiltroProdutos").trigger("submit", [true]);
-                }
-            });
-
-            // Captura a mudança no select de tamanho da página
-            $(document).on("change", "#tamanhoPagina", function() {
-                $("#pagina").val(1); // Reseta para a página 1 ao mudar o tamanho
-                $("#formFiltroProdutos").submit();
-            });
-
+            // Troca de ícone no colapso do card
             $(".btn-tool").on("click", function () {
-                const $card = $(this).closest(".card");
                 const $icon = $(this).find("i");
-                const vaiFechar = !$card.hasClass("collapsed-card");
-
-                $icon.attr("class", `fas fa-${vaiFechar ? "plus" : "minus"}`);
+                setTimeout(() => {
+                    const isCollapsed = $(this).closest(".card").hasClass("collapsed-card");
+                    $icon.attr("class", `fas fa-${isCollapsed ? "plus" : "minus"}`);
+                }, 300);
             });
-
         });
     </script>
 }

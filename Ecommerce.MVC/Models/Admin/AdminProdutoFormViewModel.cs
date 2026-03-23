@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Ecommerce.MVC.Models.Admin;
@@ -7,18 +9,19 @@ public class AdminProdutoFormViewModel
 {
     public Guid? Id { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "O nome do produto é obrigatório")]
     [StringLength(150)]
     public string Nome { get; set; }
 
     [StringLength(500)]
+    [Display(Name = "Descrição")]
     public string Descricao { get; set; }
 
-    [Required]
-    [Range(0.01, 999999)]
-    public decimal Preco { get; set; }
+    [Required(ErrorMessage = "Informe o preço")]
+    [Display(Name = "Preço")]
+    public string Preco { get; set; } = string.Empty;
 
-    [Display(Name = "Imagem (URL)")]
+    [Display(Name = "URL da Imagem")]
     [StringLength(255)]
     public string ImagemUrl { get; set; }
 
@@ -26,8 +29,38 @@ public class AdminProdutoFormViewModel
     [Range(0, 600)]
     public int TempoPreparoMinutos { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Selecione uma categoria")]
     [Display(Name = "Categoria")]
     public Guid CategoriaId { get; set; }
+
+    [Display(Name = "Disponível para venda")]
+    public bool Ativo { get; set; } = true;
+
+    // --- Listas de Suporte para a View ---
+
+    // Lista de categorias do menu (Sopa, Bebida, etc)
+    public IEnumerable<SelectListItem> Categorias { get; set; } = new List<SelectListItem>();
+
+    // Lista de categorias de acompanhamento disponíveis para o "Novo Grupo"
+    public IEnumerable<SelectListItem> CategoriasAcompanhamentoDisponiveis { get; set; } = new List<SelectListItem>();
+
+    // Coleção que o Model Binder preencherá com os dados do formulário dinâmico
+    public List<CategoriaAcompanhamentoSelecaoViewModel> CategoriasAcompanhamentoSelecionadas { get; set; } = new();
 }
 
+// ViewModel Auxiliar para os Grupos de Acompanhamento
+public class CategoriaAcompanhamentoSelecaoViewModel
+{
+    public Guid ProdutoId { get; set; }
+    public Guid AcompanhamentoCategoriaId { get; set; }
+    public string NomeCategoria { get; set; }
+    public bool Obrigatorio { get; set; }
+    public int MinSelecionados { get; set; }
+    public int MaxSelecionados { get; set; }
+    public int Ordem { get; set; }
+
+    public List<AcompanhamentoItemViewModel> Acompanhamentos { get; set; } = new();
+
+    // Se precisar editar os itens individuais dentro do grupo:
+    // public List<AcompanhamentoOpcaoViewModel> Acompanhamentos { get; set; } = new();
+}

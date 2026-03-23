@@ -30,5 +30,5 @@ public class ProdutoAcompanhamentoCategoria
 
     public int Ordem { get; set; } = 0;
 
-    public ICollection<Acompanhamento> Acompanhamentos { get; set; } = new List<Acompanhamento>();
+    public ICollection<ProdutoAcompanhamento> ProdutoAcompanhamentos { get; set; } = new List<ProdutoAcompanhamento>();
 }

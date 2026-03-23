@@ -27,7 +27,8 @@ public class ProdutoController : Controller
             .Include(p => p.AcompanhamentoCategorias)
                 .ThenInclude(pc => pc.Categoria)
             .Include(p => p.AcompanhamentoCategorias)
-                .ThenInclude(pc => pc.Acompanhamentos)
+                .ThenInclude(pc => pc.ProdutoAcompanhamentos)
+                    .ThenInclude(pa => pa.Acompanhamento)
             .FirstOrDefaultAsync(p => p.Id == id && p.Ativo);
 
         if (produto == null)

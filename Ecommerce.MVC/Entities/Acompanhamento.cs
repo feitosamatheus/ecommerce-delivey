@@ -20,4 +20,6 @@ public class Acompanhamento
 
     public Guid AcompanhamentoCategoriaId { get; set; }
     public AcompanhamentoCategoria Categoria { get; set; } = null!;
+
+    public ICollection<ProdutoAcompanhamento> ProdutoAcompanhamentos { get; set; } = new List<ProdutoAcompanhamento>();
 }

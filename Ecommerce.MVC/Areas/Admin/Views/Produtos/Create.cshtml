@@ -2,320 +2,173 @@
 
 @{
     ViewData["Title"] = "Novo Produto";
-    ViewData["Description"] = "Cadastre um novo item no seu cardápio.";
+    ViewData["Description"] = "Atualize os dados e as configurações de exibição deste item.";
 }
 
 <style>
+    :root {
+        --primary-soft: #eef2ff;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+    }
+
     .card-form-clean {
-        border: none !important;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05) !important;
-        border-radius: 0.75rem !important;
+        border: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-radius: 1rem;
         background-color: #ffffff;
         margin-bottom: 1.5rem;
+        transition: transform 0.2s;
     }
 
-    .card-form-clean .card-header {
-        background-color: transparent;
-        border-bottom: 1px solid #f1f5f9;
+    .card-header-custom {
         padding: 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
-    .card-form-clean .form-label {
-        font-size: 0.8rem;
+    .form-label {
+        font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.025em;
-        color: #64748b;
-        margin-bottom: 0.5rem;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
     }
 
-    .image-preview-container {
+    /* Image Upload Styling */
+    .image-upload-zone {
+        cursor: pointer;
         width: 100%;
-        height: 200px;
-        border: 2px dashed #e2e8f0;
-        border-radius: 0.75rem;
+        height: 250px;
+        border: 2px dashed var(--border-color);
+        border-radius: 1rem;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        overflow: hidden;
-        background-color: #f8fafc;
-        margin-bottom: 1rem;
-    }
-
-    #imgPreview {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: cover;
-    }
-
-    .acompanhamento-card-item {
-        border: 1px solid #e2e8f0;
-        border-radius: 0.75rem;
-        padding: 1rem;
-        background: #f8fafc;
-    }
-
-    .badge-rule {
-        font-size: 0.75rem;
-        padding: 0.45rem 0.65rem;
-        border-radius: 999px;
-        background: #eef2ff;
-        color: #334155;
-        display: inline-block;
-        margin-right: 0.35rem;
-        margin-top: 0.25rem;
-    }
-
-    .acompanhamento-opcao {
-        border: 1px solid #e2e8f0;
-        border-radius: 0.75rem;
-        background: #fff;
-        padding: 0.75rem 1rem;
-    }
-
-    .image-preview-container {
-        width: 100%;
-        height: 300px;
-        border: 2px dashed #cbd5e0;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
         background-color: #f8fafc;
         transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
 
-    .image-preview-container:hover {
-        border-color: #3182ce;
-        background-color: #edf2f7;
-    }
+        .image-upload-zone:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
 
     #imgPreview {
-        max-width: 100%;
-        max-height: 100%;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        display: block;
+        display: none;
+    }
+
+    .upload-placeholder {
+        text-align: center;
+        color: var(--text-muted);
+    }
+
+    /* Acompanhamentos UI */
+    .acompanhamento-card-item {
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        background: #ffffff;
+        margin-bottom: 1rem;
+        border-left: 4px solid #cbd5e1;
+    }
+
+        .acompanhamento-card-item.has-content {
+            border-left-color: #3b82f6;
+        }
+
+    .badge-rule {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        background: var(--primary-soft);
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .badge-mandatory {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .input-group-text-clean {
+        background: #f8fafc;
+        border-right: none;
+        color: var(--text-muted);
+        font-weight: 600;
     }
 </style>
 
 <form asp-action="Create" method="post" enctype="multipart/form-data">
-    <div class="container-fluid px-0">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <a asp-action="Index" class="btn btn-filter-outline">
-                <i class="fas fa-arrow-left me-1"></i> Voltar
-            </a>
-
-            <button type="submit" class="btn btn-primary btn-filter-action shadow-sm">
-                <i class="fas fa-save me-1"></i> Salvar Produto
-            </button>
+    <div class="container-fluid">
+        <div class="d-flex flex-column flex-md-row justify-content-end align-items-md-center mb-4 gap-3">
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancelar</a>
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fas fa-save me-2"></i>Publicar Produto
+                </button>
+            </div>
         </div>
-
-        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
         <div class="row">
             <div class="col-xl-8">
                 <div class="card card-form-clean">
-                    <div class="card-header">
-                        <h3 class="card-title fs-6 mb-0 text-primary">Informações Básicas</h3>
+                    <div class="card-header-custom">
+                        <span class="fw-bold text-dark"><i class="fas fa-info-circle me-2 text-primary"></i>Geral</span>
                     </div>
-
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-12">
-                                <label asp-for="Nome" class="form-label">Nome do Produto</label>
-                                <input asp-for="Nome" class="form-control" placeholder="Ex: Pizza Margherita Individual" />
+                            <div class="col-12">
+                                <label asp-for="Nome" class="form-label"></label>
+                                <input asp-for="Nome" class="form-control" placeholder="Nome do prato ou bebida" />
                                 <span asp-validation-for="Nome" class="text-danger small"></span>
                             </div>
-
-                            <div class="col-md-12">
-                                <label asp-for="Descricao" class="form-label">Descrição Detalhada</label>
-                                <textarea asp-for="Descricao" class="form-control" rows="4" placeholder="Descreva os ingredientes e detalhes..."></textarea>
-                                <span asp-validation-for="Descricao" class="text-danger small"></span>
+                            <div class="col-12">
+                                <label asp-for="Descricao" class="form-label">Descrição</label>
+                                <textarea asp-for="Descricao" class="form-control" rows="3" placeholder="Ex: Sopa de macaxeira com carne de sol e queijo coalho..."></textarea>
                             </div>
-
                             <div class="col-md-6">
-                                <label asp-for="CategoriaId" class="form-label">Categoria</label>
+                                <label asp-for="CategoriaId" class="form-label">Categoria do Menu</label>
                                 <select asp-for="CategoriaId" asp-items="Model.Categorias" class="form-select">
-                                    <option value="">Selecione uma categoria</option>
+                                    <option value="">Selecione...</option>
                                 </select>
-                                <span asp-validation-for="CategoriaId" class="text-danger small"></span>
                             </div>
-
                             <div class="col-md-3">
-                                <label asp-for="Preco" class="form-label">Preço (R$)</label>
-                                <input asp-for="Preco" class="form-control" type="number" step="0.01" />
-                                <span asp-validation-for="Preco" class="text-danger small"></span>
+                                <label asp-for="Preco" class="form-label">Preço de Venda</label>
+                                <div class="input-group">
+                                    <span class="input-group-text input-group-text-clean">R$</span>
+                                    <input asp-for="Preco" type="text" value="" class="form-control money" placeholder="0,00" />
+                                </div>
                             </div>
-
                             <div class="col-md-3">
-                                <label asp-for="TempoPreparoMinutos" class="form-label">Preparo (Min)</label>
+                                <label asp-for="TempoPreparoMinutos" class="form-label">Preparo (min)</label>
                                 <input asp-for="TempoPreparoMinutos" class="form-control" type="number" />
-                                <span asp-validation-for="TempoPreparoMinutos" class="text-danger small"></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card card-form-clean">
-                    <div class="card-header row d-flex justify-content-between align-items-center">
-                        <div class="col-6">
-                            <h3 class="card-title fs-6 mb-0 text-primary">Categorias de Acompanhamento</h3>
-                        </div>
-                        <div class="col-6 d-flex justify-content-end">
-                            <button type="button" id="btnAdicionarCategoriaAcompanhamento" class="btn btn-sm btn-primary">
-                                <i class="fas fa-plus me-1"></i> Adicionar
-                            </button>
-                        </div>
+                    <div class="card-header-custom">
+                        <span class="fw-bold text-dark"><i class="fas fa-list-ul me-2 text-primary"></i>Personalização</span>
+                        <button type="button" id="btnAdicionarCategoriaAcompanhamento" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i>Novo Grupo
+                        </button>
                     </div>
-
                     <div class="card-body">
                         <div id="categorias-acompanhamento-container">
-                            @if (Model.CategoriasAcompanhamentoSelecionadas != null && Model.CategoriasAcompanhamentoSelecionadas.Any())
-                            {
-                                for (int i = 0; i < Model.CategoriasAcompanhamentoSelecionadas.Count; i++)
-                                {
-                                    <div class="acompanhamento-card-item mb-3 categoria-acompanhamento-item">
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label">Categoria de Acompanhamento</label>
-                                                <select name="CategoriasAcompanhamentoSelecionadas[@i].AcompanhamentoCategoriaId"
-                                                        class="form-select select-categoria-acompanhamento">
-                                                    <option value="">Selecione</option>
-                                                    @foreach (var item in Model.CategoriasAcompanhamentoDisponiveis)
-                                                    {
-                                                        var selected = Model.CategoriasAcompanhamentoSelecionadas[i].AcompanhamentoCategoriaId.HasValue
-                                                            && Model.CategoriasAcompanhamentoSelecionadas[i].AcompanhamentoCategoriaId.Value.ToString() == item.Value;
-
-                                                        if (selected)
-                                                        {
-                                                            <option value="@item.Value" selected>@item.Text</option>
-                                                        }
-                                                        else
-                                                        {
-                                                            <option value="@item.Value">@item.Text</option>
-                                                        }
-                                                    }
-                                                </select>
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <label class="form-label">Obrigatório</label>
-                                                <div class="form-check form-switch mt-2">
-                                                    <input class="form-check-input input-obrigatorio-checkbox"
-                                                           type="checkbox"
-                                                           name="CategoriasAcompanhamentoSelecionadas[@i].Obrigatorio"
-                                                           value="true"
-                                                           @(Model.CategoriasAcompanhamentoSelecionadas[i].Obrigatorio ? "checked" : null) />
-
-                                                    <input type="hidden"
-                                                           name="CategoriasAcompanhamentoSelecionadas[@i].Obrigatorio"
-                                                           value="false" />
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <label class="form-label">Mínimo</label>
-                                                <input type="number"
-                                                       min="0"
-                                                       class="form-control input-min"
-                                                       name="CategoriasAcompanhamentoSelecionadas[@i].MinSelecionados"
-                                                       value="@Model.CategoriasAcompanhamentoSelecionadas[i].MinSelecionados" />
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <label class="form-label">Máximo</label>
-                                                <input type="number"
-                                                       min="1"
-                                                       class="form-control input-max"
-                                                       name="CategoriasAcompanhamentoSelecionadas[@i].MaxSelecionados"
-                                                       value="@Model.CategoriasAcompanhamentoSelecionadas[i].MaxSelecionados" />
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <label class="form-label">Ordem</label>
-                                                <input type="number"
-                                                       min="0"
-                                                       class="form-control input-ordem"
-                                                       name="CategoriasAcompanhamentoSelecionadas[@i].Ordem"
-                                                       value="@Model.CategoriasAcompanhamentoSelecionadas[i].Ordem" />
-                                            </div>
-
-                                            <div class="col-md-10">
-                                                <input type="hidden"
-                                                       name="CategoriasAcompanhamentoSelecionadas[@i].NomeCategoria"
-                                                       value="@Model.CategoriasAcompanhamentoSelecionadas[i].NomeCategoria"
-                                                       class="input-nome-categoria" />
-
-                                                <div class="categoria-acompanhamento-regras mb-3">
-                                                    <span class="badge-rule">
-                                                        Obrigatório: @(Model.CategoriasAcompanhamentoSelecionadas[i].Obrigatorio ? "Sim" : "Não")
-                                                    </span>
-                                                    <span class="badge-rule">
-                                                        Mínimo: @Model.CategoriasAcompanhamentoSelecionadas[i].MinSelecionados
-                                                    </span>
-                                                    <span class="badge-rule">
-                                                        Máximo: @Model.CategoriasAcompanhamentoSelecionadas[i].MaxSelecionados
-                                                    </span>
-                                                    <span class="badge-rule">
-                                                        Ordem: @Model.CategoriasAcompanhamentoSelecionadas[i].Ordem
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-2 d-flex align-items-end justify-content-end">
-                                                <button type="button" class="btn btn-outline-danger btnRemoverCategoriaAcompanhamento">
-                                                    <i class="fas fa-trash me-1"></i> Remover
-                                                </button>
-                                            </div>
-
-                                            <div class="col-12">
-                                                <div class="acompanhamentos-vinculados">
-                                                    @if (Model.CategoriasAcompanhamentoSelecionadas[i].Acompanhamentos != null &&
-                                                         Model.CategoriasAcompanhamentoSelecionadas[i].Acompanhamentos.Any())
-                                                    {
-                                                        <div class="row g-2">
-                                                            @for (int j = 0; j < Model.CategoriasAcompanhamentoSelecionadas[i].Acompanhamentos.Count; j++)
-                                                            {
-                                                                <div class="col-md-6">
-                                                                    <div class="form-check acompanhamento-opcao">
-                                                                        <input type="hidden"
-                                                                               name="CategoriasAcompanhamentoSelecionadas[@i].Acompanhamentos[@j].AcompanhamentoId"
-                                                                               value="@Model.CategoriasAcompanhamentoSelecionadas[i].Acompanhamentos[j].AcompanhamentoId" />
-
-                                                                        <input type="hidden"
-                                                                               name="CategoriasAcompanhamentoSelecionadas[@i].Acompanhamentos[@j].Nome"
-                                                                               value="@Model.CategoriasAcompanhamentoSelecionadas[i].Acompanhamentos[j].Nome" />
-
-                                                                        <input class="form-check-input"
-                                                                               type="checkbox"
-                                                                               id="cat_@(i)_acom_@(j)"
-                                                                               name="CategoriasAcompanhamentoSelecionadas[@i].Acompanhamentos[@j].Selecionado"
-                                                                               value="true"
-                                                                               @(Model.CategoriasAcompanhamentoSelecionadas[i].Acompanhamentos[j].Selecionado ? "checked" : null) />
-
-                                                                        <input type="hidden"
-                                                                               name="CategoriasAcompanhamentoSelecionadas[@i].Acompanhamentos[@j].Selecionado"
-                                                                               value="false" />
-
-                                                                        <label class="form-check-label ms-1" for="cat_@(i)_acom_@(j)">
-                                                                            @Model.CategoriasAcompanhamentoSelecionadas[i].Acompanhamentos[j].Nome
-                                                                        </label>
-                                                                    </div>
-                                                                </div>
-                                                            }
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            }
                         </div>
-
-                        <div id="mensagemSemCategorias" class="text-muted small">
-                            Nenhuma categoria de acompanhamento adicionada.
+                        <div id="mensagemSemCategorias" class="text-center py-4 text-muted">
+                            <i class="fas fa-layer-group d-block fs-2 mb-2 opacity-25"></i>
+                            <p class="small mb-0">Sem grupos de acompanhamento (opcional).</p>
                         </div>
                     </div>
                 </div>
@@ -323,120 +176,111 @@
 
             <div class="col-xl-4">
                 <div class="card card-form-clean">
-                    <div class="card-header">
-                        <h3 class="card-title fs-6 mb-0 text-primary">Mídia e Status</h3>
+                    <div class="card-header-custom">
+                        <span class="fw-bold text-dark">Imagem</span>
                     </div>
-
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label d-block text-center">Imagem do Produto</label>
-
-                            <div class="image-preview-container" id="containerPreview">
-                                <img id="imgPreview" src="/img/placeholder-produto.png" alt="Preview" />
+                        <div class="image-upload-zone" onclick="document.getElementById('imagemForm').click()">
+                            <div class="upload-placeholder" id="placeholderIcon">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                                <p class="small mb-0">Clique para upload</p>
                             </div>
-
-                            <input type="file" name="imagemForm" id="imagemForm" class="form-control form-control-sm" accept="image/*" />
-                            <small class="text-muted mt-1 d-block text-center">JPG, PNG ou WebP (Máx. 2MB)</small>
+                            <img id="imgPreview" src="#" alt="Preview" />
                         </div>
+                        <input type="file" name="imagemForm" id="imagemForm" class="d-none" accept="image/*" onchange="previewImage(this)" />
+                        <p class="text-center text-muted x-small mt-2">Recomendado: 800x600px (Máx 2MB)</p>
+                    </div>
+                </div>
 
-                        <hr class="text-light">
-
-                        <div class="form-check form-switch mt-3">
+                <div class="card card-form-clean bg-light border-0">
+                    <div class="card-body">
+                        <div class="form-check form-switch custom-switch">
                             <input class="form-check-input" type="checkbox" asp-for="Ativo" checked>
-                            <label class="form-check-label fw-bold" asp-for="Ativo">Produto Ativo</label>
-                            <small class="d-block text-muted">Se desativado, o produto não aparecerá no cardápio digital.</small>
+                                <label class="form-check-label fw-bold" asp-for="Ativo">Disponível para venda</label>
+                            </div>
+                            <p class="text-muted small mt-2 mb-0">Produtos desativados não aparecem para o cliente no cardápio.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</form>
+    </form>
 
-<script id="template-categoria-acompanhamento" type="text/template">
-    <div class="acompanhamento-card-item mb-3 categoria-acompanhamento-item">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label">Categoria de Acompanhamento</label>
-                <select name="CategoriasAcompanhamentoSelecionadas[__index__].AcompanhamentoCategoriaId"
-                        class="form-select select-categoria-acompanhamento">
-                    <option value="">Selecione</option>
-                    @foreach (var item in Model.CategoriasAcompanhamentoDisponiveis)
-                    {
-                        <option value="@item.Value">@item.Text</option>
-                    }
-                </select>
-            </div>
+    <script id="template-categoria-acompanhamento" type="text/template">
+        <div class="card shadow-sm mb-4 categoria-acompanhamento-item border-0">
+            <div class="card-body">
+                <div class="row g-3 align-items-end mb-4">
+                    <div class="col-md-7">
+                        <label class="form-label fw-semibold text-dark">Categoria de Acompanhamento</label>
+                        <select name="CategoriasAcompanhamentoSelecionadas[__index__].AcompanhamentoCategoriaId"
+                                class="form-select select-categoria-acompanhamento border-secondary-subtle">
+                            <option value="">Selecione uma categoria...</option>
+                            @foreach (var item in Model.CategoriasAcompanhamentoDisponiveis)
+                            {
+                                    <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
 
-            <div class="col-md-2">
-                <label class="form-label">Obrigatório</label>
-                <div class="form-check form-switch mt-2">
-                    <input type="checkbox"
-                           class="form-check-input input-obrigatorio-checkbox"
-                           name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio"
-                           value="true" />
-
-                    <input type="hidden"
-                           name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio"
-                           value="false" />
+                    <div class="col-md-5 text-md-end">
+                        <button type="button" class="btn btn-link text-danger text-decoration-none btnRemoverCategoriaAcompanhamento p-0 mb-2">
+                            <i class="fas fa-trash-alt me-1"></i> Remover Categoria
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-md-2">
-                <label class="form-label">Mínimo</label>
-                <input type="number"
-                       min="0"
-                       class="form-control input-min"
-                       name="CategoriasAcompanhamentoSelecionadas[__index__].MinSelecionados"
-                       value="0" />
-            </div>
+                <div class="bg-body-tertiary p-3 rounded-3 mb-2">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted d-block">Obrigatório?</label>
+                            <div class="form-check form-switch pt-1">
+                                <input type="checkbox"
+                                       id="check_obrigatorio___index__"
+                                       class="form-check-input input-obrigatorio-checkbox"
+                                       name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio"
+                                       value="true" />
+                                <label class="form-check-label small" for="check_obrigatorio___index__">Sim</label>
+                            
+                                <input type="hidden" name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio" value="false" />
+                            </div>
+                        </div>
 
-            <div class="col-md-2">
-                <label class="form-label">Máximo</label>
-                <input type="number"
-                       min="1"
-                       class="form-control input-max"
-                       name="CategoriasAcompanhamentoSelecionadas[__index__].MaxSelecionados"
-                       value="1" />
-            </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small text-muted font-monospace">Mínimo</label>
+                            <input type="number" min="0" class="form-control form-control-sm input-min"
+                                   name="CategoriasAcompanhamentoSelecionadas[__index__].MinSelecionados" value="0" />
+                        </div>
 
-            <div class="col-md-2">
-                <label class="form-label">Ordem</label>
-                <input type="number"
-                       min="0"
-                       class="form-control input-ordem"
-                       name="CategoriasAcompanhamentoSelecionadas[__index__].Ordem"
-                       value="0" />
-            </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small text-muted font-monospace">Máximo</label>
+                            <input type="number" min="1" class="form-control form-control-sm input-max"
+                                   name="CategoriasAcompanhamentoSelecionadas[__index__].MaxSelecionados" value="1" />
+                        </div>
 
-            <div class="col-md-10">
-                <input type="hidden"
-                       name="CategoriasAcompanhamentoSelecionadas[__index__].NomeCategoria"
-                       value=""
-                       class="input-nome-categoria" />
-
-                <div class="categoria-acompanhamento-regras mb-3">
-                    <span class="badge-rule">Obrigatório: Não</span>
-                    <span class="badge-rule">Mínimo: 0</span>
-                    <span class="badge-rule">Máximo: 1</span>
-                    <span class="badge-rule">Ordem: 0</span>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small text-muted font-monospace">Ordem</label>
+                            <input type="number" min="0" class="form-control form-control-sm input-ordem"
+                                   name="CategoriasAcompanhamentoSelecionadas[__index__].Ordem" value="0" />
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-md-2 d-flex align-items-end justify-content-end">
-                <button type="button" class="btn btn-outline-danger btnRemoverCategoriaAcompanhamento">
-                    <i class="fas fa-trash me-1"></i> Remover
-                </button>
-            </div>
+                <div class="categoria-acompanhamento-regras d-flex gap-2 px-1">
+                    <span class="badge text-secondary border badge-rule">Obrigatório: Não</span>
+                    <span class="badge text-secondary border badge-rule">Mínimo: 0</span>
+                    <span class="badge text-secondary border badge-rule">Máximo: 1</span>
+                </div>
 
-            <div class="col-12">
-                <div class="acompanhamentos-vinculados"></div>
+                <input type="hidden" name="CategoriasAcompanhamentoSelecionadas[__index__].NomeCategoria"
+                       value="" class="input-nome-categoria" />
+
+                <div class="acompanhamentos-vinculados mt-3"></div>
             </div>
         </div>
-    </div>
-</script>
+    </script>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
 
     <script>
@@ -445,6 +289,10 @@
             const btnAdicionar = document.getElementById("btnAdicionarCategoriaAcompanhamento");
             const template = document.getElementById("template-categoria-acompanhamento").innerHTML;
             const mensagemSemCategorias = document.getElementById("mensagemSemCategorias");
+
+            $('.money').mask('#.##0,00', {
+                reverse: true
+            });
 
             function atualizarMensagemVazia() {
                 const total = container.querySelectorAll(".categoria-acompanhamento-item").length;

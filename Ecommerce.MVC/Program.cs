@@ -4,7 +4,9 @@ using Ecommerce.MVC.Hubs;
 using Ecommerce.MVC.Interfaces;
 using Ecommerce.MVC.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Threading.RateLimiting;
 
@@ -112,6 +114,15 @@ builder.Services.AddRateLimiter(options =>
 //builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var app = builder.Build();
+
+var cultureInfo = new CultureInfo("pt-BR");
+
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(cultureInfo),
+    SupportedCultures = new List<CultureInfo> { cultureInfo },
+    SupportedUICultures = new List<CultureInfo> { cultureInfo }
+};
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

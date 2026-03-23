@@ -1,6 +1,100 @@
 @model Ecommerce.MVC.Models.Admin.AcompanhamentoCategorias.AcompanhamentoCategoriaFormViewModel
+
 @{
     ViewData["Title"] = "Editar Categoria de Acompanhamento";
-    ViewData["Description"] = "Atualize os dados da categoria.";
+    ViewData["Description"] = "Atualize o nome e a descrição deste grupo de itens.";
 }
-<partial name="_Form" model="Model" />
+
+<style>
+    /* Design System Barriga Cheia */
+    .card-form-clean {
+        border: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05) !important;
+        border-radius: 0.75rem !important;
+        background-color: #ffffff;
+    }
+
+    .form-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 0.6rem 0.75rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: #94a3b8;
+            box-shadow: none;
+        }
+
+    .btn-action {
+        border-radius: 0.5rem;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class="container-fluid px-0">
+    @* Cabeçalho *@
+    <div class="w-100 d-flex justify-content-start align-items-center mb-4">
+        <a asp-action="Index" class="btn btn-light btn-sm border text-muted btn-action" style="border-radius: 0.5rem; padding: 0.6rem 1rem;">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    @* Card do Formulário Integrado *@
+    <div class="card card-form-clean">
+        <div class="card-body p-4 pb-3">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                
+                @* Campo oculto para o GUID *@
+                <input asp-for="Id" type="hidden" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 shadow-sm mb-4 small"></div>
+
+                <div class="row g-4">
+                    @* Nome da Categoria *@
+                    <div class="col-md-12">
+                        <label asp-for="Nome" class="form-label">Nome da Categoria</label>
+                        <input asp-for="Nome" class="form-control" placeholder="Ex: Molhos, Adicionais, Bordas Recheadas..." />
+                        <span asp-validation-for="Nome" class="text-danger small"></span>
+                    </div>
+
+                    @* Descrição *@
+                    <div class="col-md-12">
+                        <label asp-for="Descricao" class="form-label">Descrição (Opcional)</label>
+                        <textarea asp-for="Descricao" class="form-control" rows="4" placeholder="Descreva a finalidade deste grupo para organização interna..."></textarea>
+                        <span asp-validation-for="Descricao" class="text-danger small"></span>
+                    </div>
+
+                    @* Rodapé de Ações *@
+                    <div class="col-12 mt-5 d-flex justify-content-end gap-2 border-top pt-3">
+                        <a asp-action="Index" class="btn btn-link text-muted text-decoration-none fw-bold px-4">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary shadow-sm btn-action">
+                            <i class="fas fa-save"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

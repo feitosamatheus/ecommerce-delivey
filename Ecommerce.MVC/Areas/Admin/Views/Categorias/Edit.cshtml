@@ -1,12 +1,12 @@
-@model Ecommerce.MVC.Models.Admin.AcompanhamentoCategorias.AcompanhamentoCategoriaFormViewModel
+﻿@model Ecommerce.MVC.Models.Admin.Categorias.CategoriaFormViewModel
 
 @{
-    ViewData["Title"] = "Nova Categoria de Acompanhamento";
-    ViewData["Description"] = "Crie grupos para organizar itens como molhos, adicionais e complementos.";
+    ViewData["Title"] = "Editar Categoria";
+    ViewData["Description"] = "Atualize o nome e as configurações de exibição desta categoria.";
 }
 
 <style>
-    /* Design System Barriga Cheia - Form */
+    /* Design System Barriga Cheia */
     .card-form-clean {
         border: none !important;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05) !important;
@@ -23,7 +23,7 @@
         margin-bottom: 0.5rem;
     }
 
-    .form-control {
+    .form-control, .form-select {
         border: 1px solid #e2e8f0;
         border-radius: 0.5rem;
         padding: 0.6rem 0.75rem;
@@ -31,14 +31,14 @@
         transition: border-color 0.2s;
     }
 
-        .form-control:focus {
+        .form-control:focus, .form-select:focus {
             border-color: #94a3b8;
             box-shadow: none;
         }
 
     .btn-action {
         border-radius: 0.5rem;
-        padding: 0.6rem 1.5rem;
+        padding: 0.6rem 1rem;
         font-weight: 600;
         display: inline-flex;
         align-items: center;
@@ -57,27 +57,29 @@
     @* Card do Formulário Integrado *@
     <div class="card card-form-clean">
         <div class="card-body p-4 pb-3">
-            <form asp-action="Create" method="post">
+            <form asp-action="Edit" method="post">
                 @Html.AntiForgeryToken()
                 
-                @* Importante: GUID vazio para Create *@
+                @* Campo oculto para o GUID *@
                 <input asp-for="Id" type="hidden" />
 
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 shadow-sm mb-4 small"></div>
 
                 <div class="row g-4">
-                    @* Nome da Categoria de Acompanhamento *@
-                    <div class="col-md-12">
+                    @* Nome da Categoria *@
+                    <div class="col-md-7">
                         <label asp-for="Nome" class="form-label">Nome da Categoria</label>
-                        <input asp-for="Nome" class="form-control" placeholder="Ex: Escolha seu Molho, Adicionais de Hambúrguer..." />
+                        <input asp-for="Nome" class="form-control" placeholder="Ex: Pizzas, Bebidas, Combos..." />
                         <span asp-validation-for="Nome" class="text-danger small"></span>
                     </div>
 
-                    @* Descrição *@
-                    <div class="col-md-12">
-                        <label asp-for="Descricao" class="form-label">Descrição (Opcional)</label>
-                        <textarea asp-for="Descricao" class="form-control" rows="4" placeholder="Descreva brevemente para que serve este grupo de acompanhamentos..."></textarea>
-                        <span asp-validation-for="Descricao" class="text-danger small"></span>
+                    @* Tipo de Exibição *@
+                    <div class="col-md-5">
+                        <label asp-for="TipoExibicao" class="form-label">Tipo de Exibição no App</label>
+                        <select asp-for="TipoExibicao" asp-items="Model.TiposExibicao" class="form-select">
+                            <option value="">Selecione o modo de exibição...</option>
+                        </select>
+                        <span asp-validation-for="TipoExibicao" class="text-danger small"></span>
                     </div>
 
                     @* Rodapé de Ações *@
@@ -86,7 +88,7 @@
                             Cancelar
                         </a>
                         <button type="submit" class="btn btn-primary shadow-sm btn-action">
-                            <i class="fas fa-save"></i> Cadastrar Categoria
+                            <i class="fas fa-save"></i> Salvar Alterações
                         </button>
                     </div>
                 </div>

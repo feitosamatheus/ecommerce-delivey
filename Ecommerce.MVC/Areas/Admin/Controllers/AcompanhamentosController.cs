@@ -30,8 +30,8 @@ public class AcompanhamentosController : Controller
             busca = busca.Trim();
 
             query = query.Where(x =>
-                x.Nome.Contains(busca) ||
-                (x.Descricao != null && x.Descricao.Contains(busca)));
+                EF.Functions.ILike(x.Nome, $"%{busca}%") ||
+                (x.Descricao != null && EF.Functions.ILike(x.Descricao, $"%{busca}%")));
         }
 
         if (categoriaId.HasValue)

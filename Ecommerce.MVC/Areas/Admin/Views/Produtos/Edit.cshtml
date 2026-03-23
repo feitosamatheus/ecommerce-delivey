@@ -1,68 +1,920 @@
 @model Ecommerce.MVC.Models.Admin.AdminProdutoFormViewModel
 
 @{
-    ViewData["Title"] = "Editar produto - Admin";
-    var categorias = ViewBag.Categorias as IEnumerable<Ecommerce.MVC.Entities.Categoria> ?? Enumerable.Empty<Ecommerce.MVC.Entities.Categoria>();
+    ViewData["Title"] = "Editar Produto";
 }
 
-<div class="container my-4">
-    <h2 class="h4 mb-3">Editar produto</h2>
+<style>
+    :root {
+        --primary-soft: #eef2ff;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+    }
 
-    <form asp-area="Admin" asp-controller="Produtos" asp-action="Edit" asp-route-id="@Model.Id" method="post" class="card shadow-sm">
-        <div class="card-body">
-            <input type="hidden" asp-for="Id" />
+    .card-form-clean {
+        border: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-radius: 1rem;
+        background-color: #ffffff;
+        margin-bottom: 1.5rem;
+    }
 
-            <div class="mb-3">
-                <label asp-for="Nome" class="form-label"></label>
-                <input asp-for="Nome" class="form-control" />
-                <span asp-validation-for="Nome" class="text-danger small"></span>
+    .card-header-custom {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .form-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+    }
+
+    /* Image Upload Styling */
+    .image-upload-zone {
+        cursor: pointer;
+        width: 100%;
+        height: 250px;
+        border: 2px dashed var(--border-color);
+        border-radius: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8fafc;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .image-upload-zone:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+    #imgPreview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: @(string.IsNullOrEmpty(Model.ImagemUrl) ? "none" : "block");
+    }
+
+    .upload-placeholder {
+        text-align: center;
+        color: var(--text-muted);
+        display: @(string.IsNullOrEmpty(Model.ImagemUrl) ? "block" : "none");
+    }
+
+    .badge-rule {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        background: var(--primary-soft);
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .input-group-text-clean {
+        background: #f8fafc;
+        border-right: none;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .custom-switch .form-check-input {
+        width: 3rem;
+        height: 1.5rem;
+        cursor: pointer;
+    }
+</style>
+
+<form asp-area="Admin" asp-controller="Produtos" asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ImagemUrl" />
+
+    <div class="container-fluid">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h2 class="h4 mb-0 text-dark fw-bold">Editar Produto</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item small"><a asp-action="Index">Produtos</a></li>
+                        <li class="breadcrumb-item small active">Editar</li>
+                    </ol>
+                </nav>
             </div>
-
-            <div class="mb-3">
-                <label asp-for="Descricao" class="form-label"></label>
-                <textarea asp-for="Descricao" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Descricao" class="text-danger small"></span>
-            </div>
-
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label asp-for="Preco" class="form-label"></label>
-                    <input asp-for="Preco" class="form-control" />
-                    <span asp-validation-for="Preco" class="text-danger small"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="TempoPreparoMinutos" class="form-label"></label>
-                    <input asp-for="TempoPreparoMinutos" class="form-control" />
-                    <span asp-validation-for="TempoPreparoMinutos" class="text-danger small"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="CategoriaId" class="form-label"></label>
-                    <select asp-for="CategoriaId" class="form-select"
-                            asp-items="new SelectList(categorias, nameof(Ecommerce.MVC.Entities.Categoria.Id), nameof(Ecommerce.MVC.Entities.Categoria.Nome))">
-                        <option value="">Selecione...</option>
-                    </select>
-                    <span asp-validation-for="CategoriaId" class="text-danger small"></span>
-                </div>
-            </div>
-
-            <div class="mt-3">
-                <label asp-for="ImagemUrl" class="form-label"></label>
-                <input asp-for="ImagemUrl" class="form-control" />
-                <span asp-validation-for="ImagemUrl" class="text-danger small"></span>
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancelar</a>
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fas fa-save me-2"></i>Salvar Alterações
+                </button>
             </div>
         </div>
-        <div class="card-footer d-flex justify-content-between">
-            <a asp-area="Admin" asp-controller="Produtos" asp-action="Index" class="btn btn-outline-secondary">
-                Voltar
-            </a>
-            <button type="submit" class="btn btn-primary">
-                Salvar
-            </button>
+
+        <div class="row">
+            <div class="col-xl-8">
+                <div class="card card-form-clean">
+                    <div class="card-header-custom">
+                        <span class="fw-bold text-dark"><i class="fas fa-info-circle me-2 text-primary"></i>Geral</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="Nome" class="form-label"></label>
+                                <input asp-for="Nome" class="form-control" placeholder="Nome do prato ou bebida" />
+                                <span asp-validation-for="Nome" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Descricao" class="form-label"></label>
+                                <textarea asp-for="Descricao" class="form-control" rows="3" placeholder="Descrição detalhada..."></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CategoriaId" class="form-label"></label>
+                                <select asp-for="CategoriaId" asp-items="Model.Categorias" class="form-select">
+                                    <option value="">Selecione...</option>
+                                </select>
+                                <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-3">
+                                <label asp-for="Preco" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text input-group-text-clean">R$</span>
+                                    <input asp-for="Preco" class="form-control money" placeholder="0,00" />
+                                </div>
+                                <span asp-validation-for="Preco" type="text" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-3">
+                                <label asp-for="TempoPreparoMinutos" class="form-label"></label>
+                                <input asp-for="TempoPreparoMinutos" class="form-control" type="number" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-form-clean">
+                    <div class="card-header-custom">
+                        <span class="fw-bold text-dark"><i class="fas fa-list-ul me-2 text-primary"></i>Personalização</span>
+                        <button type="button" id="btnAdicionarCategoriaAcompanhamento" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i>Novo Grupo
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="categorias-acompanhamento-container">
+                            @* Os itens existentes serão carregados via JS no document.ready se necessário *@
+                        </div>
+                        <div id="mensagemSemCategorias" class="text-center py-4 text-muted">
+                            <i class="fas fa-layer-group d-block fs-2 mb-2 opacity-25"></i>
+                            <p class="small mb-0">Sem grupos de acompanhamento vinculado.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card card-form-clean">
+                    <div class="card-header-custom">
+                        <span class="fw-bold text-dark">Imagem</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="image-upload-zone" onclick="document.getElementById('imagemForm').click()">
+                            <div class="upload-placeholder" id="placeholderIcon">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                                <p class="small mb-0">Clique para alterar</p>
+                            </div>
+                            <img id="imgPreview" src="@Model.ImagemUrl" alt="Preview" />
+                        </div>
+                        <input type="file" name="imagemForm" id="imagemForm" class="d-none" accept="image/*" onchange="previewImage(this)" />
+                        <p class="text-center text-muted x-small mt-2">Formatos: JPG, PNG, WEBP (Máx 2MB)</p>
+                    </div>
+                </div>
+
+                <div class="card card-form-clean bg-light border-0">
+                    <div class="card-body">
+                        <div class="form-check form-switch custom-switch d-flex align-items-center gap-2">
+                            <input class="form-check-input" type="checkbox" asp-for="Ativo">
+                                <label class="form-check-label fw-bold mb-0" asp-for="Ativo">Disponível para venda</label>
+                            </div>
+                            <p class="text-muted small mt-2 mb-0">Produtos inativos não aparecem no cardápio do cliente.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </form>
-</div>
 
-@section Scripts {
+    <script id="template-categoria-acompanhamento" type="text/template">
+        <div class="card shadow-sm mb-4 categoria-acompanhamento-item border-0">
+            <div class="card-body">
+                <input type="hidden"
+                       name="CategoriasAcompanhamentoSelecionadas[__index__].ProdutoId"
+                       value=""
+                       class="input-produto-id" />
+
+                <div class="row g-3 align-items-end mb-4">
+                    <div class="col-md-7">
+                        <label class="form-label fw-semibold text-dark">Categoria de Acompanhamento</label>
+                        <select name="CategoriasAcompanhamentoSelecionadas[__index__].AcompanhamentoCategoriaId"
+                                class="form-select select-categoria-acompanhamento border-secondary-subtle">
+                            <option value="">Selecione uma categoria...</option>
+                            @foreach (var item in Model.CategoriasAcompanhamentoDisponiveis)
+                            {
+                                    <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-5 text-md-end">
+                        <button type="button"
+                                class="btn btn-link text-danger text-decoration-none btnRemoverCategoriaAcompanhamento p-0 mb-2">
+                            <i class="fas fa-trash-alt me-1"></i> Remover
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-body-tertiary p-3 rounded-3 mb-3">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted d-block">Obrigatório?</label>
+                            <div class="form-check form-switch pt-1">
+                                <input type="checkbox"
+                                       id="check_obrigatorio___index__"
+                                       class="form-check-input input-obrigatorio-checkbox"
+                                       name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio"
+                                       value="true" />
+                                <label class="form-check-label small" for="check_obrigatorio___index__">Sim</label>
+
+                                <input type="hidden"
+                                       name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio"
+                                       value="false" />
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small text-muted">Mínimo</label>
+                            <input type="number"
+                                   min="0"
+                                   class="form-control form-control-sm input-min"
+                                   name="CategoriasAcompanhamentoSelecionadas[__index__].MinSelecionados"
+                                   value="0" />
+                        </div>
+
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small text-muted">Máximo</label>
+                            <input type="number"
+                                   min="1"
+                                   class="form-control form-control-sm input-max"
+                                   name="CategoriasAcompanhamentoSelecionadas[__index__].MaxSelecionados"
+                                   value="1" />
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small text-muted">Ordem</label>
+                            <input type="number"
+                                   min="0"
+                                   class="form-control form-control-sm input-ordem"
+                                   name="CategoriasAcompanhamentoSelecionadas[__index__].Ordem"
+                                   value="0" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="categoria-acompanhamento-regras d-flex flex-wrap gap-2 px-1 mb-3">
+                    <span class="badge-rule badge-obrigatorio">Obrigatório: Não</span>
+                    <span class="badge-rule badge-min">Mínimo: 0</span>
+                    <span class="badge-rule badge-max">Máximo: 1</span>
+                </div>
+
+                <input type="hidden"
+                       name="CategoriasAcompanhamentoSelecionadas[__index__].NomeCategoria"
+                       value=""
+                       class="input-nome-categoria" />
+
+                <div class="acompanhamentos-vinculados mt-3"></div>
+            </div>
+        </div>
+    </script>
+    
+    @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <partial name="_ValidationScriptsPartial" />
-}
 
+    <script>
+        $(document).ready(function () {
+            const container = document.getElementById("categorias-acompanhamento-container");
+            const btnAdicionar = document.getElementById("btnAdicionarCategoriaAcompanhamento");
+            const template = document.getElementById("template-categoria-acompanhamento").innerHTML;
+            const mensagemSemCategorias = document.getElementById("mensagemSemCategorias");
+
+            $('.money').mask('#.##0,00', { reverse: true });
+
+            window.previewImage = function (input) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#imgPreview').attr('src', e.target.result).show();
+                        $('#placeholderIcon').hide();
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            };
+
+            function atualizarMensagemVazia() {
+                const total = container.querySelectorAll(".categoria-acompanhamento-item").length;
+                mensagemSemCategorias.style.display = total > 0 ? "none" : "block";
+            }
+
+            function atualizarBadges(item) {
+                const obrigatorio = item.querySelector(".input-obrigatorio-checkbox")?.checked ?? false;
+                const min = item.querySelector(".input-min")?.value ?? 0;
+                const max = item.querySelector(".input-max")?.value ?? 1;
+
+                item.querySelector(".badge-obrigatorio").textContent = `Obrigatório: ${obrigatorio ? 'Sim' : 'Não'}`;
+                item.querySelector(".badge-min").textContent = `Mínimo: ${min}`;
+                item.querySelector(".badge-max").textContent = `Máximo: ${max}`;
+            }
+
+            function reindexar() {
+                container.querySelectorAll(".categoria-acompanhamento-item").forEach((item, index) => {
+                    item.querySelectorAll("select, input").forEach(campo => {
+                        if (campo.name) {
+                            campo.name = campo.name.replace(
+                                /CategoriasAcompanhamentoSelecionadas\[\d+\]/g,
+                                `CategoriasAcompanhamentoSelecionadas[${index}]`
+                            );
+                        }
+
+                        if (campo.id) {
+                            campo.id = campo.id.replace(/check_obrigatorio_\d+/g, `check_obrigatorio_${index}`);
+                        }
+                    });
+
+                    const labelObrigatorio = item.querySelector('label[for^="check_obrigatorio_"]');
+                    if (labelObrigatorio) {
+                        labelObrigatorio.setAttribute("for", `check_obrigatorio_${index}`);
+                    }
+                });
+            }
+
+            function montarHtmlAcompanhamentos(acompanhamentos, grupoIndex) {
+            if (!acompanhamentos || acompanhamentos.length === 0) {
+            return `
+            <div class="border rounded-3 p-3 bg-light text-muted small">
+            Nenhum acompanhamento cadastrado nesta categoria.
+            </div>
+            `;
+            }
+
+            let html = `
+            <div class="border rounded-3 overflow-hidden">
+            <div class="bg-light px-3 py-2 border-bottom fw-semibold small text-dark">
+            Itens da categoria
+            </div>
+            <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+            <thead>
+            <tr>
+            <th style="width: 70px;">Selecionado</th>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Preço</th>
+            <th>Ativo</th>
+            <th>Ordem</th>
+            <th class="text-end pe-3" style="width: 110px;">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            `;
+
+            acompanhamentos.forEach((acomp, itemIndex) => {
+            html += `
+            <tr class="acompanhamento-item-row">
+            <td class="text-center">
+            <input type="hidden"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Id"
+            value="${acomp.id ?? ''}"
+            class="input-acompanhamento-id" />
+
+            <input type="hidden"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].AcompanhamentoId"
+            value="${acomp.acompanhamentoId ?? ''}" />
+
+            <input type="checkbox"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Selecionado"
+            value="true"
+            class="form-check-input"
+            ${acomp.selecionado ? 'checked' : ''} />
+            <input type="hidden"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Selecionado"
+            value="false" />
+            </td>
+
+            <td>
+            <input type="text"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Nome"
+            value="${acomp.nome ?? ''}"
+            class="form-control form-control-sm" />
+            </td>
+
+            <td>
+            <input type="text"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Descricao"
+            value="${acomp.descricao ?? ''}"
+            class="form-control form-control-sm" />
+            </td>
+
+            <td style="min-width: 130px;">
+            <input type="text"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Preco"
+            value="${acomp.preco ?? '0,00'}"
+            class="form-control form-control-sm money-acomp" />
+            </td>
+
+            <td class="text-center">
+            <input type="checkbox"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ativo"
+            value="true"
+            class="form-check-input"
+            ${acomp.ativo ? 'checked' : ''} />
+            <input type="hidden"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ativo"
+            value="false" />
+            </td>
+
+            <td style="min-width: 90px;">
+            <input type="number"
+            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ordem"
+            value="${acomp.ordem ?? 0}"
+            class="form-control form-control-sm" />
+            </td>
+
+            <td class="text-end">
+            <button type="button"
+            class="btn btn-link text-danger text-decoration-none btn-remover-acompanhamento p-0">
+            <i class="fas fa-trash-alt me-1"></i>Remover
+            </button>
+            </td>
+            </tr>
+            `;
+            });
+
+            html += `
+            </tbody>
+            </table>
+            </div>
+            </div>
+            `;
+
+            return html;
+            }
+
+            async function carregarAcompanhamentos(item) {
+            const select = item.querySelector(".select-categoria-acompanhamento");
+            const categoriaId = select.value;
+            const index = Array.from(container.querySelectorAll(".categoria-acompanhamento-item")).indexOf(item);
+
+            const inputNome = item.querySelector(".input-nome-categoria");
+            const acompanhamentosBox = item.querySelector(".acompanhamentos-vinculados");
+
+            if (!categoriaId) {
+            inputNome.value = "";
+            acompanhamentosBox.innerHTML = "";
+            atualizarBadges(item);
+            return;
+            }
+
+            try {
+            const response = await fetch(`@Url.Action("ObterAcompanhamentosPorCategoria", "Produtos", new { area = "Admin" })?categoriaId=${categoriaId}`);
+
+            if (!response.ok) {
+            acompanhamentosBox.innerHTML = `<div class="alert alert-danger mb-0">Não foi possível carregar os acompanhamentos.</div>`;
+            return;
+            }
+
+            const data = await response.json();
+
+            inputNome.value = data.categoria?.nome ?? "";
+            acompanhamentosBox.innerHTML = montarHtmlAcompanhamentos(data.acompanhamentos ?? [], index);
+            aplicarMascaraAcompanhamentos(item);
+            reindexarAcompanhamentos(item);
+            } catch (error) {
+            acompanhamentosBox.innerHTML = `<div class="alert alert-danger mb-0">Erro ao carregar os acompanhamentos.</div>`;
+            }
+            }
+
+            function reindexarAcompanhamentos(itemGrupo) {
+                const grupoIndexMatch = itemGrupo
+                .querySelector('.select-categoria-acompanhamento')
+                ?.name.match(/CategoriasAcompanhamentoSelecionadas\[(\d+)\]/);
+
+                if (!grupoIndexMatch) return;
+
+                const grupoIndex = grupoIndexMatch[1];
+                const linhas = itemGrupo.querySelectorAll(".acompanhamento-item-row");
+
+                linhas.forEach((linha, itemIndex) => {
+                linha.querySelectorAll("input, select, textarea").forEach(campo => {
+                if (!campo.name) return;
+
+                campo.name = campo.name.replace(
+                /CategoriasAcompanhamentoSelecionadas\[\d+\]\.Acompanhamentos\[\d+\]/g,
+                `CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}]`
+                );
+                });
+                });
+            }
+
+            container.addEventListener("click", function (e) {
+            const btnRemoverAcompanhamento = e.target.closest(".btn-remover-acompanhamento");
+            if (btnRemoverAcompanhamento) {
+            const linha = btnRemoverAcompanhamento.closest(".acompanhamento-item-row");
+            const itemGrupo = btnRemoverAcompanhamento.closest(".categoria-acompanhamento-item");
+            const acompanhamentoId = linha.querySelector(".input-acompanhamento-id")?.value;
+            const produtoId = itemGrupo.querySelector(".input-produto-id")?.value;
+            const acompanhamentoCategoriaId = itemGrupo.querySelector(".select-categoria-acompanhamento")?.value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            Swal.fire({
+            title: "Deseja excluir?",
+            text: "Esse acompanhamento será removido.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sim, excluir",
+            cancelButtonText: "Cancelar",
+            reverseButtons: true
+            }).then(async (result) => {
+            if (!result.isConfirmed) return;
+
+            // item novo, ainda não salvo no banco
+            if (!acompanhamentoId) {
+            linha.remove();
+            reindexarAcompanhamentos(itemGrupo);
+
+            Swal.fire({
+            title: "Removido!",
+            text: "O acompanhamento foi removido do formulário.",
+            icon: "success",
+            timer: 1200,
+            showConfirmButton: false
+            });
+
+            return;
+            }
+
+            try {
+            const response = await fetch('@Url.Action("RemoverAcompanhamento", "Produtos", new { area = "Admin" })', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'RequestVerificationToken': token
+            },
+            body: new URLSearchParams({
+            produtoId: produtoId,
+            acompanhamentoCategoriaId: acompanhamentoCategoriaId,
+            acompanhamentoId: acompanhamentoId,
+            __RequestVerificationToken: token
+            })
+            });
+
+            const data = await response.json();
+
+            if (!data.sucesso) {
+            Swal.fire("Erro", data.mensagem || "Não foi possível excluir o acompanhamento.", "error");
+            return;
+            }
+
+            await Swal.fire({
+            title: "Excluído!",
+            text: "O acompanhamento foi excluído com sucesso.",
+            icon: "success",
+            confirmButtonText: "OK"
+            });
+
+            location.reload();
+            } catch (error) {
+            Swal.fire("Erro", "Falha ao processar a exclusão do acompanhamento.", "error");
+            }
+            });
+
+            return;
+            }
+
+            const btnRemover = e.target.closest(".btnRemoverCategoriaAcompanhamento");
+            if (!btnRemover) return;
+
+            const item = btnRemover.closest(".categoria-acompanhamento-item");
+            const produtoId = item.querySelector(".input-produto-id")?.value;
+            const acompanhamentoCategoriaId = item.querySelector(".select-categoria-acompanhamento")?.value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            Swal.fire({
+            title: "Deseja excluir?",
+            text: "Essa ação removerá o grupo de acompanhamento.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sim, excluir",
+            cancelButtonText: "Cancelar",
+            reverseButtons: true
+            }).then(async (result) => {
+            if (!result.isConfirmed) return;
+
+            if (!produtoId || !acompanhamentoCategoriaId) {
+            item.remove();
+            reindexar();
+            atualizarMensagemVazia();
+
+            Swal.fire({
+            title: "Removido!",
+            text: "O grupo foi removido do formulário.",
+            icon: "success",
+            timer: 1200,
+            showConfirmButton: false
+            });
+
+            return;
+            }
+
+            try {
+            const response = await fetch('@Url.Action("RemoverCategoriaAcompanhamento", "Produtos", new { area = "Admin" })', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'RequestVerificationToken': token
+            },
+            body: new URLSearchParams({
+            produtoId: produtoId,
+            acompanhamentoCategoriaId: acompanhamentoCategoriaId,
+            __RequestVerificationToken: token
+            })
+            });
+
+            const data = await response.json();
+
+            if (!data.sucesso) {
+            Swal.fire("Erro", data.mensagem || "Não foi possível excluir.", "error");
+            return;
+            }
+
+            await Swal.fire({
+            title: "Excluído!",
+            text: "O grupo foi excluído com sucesso.",
+            icon: "success",
+            confirmButtonText: "OK"
+            });
+
+            location.reload();
+            } catch (error) {
+            Swal.fire("Erro", "Falha ao processar a exclusão.", "error");
+            }
+            });
+            });
+
+            function formatarPrecoInput(valor) {
+                const numero = Number(valor || 0);
+                return numero.toFixed(2).replace('.', ',');
+            }
+
+            function aplicarMascaraAcompanhamentos(item) {
+                $(item).find('.money-acomp').mask('#.##0,00', { reverse: true });
+            }
+
+            function adicionarGrupo(categoria) {
+                const index = container.querySelectorAll(".categoria-acompanhamento-item").length;
+                const html = template.replaceAll("__index__", index);
+                container.insertAdjacentHTML("beforeend", html);
+
+                const item = container.lastElementChild;
+
+                if (categoria) {
+                    const inputProdutoId = item.querySelector(".input-produto-id");
+                    if (inputProdutoId) {
+                        inputProdutoId.value = categoria.produtoId ?? "";
+                    }
+
+                    item.querySelector(".select-categoria-acompanhamento").value = categoria.acompanhamentoCategoriaId;
+                    item.querySelector(".input-obrigatorio-checkbox").checked = categoria.obrigatorio;
+                    item.querySelector(".input-min").value = categoria.minSelecionados;
+                    item.querySelector(".input-max").value = categoria.maxSelecionados;
+                    item.querySelector(".input-ordem").value = categoria.ordem;
+                    item.querySelector(".input-nome-categoria").value = categoria.nomeCategoria ?? "";
+
+                    const wrap = item.querySelector(".acompanhamentos-vinculados");
+                    wrap.innerHTML = montarHtmlAcompanhamentos(categoria.acompanhamentos, index);
+                    aplicarMascaraAcompanhamentos(item);
+                }
+
+                atualizarBadges(item);
+                atualizarMensagemVazia();
+            }
+
+            btnAdicionar.addEventListener("click", function () {
+                adicionarGrupo(null);
+            });
+
+            container.addEventListener("click", function (e) {
+                const btnRemover = e.target.closest(".btnRemoverCategoriaAcompanhamento");
+                if (!btnRemover) return;
+
+                const item = btnRemover.closest(".categoria-acompanhamento-item");
+                const produtoId = item.querySelector(".input-produto-id")?.value;
+                const acompanhamentoCategoriaId = item.querySelector(".select-categoria-acompanhamento")?.value;
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                Swal.fire({
+                    title: "Deseja excluir?",
+                    text: "Essa ação removerá o grupo de acompanhamento.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Sim, excluir",
+                    cancelButtonText: "Cancelar",
+                    reverseButtons: true
+                }).then(async (result) => {
+                    if (!result.isConfirmed) return;
+
+                    // grupo novo, ainda não salvo
+                    if (!produtoId || !acompanhamentoCategoriaId) {
+                        item.remove();
+                        reindexar();
+                        atualizarMensagemVazia();
+
+                        Swal.fire({
+                            title: "Removido!",
+                            text: "O grupo foi removido do formulário.",
+                            icon: "success",
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('@Url.Action("RemoverCategoriaAcompanhamento", "Produtos", new { area = "Admin" })', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'RequestVerificationToken': token
+                            },
+                            body: new URLSearchParams({
+                                produtoId: produtoId,
+                                acompanhamentoCategoriaId: acompanhamentoCategoriaId,
+                                __RequestVerificationToken: token
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (!data.sucesso) {
+                            Swal.fire("Erro", data.mensagem || "Não foi possível excluir.", "error");
+                            return;
+                        }
+
+                        await Swal.fire({
+                            title: "Excluído!",
+                            text: "O grupo foi excluído com sucesso.",
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        });
+
+                        location.reload();
+                    } catch (error) {
+                        Swal.fire("Erro", "Falha ao processar a exclusão.", "error");
+                    }
+                });
+            });
+
+            container.addEventListener("change", async function (e) {
+                const item = e.target.closest(".categoria-acompanhamento-item");
+                if (!item) return;
+
+                if (
+                e.target.classList.contains("input-obrigatorio-checkbox") ||
+                e.target.classList.contains("input-min") ||
+                e.target.classList.contains("input-max")
+                ) {
+                atualizarBadges(item);
+                }
+
+                if (e.target.classList.contains("select-categoria-acompanhamento")) {
+                await carregarAcompanhamentos(item);
+                }
+
+            if (e.target.matches('input[name*=".Selecionado"]')) {
+            await salvarSelecaoAcompanhamentoAjax(e.target, item);
+            }
+            });
+
+            const categoriasExistentes = [
+            @if (Model.CategoriasAcompanhamentoSelecionadas?.Any() == true)
+            {
+                for (int i = 0; i < Model.CategoriasAcompanhamentoSelecionadas.Count; i++)
+                {
+                    var cat = Model.CategoriasAcompanhamentoSelecionadas[i];
+                    <text>
+                        {
+                        produtoId: "@cat.ProdutoId",
+                        acompanhamentoCategoriaId: "@cat.AcompanhamentoCategoriaId",
+                        nomeCategoria: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(cat.NomeCategoria ?? "")),
+                        obrigatorio: @(cat.Obrigatorio.ToString().ToLower()),
+                        minSelecionados: @cat.MinSelecionados,
+                        maxSelecionados: @cat.MaxSelecionados,
+                        ordem: @cat.Ordem,
+                        acompanhamentos: [
+                        @{
+                            var acompanhamentos = cat.Acompanhamentos ?? new List<AcompanhamentoItemViewModel>();
+                        }
+                        @for (int j = 0; j < acompanhamentos.Count; j++)
+                        {
+                            var acomp = acompanhamentos[j];
+                            <text>
+                                {
+                                id: "@acomp.Id",
+                                acompanhamentoId: "@acomp.AcompanhamentoId",
+                                nome: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acomp.Nome ?? "")),
+                                descricao: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acomp.Descricao ?? "")),
+                                preco: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acomp.Preco ?? "0,00")),
+                                ativo: @(acomp.Ativo.ToString().ToLower()),
+                                ordem: @acomp.Ordem,
+                                selecionado: @(acomp.Selecionado.ToString().ToLower())
+                                }@(j < acompanhamentos.Count - 1 ? "," : "")
+                            </text>
+                        }
+                        ]
+                        }@(i < Model.CategoriasAcompanhamentoSelecionadas.Count - 1 ? "," : "")
+                    </text>
+                }
+            }
+            ];
+
+            categoriasExistentes.forEach(cat => adicionarGrupo(cat));
+            atualizarMensagemVazia();
+
+
+            async function salvarSelecaoAcompanhamentoAjax(checkbox, itemGrupo) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            const produtoId = document.querySelector('input[name="Id"]')?.value || itemGrupo.querySelector(".input-produto-id")?.value;
+            const acompanhamentoCategoriaId = itemGrupo.querySelector(".select-categoria-acompanhamento")?.value;
+
+            const linha = checkbox.closest(".acompanhamento-item-row");
+            const acompanhamentoId = linha.querySelector('input[name*=".AcompanhamentoId"]')?.value;
+
+            const obrigatorio = itemGrupo.querySelector(".input-obrigatorio-checkbox")?.checked ?? false;
+            const minSelecionados = itemGrupo.querySelector(".input-min")?.value ?? 0;
+            const maxSelecionados = itemGrupo.querySelector(".input-max")?.value ?? 1;
+            const ordemGrupo = itemGrupo.querySelector(".input-ordem")?.value ?? 0;
+
+            const ativo = linha.querySelector('input[name*=".Ativo"][type="checkbox"]')?.checked ?? true;
+            const ordemItem = linha.querySelector('input[name*=".Ordem"]')?.value ?? 0;
+            const selecionado = checkbox.checked;
+
+            if (!produtoId || !acompanhamentoCategoriaId || !acompanhamentoId) {
+            Swal.fire("Atenção", "Produto, categoria ou acompanhamento inválido.", "warning");
+            checkbox.checked = !selecionado;
+            return;
+            }
+
+            try {
+            const response = await fetch('@Url.Action("SalvarSelecaoAcompanhamento", "Produtos", new { area = "Admin" })', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'RequestVerificationToken': token
+            },
+            body: new URLSearchParams({
+            produtoId: produtoId,
+            acompanhamentoCategoriaId: acompanhamentoCategoriaId,
+            acompanhamentoId: acompanhamentoId,
+            selecionado: selecionado,
+            obrigatorio: obrigatorio,
+            minSelecionados: minSelecionados,
+            maxSelecionados: maxSelecionados,
+            ordemGrupo: ordemGrupo,
+            ativo: ativo,
+            ordemItem: ordemItem,
+            __RequestVerificationToken: token
+            })
+            });
+
+            const data = await response.json();
+
+            if (!data.sucesso) {
+            checkbox.checked = !selecionado;
+            Swal.fire("Erro", data.mensagem || "Não foi possível salvar a seleção.", "error");
+            return;
+            }
+            } catch (error) {
+            checkbox.checked = !selecionado;
+            Swal.fire("Erro", "Falha ao salvar automaticamente a seleção.", "error");
+            }
+            }
+
+
+        });
+    </script>
+}

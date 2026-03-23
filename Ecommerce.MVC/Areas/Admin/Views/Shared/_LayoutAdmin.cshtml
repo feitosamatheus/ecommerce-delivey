@@ -61,6 +61,7 @@
         .breadcrumb-clean a:hover {
             color: #3b82f6;
         }
+
     </style>
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
@@ -102,36 +103,47 @@
 
                         <li class="nav-item">
                             <a href="@Url.Action("Index", "Home", new { area = "Admin" })"
-                               class="nav-link @(controller == "Home" ? "active" : "")">
+                                   class="nav-link @(controller == "Home" ? "active" : "")">
                                 <i class="nav-icon bi bi-house-door"></i>
                                 <p>Dashboard</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="@Url.Action("Index", "Produtos", new { area = "Admin" })"
-                               class="nav-link @(controller == "Produtos" ? "active" : "")">
-                                <i class="nav-icon bi bi-box-seam"></i>
-                                <p>Produtos</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
                             <a href="@Url.Action("Index", "Pedidos", new { area = "Admin" })"
-                               class="nav-link @(controller == "Pedidos" ? "active" : "")">
+                                   class="nav-link @(controller == "Pedidos" ? "active" : "")">
                                 <i class="nav-icon bi bi-cart-check"></i>
                                 <p>Pedidos</p>
                             </a>
                         </li>
 
-                        <li class="nav-item">
-                            <a href="@Url.Action("Index", "Categorias", new { area = "Admin" })"
-                               class="nav-link @(controller == "Categorias" ? "active" : "")">
-                                <i class="nav-icon bi bi-tags"></i>
-                                <p>Categorias</p>
+                        <li class="nav-item @(controller == "Produtos" || controller == "Categorias" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(controller == "Produtos" || controller == "Categorias" ? "active" : "")">
+                                <i class="nav-icon bi bi-box-seam"></i>
+                                <p>
+                                    Produtos
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
                             </a>
+                            <ul class="nav nav-treeview menu-open">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Produtos", new { area = "Admin" })"
+                                           class="nav-link @(controller == "Produtos" ? "active" : "")">
+                                        <i class="nav-icon bi bi-list-ul"></i>
+                                        <p>Todos os Produtos</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Categorias", new { area = "Admin" })"
+                                           class="nav-link @(controller == "Categorias" ? "active" : "")">
+                                        <i class="nav-icon bi bi-tags"></i>
+                                        <p>Categorias</p>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
-                        <li class="nav-item menu-open">
+
+                        <li class="nav-item @(controller == "Acompanhamentos" || controller == "AcompanhamentoCategorias" ? "menu-open" : "")">
                             <a href="#" class="nav-link @(controller == "Acompanhamentos" || controller == "AcompanhamentoCategorias" ? "active" : "")">
                                 <i class="nav-icon bi bi-ui-checks-grid"></i>
                                 <p>
@@ -141,17 +153,17 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="@Url.Action("Index", "AcompanhamentoCategorias", new { area = "Admin" })"
-                                    class="nav-link @(controller == "AcompanhamentoCategorias" ? "active" : "")">
-                                        <i class="nav-icon bi bi-tags"></i>
-                                        <p>Categorias</p>
+                                    <a href="@Url.Action("Index", "Acompanhamentos", new { area = "Admin" })"
+                                           class="nav-link @(controller == "Acompanhamentos" ? "active" : "")">
+                                        <i class="nav-icon bi bi-list-check"></i>
+                                        <p>Itens</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="@Url.Action("Index", "Acompanhamentos", new { area = "Admin" })"
-                                    class="nav-link @(controller == "Acompanhamentos" ? "active" : "")">
-                                        <i class="nav-icon bi bi-list-check"></i>
-                                        <p>Itens</p>
+                                    <a href="@Url.Action("Index", "AcompanhamentoCategorias", new { area = "Admin" })"
+                                           class="nav-link @(controller == "AcompanhamentoCategorias" ? "active" : "")">
+                                        <i class="nav-icon bi bi-tags"></i>
+                                        <p>Categorias</p>
                                     </a>
                                 </li>
                             </ul>
@@ -161,7 +173,6 @@
                 </nav>
             </div>
         </aside>
-
         @* <main class="app-main">
             <div class="app-content-header"> 
                 <div class="container-fluid"> 

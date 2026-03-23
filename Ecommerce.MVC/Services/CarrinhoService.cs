@@ -90,7 +90,7 @@ public class CarrinhoService : ICarrinhoService
             .Include(p => p.AcompanhamentoCategorias)
                 .ThenInclude(pc => pc.Categoria)
             .Include(p => p.AcompanhamentoCategorias)
-                .ThenInclude(pc => pc.Acompanhamentos)
+                .ThenInclude(pc => pc.ProdutoAcompanhamentos)
             .FirstOrDefaultAsync(p => p.Id == req.ProdutoId && p.Ativo, ct);
 
         if (produto == null)
@@ -106,7 +106,7 @@ public class CarrinhoService : ICarrinhoService
             if (!categoriasDoProduto.TryGetValue(sel.CategoriaId, out var categoriaProduto))
                 throw new InvalidOperationException("Categoria inválida para este produto.");
 
-            var acompanhamentoValido = categoriaProduto.Acompanhamentos
+            var acompanhamentoValido = categoriaProduto.ProdutoAcompanhamentos
                 .FirstOrDefault(a => a.Id == sel.AcompanhamentoId && a.Ativo);
 
             if (acompanhamentoValido == null)
@@ -154,15 +154,15 @@ public class CarrinhoService : ICarrinhoService
         {
             var categoriaProduto = categoriasDoProduto[sel.CategoriaId];
 
-            var acompanhamento = categoriaProduto.Acompanhamentos
+            var acompanhamento = categoriaProduto.ProdutoAcompanhamentos
                 .First(a => a.Id == sel.AcompanhamentoId && a.Ativo);
 
             item.Acompanhamentos.Add(new CarrinhoItemAcompanhamento
             {
                 AcompanhamentoId = acompanhamento.Id,
                 CategoriaId = categoriaProduto.AcompanhamentoCategoriaId,
-                NomeSnapshot = acompanhamento.Nome,
-                PrecoSnapshot = acompanhamento.Preco
+                NomeSnapshot = acompanhamento.Acompanhamento.Nome,
+                PrecoSnapshot = acompanhamento.Acompanhamento.Preco
             });
         }
 

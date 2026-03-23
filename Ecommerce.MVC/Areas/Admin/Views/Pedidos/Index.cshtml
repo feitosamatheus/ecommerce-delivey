@@ -174,7 +174,15 @@
                 </button>
             </div>
         </div>
-
+        @* Mensagens de Feedback *@
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success border-0 shadow-sm mb-4">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger border-0 shadow-sm mb-4">@TempData["Error"]</div>
+        }
         <div class="card-body">
             <form class="py-2" id="formFiltroPedidos" method="get" action="@Url.Action("Index", "Pedidos", new { area = "Admin" })">
                 <input type="hidden" id="pagina" name="pagina" value="@Model.PaginaAtual" />

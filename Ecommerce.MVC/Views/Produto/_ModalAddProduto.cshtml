@@ -58,10 +58,10 @@
                                         var requiredLabel = pc.Obrigatorio ? "Obrigatório" : "Opcional";
                                         var inputName = $"acomp_{pc.AcompanhamentoCategoriaId:N}";
 
-                                        var itens = (pc.Acompanhamentos ?? new List<Acompanhamento>())
+                                        var itens = (pc.ProdutoAcompanhamentos ?? new List<ProdutoAcompanhamento>())
                                             .Where(a => a.Ativo)
                                             .OrderBy(a => a.Ordem)
-                                            .ThenBy(a => a.Nome)
+                                            .ThenBy(a => a.Acompanhamento.Nome)
                                             .ToList();
 
                                         <div class="card border-0 shadow-sm mb-3" style="border-radius:14px; overflow:hidden;">
@@ -107,23 +107,23 @@
                                                     @foreach (var item in itens)
                                                     {
                                                         var inputId = $"acomp_{pc.AcompanhamentoCategoriaId:N}_{item.Id:N}";
-                                                        var temAdicional = item.Preco > 0;
+                                                        var temAdicional = item.Acompanhamento.Preco > 0;
 
                                                         <label class="list-group-item d-flex justify-content-between align-items-center py-3 acomp-item"
                                                                for="@inputId"
                                                                style="cursor:pointer;">
                                                             <div class="d-flex flex-column">
-                                                                <span class="fw-semibold">@item.Nome</span>
+                                                                <span class="fw-semibold">@item.Acompanhamento.Nome</span>
 
-                                                                @if (!string.IsNullOrWhiteSpace(item.Descricao))
+                                                                @if (!string.IsNullOrWhiteSpace(item.Acompanhamento.Descricao))
                                                                 {
-                                                                    <span class="text-muted small">@item.Descricao</span>
+                                                                    <span class="text-muted small">@item.Acompanhamento.Descricao</span>
                                                                 }
                                                             </div>
 
                                                             <div class="d-flex align-items-center gap-3">
                                                                 <div class="fw-bold @(temAdicional ? "text-success" : "text-muted")">
-                                                                    @(temAdicional ? $"+ {item.Preco.ToString("C", pt)}" : "Incluso")
+                                                                    @(temAdicional ? $"+ {item.Acompanhamento.Preco.ToString("C", pt)}" : "Incluso")
                                                                 </div>
 
                                                                 <input id="@inputId"
@@ -131,9 +131,9 @@
                                                                        name="@inputName"
                                                                        class="form-check-input acomp-input"
                                                                        value="@item.Id"
-                                                                       data-preco="@item.Preco.ToString(CultureInfo.InvariantCulture)"
+                                                                       data-preco="@item.Acompanhamento.Preco.ToString(CultureInfo.InvariantCulture)"
                                                                        data-categoria-id="@pc.AcompanhamentoCategoriaId"
-                                                                       aria-label="Selecionar @item.Nome" />
+                                                                       aria-label="Selecionar @item.Acompanhamento.Nome" />
                                                             </div>
                                                         </label>
                                                     }
