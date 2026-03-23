@@ -131,6 +131,31 @@
                                 <p>Categorias</p>
                             </a>
                         </li>
+                        <li class="nav-item menu-open">
+                            <a href="#" class="nav-link @(controller == "Acompanhamentos" || controller == "AcompanhamentoCategorias" ? "active" : "")">
+                                <i class="nav-icon bi bi-ui-checks-grid"></i>
+                                <p>
+                                    Acompanhamentos
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "AcompanhamentoCategorias", new { area = "Admin" })"
+                                    class="nav-link @(controller == "AcompanhamentoCategorias" ? "active" : "")">
+                                        <i class="nav-icon bi bi-tags"></i>
+                                        <p>Categorias</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Acompanhamentos", new { area = "Admin" })"
+                                    class="nav-link @(controller == "Acompanhamentos" ? "active" : "")">
+                                        <i class="nav-icon bi bi-list-check"></i>
+                                        <p>Itens</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
                     </ul>
                 </nav>

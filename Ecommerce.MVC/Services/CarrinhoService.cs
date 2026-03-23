@@ -72,39 +72,74 @@ public class CarrinhoService : ICarrinhoService
 
     public async Task<Carrinho> AdicionarAsync(HttpContext http, AdicionarProdutoCarrinhoViewModel req, CancellationToken ct = default)
     {
-        if (req.ProdutoId == Guid.Empty) throw new InvalidOperationException("Produto inválido.");
-        if (req.Quantidade < 1) req.Quantidade = 1;
+        if (req.ProdutoId == Guid.Empty)
+            throw new InvalidOperationException("Produto inválido.");
+
+        if (req.Quantidade < 1)
+            req.Quantidade = 1;
+
+        if (req.Acompanhamentos == null)
+        {
+            req.Acompanhamentos = new List<CarrinhoAddAcompanhamentoViewModel>();
+        }
 
         var carrinho = await ObterOuCriarCarrinhoAsync(http, ct);
 
-        // Carrega o produto com categorias e acompanhamentos necessários para validar/snapshot
         var produto = await _db.Set<Produto>()
+            .AsNoTracking()
             .Include(p => p.AcompanhamentoCategorias)
                 .ThenInclude(pc => pc.Categoria)
-                    .ThenInclude(cat => cat.Acompanhamentos)
-            .FirstOrDefaultAsync(p => p.Id == req.ProdutoId, ct);
+            .Include(p => p.AcompanhamentoCategorias)
+                .ThenInclude(pc => pc.Acompanhamentos)
+            .FirstOrDefaultAsync(p => p.Id == req.ProdutoId && p.Ativo, ct);
 
-        if (produto == null) throw new InvalidOperationException("Produto não encontrado.");
+        if (produto == null)
+            throw new InvalidOperationException("Produto não encontrado.");
 
-        // Validação mínima: acompanhamentos precisam pertencer ao produto
         var categoriasDoProduto = produto.AcompanhamentoCategorias
-            .Select(x => x.Categoria)
-            .GroupBy(c => c.Id)
+            .GroupBy(x => x.AcompanhamentoCategoriaId)
             .Select(g => g.First())
-            .ToDictionary(c => c.Id);
+            .ToDictionary(x => x.AcompanhamentoCategoriaId);
 
-        // (Opcional) valida min/max por categoria usando req.Acompanhamentos
-        foreach (var cat in categoriasDoProduto.Values)
+        foreach (var sel in req.Acompanhamentos)
         {
-            var selecionados = req.Acompanhamentos.Count(a => a.CategoriaId == cat.Id);
-            if (cat.Obrigatorio && selecionados < cat.MinSelecionados)
-                throw new InvalidOperationException($"Categoria '{cat.Nome}' exige pelo menos {cat.MinSelecionados} seleção(ões).");
+            if (!categoriasDoProduto.TryGetValue(sel.CategoriaId, out var categoriaProduto))
+                throw new InvalidOperationException("Categoria inválida para este produto.");
 
-            if (cat.MaxSelecionados > 0 && selecionados > cat.MaxSelecionados)
-                throw new InvalidOperationException($"Categoria '{cat.Nome}' permite no máximo {cat.MaxSelecionados} seleção(ões).");
+            var acompanhamentoValido = categoriaProduto.Acompanhamentos
+                .FirstOrDefault(a => a.Id == sel.AcompanhamentoId && a.Ativo);
+
+            if (acompanhamentoValido == null)
+                throw new InvalidOperationException("Acompanhamento inválido ou inativo para este produto.");
         }
 
-        // Monta snapshot do item
+        foreach (var categoriaProduto in categoriasDoProduto.Values)
+        {
+            var selecionadosNaCategoria = req.Acompanhamentos
+                .Where(x => x.CategoriaId == categoriaProduto.AcompanhamentoCategoriaId)
+                .ToList();
+
+            var quantidadeSelecionada = selecionadosNaCategoria.Count;
+
+            if (categoriaProduto.Obrigatorio && quantidadeSelecionada == 0)
+            {
+                throw new InvalidOperationException(
+                    $"A categoria '{categoriaProduto.Categoria.Nome}' é obrigatória.");
+            }
+
+            if (quantidadeSelecionada < categoriaProduto.MinSelecionados)
+            {
+                throw new InvalidOperationException(
+                    $"A categoria '{categoriaProduto.Categoria.Nome}' exige pelo menos {categoriaProduto.MinSelecionados} seleção(ões).");
+            }
+
+            if (categoriaProduto.MaxSelecionados > 0 && quantidadeSelecionada > categoriaProduto.MaxSelecionados)
+            {
+                throw new InvalidOperationException(
+                    $"A categoria '{categoriaProduto.Categoria.Nome}' permite no máximo {categoriaProduto.MaxSelecionados} seleção(ões).");
+            }
+        }
+
         var item = new CarrinhoItem
         {
             CarrinhoId = carrinho.Id,
@@ -115,22 +150,19 @@ public class CarrinhoService : ICarrinhoService
             Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim()
         };
 
-        // Snapshot dos acompanhamentos selecionados
         foreach (var sel in req.Acompanhamentos)
         {
-            if (!categoriasDoProduto.TryGetValue(sel.CategoriaId, out var cat))
-                throw new InvalidOperationException("Categoria inválida para este produto.");
+            var categoriaProduto = categoriasDoProduto[sel.CategoriaId];
 
-            var acomp = cat.Acompanhamentos.FirstOrDefault(a => a.Id == sel.AcompanhamentoId && a.Ativo);
-            if (acomp == null)
-                throw new InvalidOperationException("Acompanhamento inválido ou inativo.");
+            var acompanhamento = categoriaProduto.Acompanhamentos
+                .First(a => a.Id == sel.AcompanhamentoId && a.Ativo);
 
             item.Acompanhamentos.Add(new CarrinhoItemAcompanhamento
             {
-                AcompanhamentoId = acomp.Id,
-                CategoriaId = cat.Id,
-                NomeSnapshot = acomp.Nome,
-                PrecoSnapshot = acomp.Preco
+                AcompanhamentoId = acompanhamento.Id,
+                CategoriaId = categoriaProduto.AcompanhamentoCategoriaId,
+                NomeSnapshot = acompanhamento.Nome,
+                PrecoSnapshot = acompanhamento.Preco
             });
         }
 
@@ -139,9 +171,9 @@ public class CarrinhoService : ICarrinhoService
         carrinho.UpdatedAtUtc = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
 
-        // Retorna carrinho atualizado
         return await _db.Carrinhos
-            .Include(c => c.Itens).ThenInclude(i => i.Acompanhamentos)
+            .Include(c => c.Itens)
+            .ThenInclude(i => i.Acompanhamentos)
             .FirstAsync(c => c.Id == carrinho.Id, ct);
     }
 
@@ -152,13 +184,14 @@ public class CarrinhoService : ICarrinhoService
         if (carrinho == null || carrinho.Itens == null)
             return 0;
 
-        return carrinho.Itens.Count();
+        return carrinho.Itens.Sum(i => i.Quantidade);
     }
 
     public async Task UnificarCarrinhoAsync(Guid clienteId, string token)
     {
         var carrinhoAnonimo = await _db.Carrinhos
             .Include(c => c.Itens)
+            .ThenInclude(i => i.Acompanhamentos)
             .FirstOrDefaultAsync(c => c.Token == token && c.UserId == null);
 
         if (carrinhoAnonimo is null)
@@ -166,6 +199,7 @@ public class CarrinhoService : ICarrinhoService
 
         var carrinhoCliente = await _db.Carrinhos
             .Include(c => c.Itens)
+            .ThenInclude(i => i.Acompanhamentos)
             .FirstOrDefaultAsync(c => c.UserId == clienteId);
 
         if (carrinhoCliente is null)
@@ -176,7 +210,7 @@ public class CarrinhoService : ICarrinhoService
             return;
         }
 
-        foreach (var itemAnonimo in carrinhoAnonimo.Itens)
+        foreach (var itemAnonimo in carrinhoAnonimo.Itens.ToList())
         {
             var existente = carrinhoCliente.Itens
                 .FirstOrDefault(i => i.ProdutoId == itemAnonimo.ProdutoId);
@@ -188,11 +222,15 @@ public class CarrinhoService : ICarrinhoService
             else
             {
                 existente.Quantidade += itemAnonimo.Quantidade;
+
+                foreach (var acompanhamento in itemAnonimo.Acompanhamentos)
+                {
+                    existente.Acompanhamentos.Add(acompanhamento);
+                }
             }
         }
 
         _db.Carrinhos.Remove(carrinhoAnonimo);
-
         await _db.SaveChangesAsync();
     }
 }
