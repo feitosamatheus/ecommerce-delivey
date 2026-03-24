@@ -7,7 +7,7 @@ namespace Ecommerce.MVC.Models.Admin;
 
 public class AdminProdutoFormViewModel
 {
-    public Guid? Id { get; set; }
+    public Guid Id { get; set; }
 
     [Required(ErrorMessage = "O nome do produto é obrigatório")]
     [StringLength(150)]
@@ -46,6 +46,8 @@ public class AdminProdutoFormViewModel
 
     // Coleção que o Model Binder preencherá com os dados do formulário dinâmico
     public List<CategoriaAcompanhamentoSelecaoViewModel> CategoriasAcompanhamentoSelecionadas { get; set; } = new();
+
+    public string? PersonalizacaoJson { get; set; }
 }
 
 // ViewModel Auxiliar para os Grupos de Acompanhamento

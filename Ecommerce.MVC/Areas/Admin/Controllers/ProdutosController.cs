@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ecommerce.MVC.Areas.Admin.Controllers;
@@ -28,7 +29,72 @@ public class ProdutosController : Controller
         _environment = environment;
     }
 
-    public async Task<IActionResult> Index(string? busca, Guid? categoriaId, int pagina = 1, int tamanhoPagina = 5)
+    // public async Task<IActionResult> Index(string? busca, Guid? categoriaId, int pagina = 1, int tamanhoPagina = 5)
+    // {
+    //     var query = _db.Produtos
+    //         .AsNoTracking()
+    //         .Include(p => p.Categoria)
+    //         .AsQueryable();
+
+    //     if (!string.IsNullOrWhiteSpace(busca))
+    //     {
+    //         busca = busca.Trim();
+
+    //         query = query.Where(p =>
+    //             EF.Functions.ILike(p.Nome, $"%{busca}%") ||
+    //             (p.Descricao != null && EF.Functions.ILike(p.Descricao, $"%{busca}%")));
+    //     }
+
+    //     if (categoriaId.HasValue)
+    //     {
+    //         query = query.Where(p => p.CategoriaId == categoriaId.Value);
+    //     }
+
+    //     query = query.OrderBy(p => p.Nome);
+
+    //     var totalItens = await query.CountAsync();
+    //     var produtos = await query
+    //         .Skip((pagina - 1) * tamanhoPagina)
+    //         .Take(tamanhoPagina)
+    //         .ToListAsync();
+
+    //     var model = new ProdutosIndexViewModel
+    //     {
+    //         Produtos = produtos,
+    //         Categorias = await _db.Categorias
+    //             .AsNoTracking()
+    //             .OrderBy(c => c.Nome)
+    //             .Select(c => new SelectListItem
+    //             {
+    //                 Value = c.Id.ToString(),
+    //                 Text = c.Nome,
+    //                 Selected = c.Id == categoriaId
+    //             })
+    //             .ToListAsync(),
+    //         PaginaAtual = pagina,
+    //         TotalPaginas = (int)Math.Ceiling(totalItens / (double)tamanhoPagina),
+    //         TotalItens = totalItens,
+    //         TamanhoPagina = tamanhoPagina,
+    //         Busca = busca,
+    //         CategoriaId = categoriaId
+    //     };
+
+    //     if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+    //     {
+    //         return PartialView("_ProdutosLista", model);
+    //     }
+
+    //     return View(model);
+    // }
+
+    [HttpGet]
+    public async Task<IActionResult> Index(
+        string? busca,
+        Guid? categoriaId,
+        string? sortColumn = "DataCriacao",
+        string? sortDirection = "desc",
+        int pagina = 1,
+        int tamanhoPagina = 5)
     {
         var query = _db.Produtos
             .AsNoTracking()
@@ -49,9 +115,31 @@ public class ProdutosController : Controller
             query = query.Where(p => p.CategoriaId == categoriaId.Value);
         }
 
-        query = query.OrderBy(p => p.Nome);
+        sortColumn ??= "DataCriacao";
+        sortDirection = (sortDirection ?? "desc").ToLower();
+
+        query = (sortColumn, sortDirection) switch
+        {
+            ("Nome", "desc") => query.OrderByDescending(p => p.Nome),
+
+            ("Preco", "asc") => query.OrderBy(p => p.Preco),
+            ("Preco", "desc") => query.OrderByDescending(p => p.Preco),
+
+            ("Categoria", "asc") => query.OrderBy(p => p.Categoria != null ? p.Categoria.Nome : ""),
+            ("Categoria", "desc") => query.OrderByDescending(p => p.Categoria != null ? p.Categoria.Nome : ""),
+
+            ("Status", "asc") => query.OrderBy(p => p.Ativo),
+            ("Status", "desc") => query.OrderByDescending(p => p.Ativo),
+
+            ("DataCriacao", "asc") => query.OrderBy(p => p.DataCriacaoUtc),
+            ("DataCriacao", "desc") => query.OrderByDescending(p => p.DataCriacaoUtc),
+
+            (_, "desc") => query.OrderByDescending(p => p.Nome),
+            _ => query.OrderBy(p => p.Nome)
+        };
 
         var totalItens = await query.CountAsync();
+
         var produtos = await query
             .Skip((pagina - 1) * tamanhoPagina)
             .Take(tamanhoPagina)
@@ -70,12 +158,15 @@ public class ProdutosController : Controller
                     Selected = c.Id == categoriaId
                 })
                 .ToListAsync(),
+
             PaginaAtual = pagina,
             TotalPaginas = (int)Math.Ceiling(totalItens / (double)tamanhoPagina),
             TotalItens = totalItens,
             TamanhoPagina = tamanhoPagina,
             Busca = busca,
-            CategoriaId = categoriaId
+            CategoriaId = categoriaId,
+            SortColumn = sortColumn,
+            SortDirection = sortDirection
         };
 
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -209,45 +300,309 @@ public class ProdutosController : Controller
     {
         var categoria = await _db.AcompanhamentoCategorias
             .AsNoTracking()
-            .Where(x => x.Id == categoriaId)
-            .Select(x => new
-            {
-                id = x.Id,
-                nome = x.Nome
-            })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(x => x.Id == categoriaId);
 
         if (categoria == null)
-            return NotFound();
+            return NotFound(new { mensagem = "Categoria não encontrada." });
+
+        var ptBr = new CultureInfo("pt-BR");
 
         var acompanhamentos = await _db.Acompanhamentos
             .AsNoTracking()
             .Where(x => x.AcompanhamentoCategoriaId == categoriaId && x.Ativo)
-            .OrderBy(x => x.Nome)
+            .OrderBy(x => x.Ordem)
             .Select(x => new
             {
                 id = x.Id,
-                nome = x.Nome
+                acompanhamentoId = x.Id,
+                nome = x.Nome,
+                descricao = x.Descricao,
+                preco = x.Preco.ToString("N2", ptBr),
+                ativo = x.Ativo,
+                ordem = x.Ordem,
+                selecionado = false
             })
             .ToListAsync();
 
         return Json(new
         {
-            categoria,
+            categoria = new
+            {
+                id = categoria.Id,
+                nome = categoria.Nome,
+                descricao = categoria.Descricao
+            },
             acompanhamentos
         });
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(AdminProdutoFormViewModel vm, IFormFile? imagemForm)
+    {
+        Console.WriteLine("===== EDIT POST =====");
+        Console.WriteLine($"ProdutoId: {vm.Id}");
+        Console.WriteLine($"PersonalizacaoJson vazio? {string.IsNullOrWhiteSpace(vm.PersonalizacaoJson)}");
+        Console.WriteLine($"Qtd grupos bindados antes do fallback: {vm.CategoriasAcompanhamentoSelecionadas?.Count ?? 0}");
+
+        decimal precoConvertido = 0m;
+
+        if (string.IsNullOrWhiteSpace(vm.Preco) ||
+            !decimal.TryParse(
+                vm.Preco.Replace(".", "").Replace(",", "."),
+                NumberStyles.Any,
+                CultureInfo.InvariantCulture,
+                out precoConvertido))
+        {
+            ModelState.AddModelError(nameof(vm.Preco), "Informe um preço válido.");
+        }
+
+        vm.CategoriasAcompanhamentoSelecionadas ??= new List<CategoriaAcompanhamentoSelecaoViewModel>();
+
+        // fallback: monta a lista a partir do JSON
+        if ((!vm.CategoriasAcompanhamentoSelecionadas.Any() ||
+            vm.CategoriasAcompanhamentoSelecionadas.All(x => x.AcompanhamentoCategoriaId == Guid.Empty))
+            && !string.IsNullOrWhiteSpace(vm.PersonalizacaoJson))
+        {
+            try
+            {
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var personalizacao = JsonSerializer.Deserialize<PersonalizacaoJsonPostViewModel>(
+                    vm.PersonalizacaoJson,
+                    options);
+
+                if (personalizacao?.ProdutoAcompanhamentoCategorias != null)
+                {
+                    vm.CategoriasAcompanhamentoSelecionadas = personalizacao.ProdutoAcompanhamentoCategorias
+                        .Select(grupo => new CategoriaAcompanhamentoSelecaoViewModel
+                        {
+                            ProdutoId = vm.Id,
+                            AcompanhamentoCategoriaId = TryParseGuid(grupo.AcompanhamentoCategoriaId),
+                            NomeCategoria = grupo.NomeCategoria ?? string.Empty,
+                            Obrigatorio = grupo.Obrigatorio,
+                            MinSelecionados = grupo.MinSelecionados,
+                            MaxSelecionados = grupo.MaxSelecionados,
+                            Ordem = grupo.Ordem,
+                            Acompanhamentos = (grupo.ProdutoAcompanhamentos ?? new List<ProdutoAcompanhamentoJsonPostViewModel>())
+                                .Select(item => new AcompanhamentoItemViewModel
+                                {
+                                    Id = TryParseGuid(item.Id),
+                                    AcompanhamentoId = TryParseGuid(item.AcompanhamentoId),
+                                    Nome = item.Nome ?? string.Empty,
+                                    Descricao = item.Descricao,
+                                    Preco = item.Preco ?? "0,00",
+                                    Ativo = item.Ativo,
+                                    Ordem = item.Ordem,
+                                    Selecionado = item.Selecionado
+                                })
+                                .ToList()
+                        })
+                        .ToList();
+                }
+
+                Console.WriteLine($"Qtd grupos após desserializar JSON: {vm.CategoriasAcompanhamentoSelecionadas.Count}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro ao desserializar PersonalizacaoJson:");
+                Console.WriteLine(ex.ToString());
+                ModelState.AddModelError("", "Não foi possível processar a personalização enviada.");
+            }
+        }
+
+        foreach (var grupo in vm.CategoriasAcompanhamentoSelecionadas)
+        {
+            grupo.Acompanhamentos ??= new List<AcompanhamentoItemViewModel>();
+        }
+
+        Console.WriteLine($"Qtd grupos finais para salvar: {vm.CategoriasAcompanhamentoSelecionadas.Count}");
+
+        for (int i = 0; i < vm.CategoriasAcompanhamentoSelecionadas.Count; i++)
+        {
+            var grupo = vm.CategoriasAcompanhamentoSelecionadas[i];
+            Console.WriteLine($"Grupo {i}: CategoriaId={grupo.AcompanhamentoCategoriaId}, Nome={grupo.NomeCategoria}, Obrigatorio={grupo.Obrigatorio}, Min={grupo.MinSelecionados}, Max={grupo.MaxSelecionados}, Ordem={grupo.Ordem}");
+            Console.WriteLine($"Grupo {i}: Qtd itens={grupo.Acompanhamentos?.Count ?? 0}");
+
+            if (grupo.Acompanhamentos != null)
+            {
+                for (int j = 0; j < grupo.Acompanhamentos.Count; j++)
+                {
+                    var item = grupo.Acompanhamentos[j];
+                    Console.WriteLine($"  Item {j}: AcompanhamentoId={item.AcompanhamentoId}, Nome={item.Nome}, Selecionado={item.Selecionado}, Ativo={item.Ativo}, Ordem={item.Ordem}, Preco={item.Preco}");
+                }
+            }
+        }
+
+        var produto = await _db.Produtos
+            .FirstOrDefaultAsync(p => p.Id == vm.Id);
+
+        if (produto == null)
+            return NotFound();
+
+        string imagemUrl = produto.ImagemUrl ?? "/img/placeholder-produto.png";
+
+        if (imagemForm != null && imagemForm.Length > 0)
+        {
+            var resultadoImagem = await TentarSalvarImagemAsync(imagemForm);
+
+            if (!resultadoImagem.Sucesso)
+            {
+                ModelState.AddModelError("imagemForm", resultadoImagem.Erro!);
+            }
+            else if (!string.IsNullOrWhiteSpace(resultadoImagem.Caminho))
+            {
+                imagemUrl = resultadoImagem.Caminho;
+            }
+        }
+
+        // if (!ModelState.IsValid)
+        // {
+        //     foreach (var item in ModelState)
+        //     {
+        //         var key = item.Key;
+        //         var errors = item.Value.Errors;
+
+        //         foreach (var error in errors)
+        //         {
+        //             Console.WriteLine($"KEY: {key}");
+        //             Console.WriteLine($"ERROR: {error.ErrorMessage}");
+        //             Console.WriteLine($"EXCEPTION: {error.Exception}");
+        //         }
+        //     }
+        //     await PopularListasAsync(vm);
+        //     return View(vm);
+        // }
+
+        produto.Nome = vm.Nome?.Trim() ?? string.Empty;
+        produto.Descricao = string.IsNullOrWhiteSpace(vm.Descricao) ? null : vm.Descricao.Trim();
+        produto.Preco = precoConvertido;
+        produto.TempoPreparoMinutos = vm.TempoPreparoMinutos;
+        produto.CategoriaId = vm.CategoriaId;
+        produto.Ativo = vm.Ativo;
+        produto.ImagemUrl = imagemUrl;
+
+        // remove todos os vínculos atuais
+        var acompanhamentosExistentes = await _db.ProdutoAcompanhamentos
+            .Where(x => x.ProdutoId == produto.Id)
+            .ToListAsync();
+
+        if (acompanhamentosExistentes.Any())
+        {
+            _db.ProdutoAcompanhamentos.RemoveRange(acompanhamentosExistentes);
+        }
+
+        var gruposExistentes = await _db.Set<ProdutoAcompanhamentoCategoria>()
+            .Where(x => x.ProdutoId == produto.Id)
+            .ToListAsync();
+
+        if (gruposExistentes.Any())
+        {
+            _db.Set<ProdutoAcompanhamentoCategoria>().RemoveRange(gruposExistentes);
+        }
+
+        await _db.SaveChangesAsync();
+
+        // recria com base na lista final
+        var gruposValidos = vm.CategoriasAcompanhamentoSelecionadas
+            .Where(x => x.AcompanhamentoCategoriaId != Guid.Empty)
+            .ToList();
+
+        Console.WriteLine($"Qtd grupos válidos para persistir: {gruposValidos.Count}");
+
+        foreach (var grupoVm in gruposValidos)
+        {
+            var novaCategoriaProduto = new ProdutoAcompanhamentoCategoria
+            {
+                ProdutoId = produto.Id,
+                AcompanhamentoCategoriaId = grupoVm.AcompanhamentoCategoriaId,
+                Obrigatorio = grupoVm.Obrigatorio,
+                MinSelecionados = grupoVm.MinSelecionados,
+                MaxSelecionados = grupoVm.MaxSelecionados,
+                Ordem = grupoVm.Ordem
+            };
+
+            var itensSelecionados = grupoVm.Acompanhamentos
+                .Where(x => x.Selecionado && x.AcompanhamentoId != Guid.Empty)
+                .ToList();
+
+            Console.WriteLine($"Persistindo grupo {grupoVm.NomeCategoria} - itens selecionados: {itensSelecionados.Count}");
+
+            foreach (var itemVm in itensSelecionados)
+            {
+                novaCategoriaProduto.ProdutoAcompanhamentos.Add(new ProdutoAcompanhamento
+                {
+                    Id = Guid.NewGuid(),
+                    ProdutoId = produto.Id,
+                    AcompanhamentoCategoriaId = grupoVm.AcompanhamentoCategoriaId,
+                    AcompanhamentoId = itemVm.AcompanhamentoId,
+                    DataAdicionado = DateTime.UtcNow,
+                    Ativo = itemVm.Ativo,
+                    Ordem = itemVm.Ordem
+                });
+            }
+
+            _db.Set<ProdutoAcompanhamentoCategoria>().Add(novaCategoriaProduto);
+        }
+
+        await _db.SaveChangesAsync();
+
+        // TempData["Success"] = "Produto atualizado com sucesso.";
+        // return RedirectToAction(nameof(Index));
+
+        await PopularListasAsync(vm);
+        vm.ImagemUrl = produto.ImagemUrl;
+
+        TempData["Success"] = "Produto atualizado com sucesso.";
+        return View(vm);
+    }
+
+    private static Guid TryParseGuid(string? valor)
+    {
+        return Guid.TryParse(valor, out var guid) ? guid : Guid.Empty;
+    }
+
+    public class PersonalizacaoJsonPostViewModel
+{
+    public string? ProdutoId { get; set; }
+    public List<ProdutoAcompanhamentoCategoriaJsonPostViewModel> ProdutoAcompanhamentoCategorias { get; set; } = new();
+}
+
+public class ProdutoAcompanhamentoCategoriaJsonPostViewModel
+{
+    public string? Id { get; set; }
+    public string? ProdutoId { get; set; }
+    public string? AcompanhamentoCategoriaId { get; set; }
+    public string? NomeCategoria { get; set; }
+    public string? DescricaoCategoria { get; set; }
+    public bool Obrigatorio { get; set; }
+    public int MinSelecionados { get; set; }
+    public int MaxSelecionados { get; set; }
+    public int Ordem { get; set; }
+    public List<ProdutoAcompanhamentoJsonPostViewModel> ProdutoAcompanhamentos { get; set; } = new();
+}
+
+public class ProdutoAcompanhamentoJsonPostViewModel
+{
+    public string? Id { get; set; }
+    public string? ProdutoId { get; set; }
+    public string? AcompanhamentoCategoriaId { get; set; }
+    public string? AcompanhamentoId { get; set; }
+    public string? Nome { get; set; }
+    public string? Descricao { get; set; }
+    public string? Preco { get; set; }
+    public bool Ativo { get; set; }
+    public int Ordem { get; set; }
+    public bool Selecionado { get; set; }
+}
 
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
         var produto = await _db.Produtos
-            .Include(p => p.AcompanhamentoCategorias)
-                .ThenInclude(pc => pc.Categoria)
-                    .ThenInclude(c => c.Acompanhamentos)
-            .Include(p => p.AcompanhamentoCategorias)
-                .ThenInclude(pc => pc.ProdutoAcompanhamentos)
-                    .ThenInclude(pa => pa.Acompanhamento)
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -265,44 +620,7 @@ public class ProdutosController : Controller
             ImagemUrl = produto.ImagemUrl,
             TempoPreparoMinutos = produto.TempoPreparoMinutos,
             CategoriaId = produto.CategoriaId,
-            Ativo = produto.Ativo,
-
-            CategoriasAcompanhamentoSelecionadas = produto.AcompanhamentoCategorias
-                .OrderBy(x => x.Ordem)
-                .Select(x => new CategoriaAcompanhamentoSelecaoViewModel
-                {
-                    ProdutoId = x.ProdutoId,
-                    AcompanhamentoCategoriaId = x.AcompanhamentoCategoriaId,
-                    NomeCategoria = x.Categoria != null ? x.Categoria.Nome : string.Empty,
-                    Obrigatorio = x.Obrigatorio,
-                    MinSelecionados = x.MinSelecionados,
-                    MaxSelecionados = x.MaxSelecionados,
-                    Ordem = x.Ordem,
-
-                    Acompanhamentos = x.Categoria != null
-                        ? x.Categoria.Acompanhamentos
-                            .OrderBy(a => a.Ordem)
-                            .Select(a =>
-                            {
-                                var vinculo = x.ProdutoAcompanhamentos
-                                    .FirstOrDefault(pa => pa.AcompanhamentoId == a.Id);
-
-                                return new AcompanhamentoItemViewModel
-                                {
-                                    Id = vinculo != null ? vinculo.Id : Guid.Empty, // id do vínculo ProdutoAcompanhamento
-                                    AcompanhamentoId = a.Id, // id do acompanhamento base
-                                    Nome = a.Nome,
-                                    Descricao = a.Descricao,
-                                    Preco = a.Preco.ToString("N2", ptBr),
-                                    Ativo = vinculo?.Ativo ?? true,
-                                    Ordem = vinculo?.Ordem ?? a.Ordem,
-                                    Selecionado = vinculo != null
-                                };
-                            })
-                            .ToList()
-                        : new List<AcompanhamentoItemViewModel>()
-                })
-                .ToList()
+            Ativo = produto.Ativo
         };
 
         await PopularListasAsync(vm);
@@ -334,141 +652,66 @@ public class ProdutosController : Controller
             Text = c.Nome
         });
     }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(AdminProdutoFormViewModel vm, IFormFile? imagemForm)
+    
+    [HttpGet]
+    public async Task<IActionResult> ObterPersonalizacao(Guid id)
     {
-        decimal precoConvertido = 0m;
-
-        if (string.IsNullOrWhiteSpace(vm.Preco))
-        {
-            ModelState.AddModelError(nameof(vm.Preco), "Informe o preço.");
-        }
-        else
-        {
-            var precoTexto = vm.Preco.Trim().Replace(".", "").Replace(",", ".");
-
-            if (!decimal.TryParse(
-                precoTexto,
-                System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out precoConvertido))
-            {
-                ModelState.AddModelError(nameof(vm.Preco), "Informe um preço válido.");
-            }
-            else if (precoConvertido <= 0)
-            {
-                ModelState.AddModelError(nameof(vm.Preco), "O preço deve ser maior que zero.");
-            }
-        }
-
-        vm.CategoriasAcompanhamentoSelecionadas ??= new List<CategoriaAcompanhamentoSelecaoViewModel>();
-
-        foreach (var grupo in vm.CategoriasAcompanhamentoSelecionadas)
-        {
-            grupo.Acompanhamentos ??= new List<AcompanhamentoItemViewModel>();
-        }
-
-        if (!ModelState.IsValid)
-        {
-            await PopularListasAsync(vm);
-            return View(vm);
-        }
-
         var produto = await _db.Produtos
+            .AsNoTracking()
+            .Include(p => p.AcompanhamentoCategorias.OrderBy(pc => pc.Ordem))
+                .ThenInclude(pc => pc.Categoria)
             .Include(p => p.AcompanhamentoCategorias)
-                .ThenInclude(pc => pc.ProdutoAcompanhamentos)
-            .FirstOrDefaultAsync(p => p.Id == vm.Id);
+                .ThenInclude(pc => pc.ProdutoAcompanhamentos.OrderBy(pa => pa.Ordem))
+                    .ThenInclude(pa => pa.Acompanhamento)
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (produto == null)
-            return NotFound();
+            return NotFound(new { mensagem = "Produto não encontrado." });
 
-        produto.Nome = vm.Nome?.Trim() ?? string.Empty;
-        produto.Descricao = string.IsNullOrWhiteSpace(vm.Descricao) ? null : vm.Descricao.Trim();
-        produto.Preco = precoConvertido;
-        produto.TempoPreparoMinutos = vm.TempoPreparoMinutos;
-        produto.CategoriaId = vm.CategoriaId;
-        produto.Ativo = vm.Ativo;
-
-        // 1) Remove grupos que saíram da tela
-        var categoriasVindasDaTela = vm.CategoriasAcompanhamentoSelecionadas
-            .Where(x => x.AcompanhamentoCategoriaId != Guid.Empty)
-            .Select(x => x.AcompanhamentoCategoriaId)
-            .ToHashSet();
-
-        var gruposParaRemover = produto.AcompanhamentoCategorias
-            .Where(x => !categoriasVindasDaTela.Contains(x.AcompanhamentoCategoriaId))
-            .ToList();
-
-        foreach (var grupoRemover in gruposParaRemover)
+        var response = new ProdutoPersonalizacaoResponse
         {
-            if (grupoRemover.ProdutoAcompanhamentos.Any())
-            {
-                _db.ProdutoAcompanhamentos.RemoveRange(grupoRemover.ProdutoAcompanhamentos);
-            }
-
-            _db.Remove(grupoRemover);
-        }
-
-        // 2) Cria ou atualiza grupos
-        foreach (var grupoVm in vm.CategoriasAcompanhamentoSelecionadas
-                     .Where(x => x.AcompanhamentoCategoriaId != Guid.Empty))
-        {
-            var relacao = produto.AcompanhamentoCategorias
-                .FirstOrDefault(x => x.AcompanhamentoCategoriaId == grupoVm.AcompanhamentoCategoriaId);
-
-            if (relacao == null)
-            {
-                relacao = new ProdutoAcompanhamentoCategoria
+            ProdutoId = produto.Id,
+            NomeProduto = produto.Nome,
+            ProdutoAcompanhamentoCategorias = produto.AcompanhamentoCategorias
+                .OrderBy(pc => pc.Ordem)
+                .Select(pc => new ProdutoAcompanhamentoCategoriaJsonViewModel
                 {
-                    ProdutoId = produto.Id,
-                    AcompanhamentoCategoriaId = grupoVm.AcompanhamentoCategoriaId,
-                    Obrigatorio = grupoVm.Obrigatorio,
-                    MinSelecionados = grupoVm.MinSelecionados,
-                    MaxSelecionados = grupoVm.MaxSelecionados,
-                    Ordem = grupoVm.Ordem,
-                    ProdutoAcompanhamentos = new List<ProdutoAcompanhamento>()
-                };
+                    ProdutoId = pc.ProdutoId,
+                    AcompanhamentoCategoriaId = pc.AcompanhamentoCategoriaId,
 
-                produto.AcompanhamentoCategorias.Add(relacao);
-            }
-            else
-            {
-                relacao.Obrigatorio = grupoVm.Obrigatorio;
-                relacao.MinSelecionados = grupoVm.MinSelecionados;
-                relacao.MaxSelecionados = grupoVm.MaxSelecionados;
-                relacao.Ordem = grupoVm.Ordem;
+                    NomeCategoria = pc.Categoria != null ? pc.Categoria.Nome : string.Empty,
+                    DescricaoCategoria = pc.Categoria != null ? pc.Categoria.Descricao : null,
 
-                // Estratégia segura: limpa os vínculos atuais e recria
-                if (relacao.ProdutoAcompanhamentos.Any())
-                {
-                    _db.ProdutoAcompanhamentos.RemoveRange(relacao.ProdutoAcompanhamentos.ToList());
-                    relacao.ProdutoAcompanhamentos.Clear();
-                }
-            }
+                    Obrigatorio = pc.Obrigatorio,
+                    MinSelecionados = pc.MinSelecionados,
+                    MaxSelecionados = pc.MaxSelecionados,
+                    Ordem = pc.Ordem,
 
-            // recria somente os selecionados
-            foreach (var itemVm in grupoVm.Acompanhamentos.Where(x => x.Selecionado && x.AcompanhamentoId != Guid.Empty))
-            {
-                relacao.ProdutoAcompanhamentos.Add(new ProdutoAcompanhamento
-                {
-                    Id = Guid.NewGuid(),
-                    ProdutoId = produto.Id,
-                    AcompanhamentoCategoriaId = grupoVm.AcompanhamentoCategoriaId,
-                    AcompanhamentoId = itemVm.AcompanhamentoId,
-                    DataAdicionado = DateTime.UtcNow,
-                    Ativo = itemVm.Ativo,
-                    Ordem = itemVm.Ordem
-                });
-            }
-        }
+                    ProdutoAcompanhamentos = pc.ProdutoAcompanhamentos
+                        .OrderBy(pa => pa.Ordem)
+                        .Select(pa => new ProdutoAcompanhamentoJsonViewModel
+                        {
+                            Id = pa.Id,
+                            ProdutoId = pa.ProdutoId,
+                            AcompanhamentoCategoriaId = pa.AcompanhamentoCategoriaId,
+                            AcompanhamentoId = pa.AcompanhamentoId,
 
-        await _db.SaveChangesAsync();
+                            Nome = pa.Acompanhamento != null ? pa.Acompanhamento.Nome : string.Empty,
+                            Descricao = pa.Acompanhamento != null ? pa.Acompanhamento.Descricao : null,
 
-        TempData["Success"] = "Produto atualizado com sucesso.";
-        return RedirectToAction(nameof(Index));
+                            Preco = pa.Acompanhamento != null ? pa.Acompanhamento.Preco : 0m,
+                            Ativo = pa.Ativo,
+                            Ordem = pa.Ordem,
+                            DataAdicionado = pa.DataAdicionado
+                        })
+                        .ToList()
+                })
+                .ToList()
+        };
+
+        return Json(response);
     }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoverCategoriaAcompanhamento(Guid produtoId, Guid acompanhamentoCategoriaId)

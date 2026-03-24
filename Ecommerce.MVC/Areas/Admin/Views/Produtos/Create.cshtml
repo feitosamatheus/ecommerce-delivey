@@ -105,6 +105,103 @@
         color: var(--text-muted);
         font-weight: 600;
     }
+    .acompanhamentos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .acompanhamento-card-option {
+        border: 1px solid var(--border-color);
+        border-radius: 0.9rem;
+        background: #fff;
+        padding: 0.9rem 1rem;
+        transition: all 0.2s ease;
+        position: relative;
+        min-height: 96px;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .acompanhamento-card-option:hover {
+        border-color: #93c5fd;
+        background: #f8fbff;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.08);
+    }
+
+    .acompanhamento-card-option.is-checked {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.15);
+    }
+
+    .acompanhamento-check {
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .acompanhamento-check .form-check-input {
+        width: 1.1rem;
+        height: 1.1rem;
+        cursor: pointer;
+    }
+
+    .acompanhamento-card-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .acompanhamento-card-title {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 0.95rem;
+        line-height: 1.2;
+        margin-bottom: 0.2rem;
+    }
+
+    .acompanhamento-card-description {
+        color: #64748b;
+        font-size: 0.82rem;
+        line-height: 1.35;
+        margin-bottom: 0.35rem;
+    }
+
+    .acompanhamento-card-meta {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .acompanhamento-meta-badge {
+        font-size: 0.72rem;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.25rem 0.55rem;
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+    .acompanhamentos-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .acompanhamentos-header-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #334155;
+        margin: 0;
+    }
+
+    .acompanhamentos-header-subtitle {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin: 0;
+    }
 </style>
 
 <form asp-action="Create" method="post" enctype="multipart/form-data">
@@ -354,7 +451,7 @@
                 `;
             }
 
-            function montarHtmlAcompanhamentos(indexCategoria, acompanhamentos) {
+            /* function montarHtmlAcompanhamentos(indexCategoria, acompanhamentos) {
                 if (!acompanhamentos || acompanhamentos.length === 0) {
                     return `<div class="alert alert-light border mb-0">Nenhum acompanhamento ativo encontrado para esta categoria.</div>`;
                 }
@@ -387,6 +484,75 @@
                                     ${item.nome}
                                 </label>
                             </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                return html;
+            } */
+
+            function montarHtmlAcompanhamentos(indexCategoria, acompanhamentos) {
+                if (!acompanhamentos || acompanhamentos.length === 0) {
+                    return `
+                        <div class="alert alert-light border mb-0">
+                            Nenhum acompanhamento ativo encontrado para esta categoria.
+                        </div>
+                    `;
+                }
+
+                let html = `
+                    <div class="acompanhamentos-header">
+                        <div>
+                            <p class="acompanhamentos-header-title">Itens da categoria</p>
+                            <p class="acompanhamentos-header-subtitle">
+                                Selecione os acompanhamentos disponíveis para este grupo.
+                            </p>
+                        </div>
+                        <span class="badge-rule">${acompanhamentos.length} item(ns)</span>
+                    </div>
+
+                    <div class="acompanhamentos-grid">
+                `;
+
+                acompanhamentos.forEach((item, idx) => {
+                    const descricao = item.descricao ?? "";
+                    const preco = item.preco ?? "0,00";
+                    const ordem = item.ordem ?? 0;
+
+                    html += `
+                        <div class="acompanhamento-card-option" data-acompanhamento-card>
+                            <div class="acompanhamento-check">
+                                <input type="hidden"
+                                    name="CategoriasAcompanhamentoSelecionadas[${indexCategoria}].Acompanhamentos[${idx}].AcompanhamentoId"
+                                    value="${item.id}" />
+
+                                <input type="hidden"
+                                    name="CategoriasAcompanhamentoSelecionadas[${indexCategoria}].Acompanhamentos[${idx}].Nome"
+                                    value="${item.nome}" />
+
+                                <input type="checkbox"
+                                    class="form-check-input input-selecionado-acomp"
+                                    id="cat_${indexCategoria}_acom_${idx}"
+                                    name="CategoriasAcompanhamentoSelecionadas[${indexCategoria}].Acompanhamentos[${idx}].Selecionado"
+                                    value="true" />
+
+                                <input type="hidden"
+                                    name="CategoriasAcompanhamentoSelecionadas[${indexCategoria}].Acompanhamentos[${idx}].Selecionado"
+                                    value="false" />
+                            </div>
+
+                            <label class="acompanhamento-card-content mb-0" for="cat_${indexCategoria}_acom_${idx}">
+                                <div class="acompanhamento-card-title">${item.nome}</div>
+                                <div class="acompanhamento-card-description">
+                                    ${descricao || "Sem descrição cadastrada."}
+                                </div>
+
+                                <div class="acompanhamento-card-meta">
+                                    <span class="acompanhamento-meta-badge">R$ ${preco}</span>
+                                    <span class="acompanhamento-meta-badge">Ordem ${ordem}</span>
+                                </div>
+                            </label>
                         </div>
                     `;
                 });

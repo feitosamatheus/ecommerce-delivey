@@ -20,7 +20,8 @@ public class ProdutosIndexViewModel
     // 4. Propriedades de Ordenação
     public string SortColumn { get; set; } = "Nome";
     public string SortDirection { get; set; } = "asc";
-
+    public DateTime? DataInicio { get; set; }
+    public DateTime? DataFim { get; set; }
     // 5. Mantém os valores dos filtros para persistência na UI
     public string? Busca { get; set; }
     public Guid? CategoriaId { get; set; } 

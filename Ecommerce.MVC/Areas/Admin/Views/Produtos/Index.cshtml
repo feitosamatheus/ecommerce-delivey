@@ -124,6 +124,8 @@
         <div class="card-body">
             <form id="formFiltroProdutos" method="get" action="@Url.Action("Index", "Produtos", new { area = "Admin" })">
                 <input type="hidden" id="pagina" name="pagina" value="@Model.PaginaAtual" />
+                <input type="hidden" name="sortColumn" id="sortColumn" value="@Model.SortColumn" />
+                <input type="hidden" name="sortDirection" id="sortDirection" value="@Model.SortDirection" />
                 
                 <div class="row g-3">
                     <div class="col-xl-5">
@@ -226,12 +228,12 @@
 
         // Paginação
         $(document).on("click", ".paginacao-produto", function (e) {
-        e.preventDefault();
-        const pagina = $(this).data("pagina");
-        if (pagina) {
-        $("#pagina").val(pagina);
-        $("#formFiltroProdutos").trigger("submit", [true]);
-        }
+            e.preventDefault();
+            const pagina = $(this).data("pagina");
+            if (pagina) {
+                $("#pagina").val(pagina);
+                $("#formFiltroProdutos").trigger("submit", [true]);
+            }
         });
 
             // Troca de ícone no colapso do card
@@ -241,6 +243,34 @@
                     const isCollapsed = $(this).closest(".card").hasClass("collapsed-card");
                     $icon.attr("class", `fas fa-${isCollapsed ? "plus" : "minus"}`);
                 }, 300);
+            });
+        });
+
+        $(document).on('click', '.ordenacao-produto', function () {
+            const coluna = $(this).data('coluna');
+            const sortColumnAtual = $('#sortColumn').val();
+            const sortDirectionAtual = $('#sortDirection').val();
+
+            let novaDirecao = 'asc';
+
+            if (sortColumnAtual === coluna) {
+                novaDirecao = sortDirectionAtual === 'asc' ? 'desc' : 'asc';
+            }
+
+            $('#sortColumn').val(coluna);
+            $('#sortDirection').val(novaDirecao);
+
+            // sempre volta para a primeira página ao trocar ordenação
+            $('input[name="pagina"]').val(1);
+
+            $('#formFiltroProdutos').submit();
+
+            $(document).on("change", "#sortColumnMobile, #sortDirectionMobile", function () {
+                $("#sortColumn").val($("#sortColumnMobile").val());
+                $("#sortDirection").val($("#sortDirectionMobile").val());
+                $("#pagina").val(1);
+
+                $("#formFiltroProdutos").trigger("submit", [true]);
             });
         });
     </script>

@@ -35,7 +35,6 @@
         letter-spacing: 0.05em;
     }
 
-    /* Image Upload Styling */
     .image-upload-zone {
         cursor: pointer;
         width: 100%;
@@ -52,10 +51,10 @@
         overflow: hidden;
     }
 
-        .image-upload-zone:hover {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
-        }
+    .image-upload-zone:hover {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+    }
 
     #imgPreview {
         width: 100%;
@@ -91,23 +90,139 @@
         height: 1.5rem;
         cursor: pointer;
     }
+
+    .acompanhamento-opcao {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: .75rem;
+        background: #fff;
+    }
+    .acompanhamentos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .acompanhamento-card-option {
+        border: 1px solid var(--border-color);
+        border-radius: 0.9rem;
+        background: #fff;
+        padding: 0.9rem 1rem;
+        transition: all 0.2s ease;
+        position: relative;
+        min-height: 96px;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .acompanhamento-card-option:hover {
+        border-color: #93c5fd;
+        background: #f8fbff;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.08);
+    }
+
+    .acompanhamento-card-option.is-checked {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.15);
+    }
+
+    .acompanhamento-check {
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .acompanhamento-check .form-check-input {
+        width: 1.1rem;
+        height: 1.1rem;
+        cursor: pointer;
+    }
+
+    .acompanhamento-card-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .acompanhamento-card-title {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 0.95rem;
+        line-height: 1.2;
+        margin-bottom: 0.2rem;
+    }
+
+    .acompanhamento-card-description {
+        color: #64748b;
+        font-size: 0.82rem;
+        line-height: 1.35;
+        margin-bottom: 0.35rem;
+    }
+
+    .acompanhamento-card-meta {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .acompanhamento-meta-badge {
+        font-size: 0.72rem;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.25rem 0.55rem;
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+    .acompanhamentos-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .acompanhamentos-header-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #334155;
+        margin: 0;
+    }
+
+    .acompanhamentos-header-subtitle {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin: 0;
+    }
 </style>
 
-<form asp-area="Admin" asp-controller="Produtos" asp-action="Edit" method="post" enctype="multipart/form-data">
+<form asp-area="Admin" asp-controller="Produtos" asp-action="Edit" method="post" enctype="multipart/form-data" id="formProdutoEdit">
+    @Html.AntiForgeryToken()
+
     <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="ImagemUrl" />
+    <input type="hidden" asp-for="PersonalizacaoJson" id="PersonalizacaoJson" />
+    @* Mensagens de Feedback *@
+    <div id="feedbackMessages">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success border-0 shadow-sm mb-4">@TempData["Success"]</div>
+        }
 
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger border-0 shadow-sm mb-4">@TempData["Error"]</div>
+        }
+    </div>
     <div class="container-fluid">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-            <div>
-                <h2 class="h4 mb-0 text-dark fw-bold">Editar Produto</h2>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item small"><a asp-action="Index">Produtos</a></li>
-                        <li class="breadcrumb-item small active">Editar</li>
-                    </ol>
-                </nav>
+        <div class="d-flex justify-content-between align-items-md-center mb-4 gap-3">
+            @* Cabeçalho *@
+            <div class="d-flex justify-content-start align-items-center ">
+                <a asp-action="Index" class="btn btn-light btn-sm border text-muted btn-action" style="border-radius: 0.5rem; padding: 0.6rem 1rem;">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
             </div>
+
             <div class="d-flex gap-2">
                 <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancelar</a>
                 <button type="submit" class="btn btn-primary px-4 shadow-sm">
@@ -120,8 +235,11 @@
             <div class="col-xl-8">
                 <div class="card card-form-clean">
                     <div class="card-header-custom">
-                        <span class="fw-bold text-dark"><i class="fas fa-info-circle me-2 text-primary"></i>Geral</span>
+                        <span class="fw-bold text-dark">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Geral
+                        </span>
                     </div>
+
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-12">
@@ -129,10 +247,12 @@
                                 <input asp-for="Nome" class="form-control" placeholder="Nome do prato ou bebida" />
                                 <span asp-validation-for="Nome" class="text-danger small"></span>
                             </div>
+
                             <div class="col-12">
                                 <label asp-for="Descricao" class="form-label"></label>
                                 <textarea asp-for="Descricao" class="form-control" rows="3" placeholder="Descrição detalhada..."></textarea>
                             </div>
+
                             <div class="col-md-6">
                                 <label asp-for="CategoriaId" class="form-label"></label>
                                 <select asp-for="CategoriaId" asp-items="Model.Categorias" class="form-select">
@@ -140,17 +260,19 @@
                                 </select>
                                 <span asp-validation-for="CategoriaId" class="text-danger small"></span>
                             </div>
+
                             <div class="col-md-3">
                                 <label asp-for="Preco" class="form-label"></label>
                                 <div class="input-group">
                                     <span class="input-group-text input-group-text-clean">R$</span>
                                     <input asp-for="Preco" class="form-control money" placeholder="0,00" />
                                 </div>
-                                <span asp-validation-for="Preco" type="text" class="text-danger small"></span>
+                                <span asp-validation-for="Preco" class="text-danger small"></span>
                             </div>
+
                             <div class="col-md-3">
                                 <label asp-for="TempoPreparoMinutos" class="form-label"></label>
-                                <input asp-for="TempoPreparoMinutos" class="form-control" type="number" />
+                                <input asp-for="TempoPreparoMinutos" class="form-control" type="number" min="0" />
                             </div>
                         </div>
                     </div>
@@ -158,18 +280,21 @@
 
                 <div class="card card-form-clean">
                     <div class="card-header-custom">
-                        <span class="fw-bold text-dark"><i class="fas fa-list-ul me-2 text-primary"></i>Personalização</span>
+                        <span class="fw-bold text-dark">
+                            <i class="fas fa-list-ul me-2 text-primary"></i>Personalização
+                        </span>
+
                         <button type="button" id="btnAdicionarCategoriaAcompanhamento" class="btn btn-sm btn-primary">
                             <i class="fas fa-plus me-1"></i>Novo Grupo
                         </button>
                     </div>
+
                     <div class="card-body">
-                        <div id="categorias-acompanhamento-container">
-                            @* Os itens existentes serão carregados via JS no document.ready se necessário *@
-                        </div>
+                        <div id="categorias-acompanhamento-container"></div>
+
                         <div id="mensagemSemCategorias" class="text-center py-4 text-muted">
                             <i class="fas fa-layer-group d-block fs-2 mb-2 opacity-25"></i>
-                            <p class="small mb-0">Sem grupos de acompanhamento vinculado.</p>
+                            <p class="small mb-0">Sem grupos de acompanhamento vinculados.</p>
                         </div>
                     </div>
                 </div>
@@ -180,741 +305,796 @@
                     <div class="card-header-custom">
                         <span class="fw-bold text-dark">Imagem</span>
                     </div>
+
                     <div class="card-body">
                         <div class="image-upload-zone" onclick="document.getElementById('imagemForm').click()">
                             <div class="upload-placeholder" id="placeholderIcon">
                                 <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
                                 <p class="small mb-0">Clique para alterar</p>
                             </div>
+
                             <img id="imgPreview" src="@Model.ImagemUrl" alt="Preview" />
                         </div>
-                        <input type="file" name="imagemForm" id="imagemForm" class="d-none" accept="image/*" onchange="previewImage(this)" />
-                        <p class="text-center text-muted x-small mt-2">Formatos: JPG, PNG, WEBP (Máx 2MB)</p>
+
+                        <input type="file"
+                               name="imagemForm"
+                               id="imagemForm"
+                               class="d-none"
+                               accept="image/*"
+                               onchange="previewImage(this)" />
+
+                        <p class="text-center text-muted x-small mt-2">
+                            Formatos: JPG, PNG, WEBP (Máx 2MB)
+                        </p>
                     </div>
                 </div>
 
                 <div class="card card-form-clean bg-light border-0">
                     <div class="card-body">
                         <div class="form-check form-switch custom-switch d-flex align-items-center gap-2">
-                            <input class="form-check-input" type="checkbox" asp-for="Ativo">
-                                <label class="form-check-label fw-bold mb-0" asp-for="Ativo">Disponível para venda</label>
-                            </div>
-                            <p class="text-muted small mt-2 mb-0">Produtos inativos não aparecem no cardápio do cliente.</p>
+                            <input class="form-check-input" type="checkbox" asp-for="Ativo" />
+                            <label class="form-check-label fw-bold mb-0" asp-for="Ativo">
+                                Disponível para venda
+                            </label>
                         </div>
+
+                        <p class="text-muted small mt-2 mb-0">
+                            Produtos inativos não aparecem no cardápio do cliente.
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
-    </form>
+    </div>
+</form>
 
-    <script id="template-categoria-acompanhamento" type="text/template">
-        <div class="card shadow-sm mb-4 categoria-acompanhamento-item border-0">
-            <div class="card-body">
-                <input type="hidden"
-                       name="CategoriasAcompanhamentoSelecionadas[__index__].ProdutoId"
-                       value=""
-                       class="input-produto-id" />
+<script id="template-categoria-acompanhamento" type="text/template">
+    <div class="card shadow-sm mb-4 categoria-acompanhamento-item border-0" data-index="__index__">
+        <div class="card-body">
+            <input type="hidden"
+                   name="CategoriasAcompanhamentoSelecionadas[__index__].ProdutoId"
+                   value=""
+                   class="input-produto-id" />
 
-                <div class="row g-3 align-items-end mb-4">
-                    <div class="col-md-7">
-                        <label class="form-label fw-semibold text-dark">Categoria de Acompanhamento</label>
-                        <select name="CategoriasAcompanhamentoSelecionadas[__index__].AcompanhamentoCategoriaId"
-                                class="form-select select-categoria-acompanhamento border-secondary-subtle">
-                            <option value="">Selecione uma categoria...</option>
-                            @foreach (var item in Model.CategoriasAcompanhamentoDisponiveis)
-                            {
-                                    <option value="@item.Value">@item.Text</option>
-                            }
-                        </select>
-                    </div>
-
-                    <div class="col-md-5 text-md-end">
-                        <button type="button"
-                                class="btn btn-link text-danger text-decoration-none btnRemoverCategoriaAcompanhamento p-0 mb-2">
-                            <i class="fas fa-trash-alt me-1"></i> Remover
-                        </button>
-                    </div>
+            <div class="row g-3 align-items-end mb-4">
+                <div class="col-md-7">
+                    <label class="form-label fw-semibold text-dark">Categoria de Acompanhamento</label>
+                    <select name="CategoriasAcompanhamentoSelecionadas[__index__].AcompanhamentoCategoriaId"
+                            class="form-select select-categoria-acompanhamento border-secondary-subtle">
+                        <option value="">Selecione uma categoria...</option>
+                        @foreach (var item in Model.CategoriasAcompanhamentoDisponiveis)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
                 </div>
 
-                <div class="bg-body-tertiary p-3 rounded-3 mb-3">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label small text-muted d-block">Obrigatório?</label>
-                            <div class="form-check form-switch pt-1">
-                                <input type="checkbox"
-                                       id="check_obrigatorio___index__"
-                                       class="form-check-input input-obrigatorio-checkbox"
-                                       name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio"
-                                       value="true" />
-                                <label class="form-check-label small" for="check_obrigatorio___index__">Sim</label>
-
-                                <input type="hidden"
-                                       name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio"
-                                       value="false" />
-                            </div>
-                        </div>
-
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small text-muted">Mínimo</label>
-                            <input type="number"
-                                   min="0"
-                                   class="form-control form-control-sm input-min"
-                                   name="CategoriasAcompanhamentoSelecionadas[__index__].MinSelecionados"
-                                   value="0" />
-                        </div>
-
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small text-muted">Máximo</label>
-                            <input type="number"
-                                   min="1"
-                                   class="form-control form-control-sm input-max"
-                                   name="CategoriasAcompanhamentoSelecionadas[__index__].MaxSelecionados"
-                                   value="1" />
-                        </div>
-
-                        <div class="col-12 col-md-3">
-                            <label class="form-label small text-muted">Ordem</label>
-                            <input type="number"
-                                   min="0"
-                                   class="form-control form-control-sm input-ordem"
-                                   name="CategoriasAcompanhamentoSelecionadas[__index__].Ordem"
-                                   value="0" />
-                        </div>
-                    </div>
+                <div class="col-md-5 text-md-end">
+                    <button type="button"
+                            class="btn btn-link text-danger text-decoration-none btnRemoverCategoriaAcompanhamento p-0 mb-2">
+                        <i class="fas fa-trash-alt me-1"></i>Remover Grupo
+                    </button>
                 </div>
-
-                <div class="categoria-acompanhamento-regras d-flex flex-wrap gap-2 px-1 mb-3">
-                    <span class="badge-rule badge-obrigatorio">Obrigatório: Não</span>
-                    <span class="badge-rule badge-min">Mínimo: 0</span>
-                    <span class="badge-rule badge-max">Máximo: 1</span>
-                </div>
-
-                <input type="hidden"
-                       name="CategoriasAcompanhamentoSelecionadas[__index__].NomeCategoria"
-                       value=""
-                       class="input-nome-categoria" />
-
-                <div class="acompanhamentos-vinculados mt-3"></div>
             </div>
+
+            <div class="bg-body-tertiary p-3 rounded-3 mb-3">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted d-block">Obrigatório?</label>
+                        <div class="form-check form-switch pt-1">
+                            <input type="checkbox"
+                                   id="check_obrigatorio___index__"
+                                   class="form-check-input input-obrigatorio-checkbox"
+                                   name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio"
+                                   value="true" />
+                            <label class="form-check-label small" for="check_obrigatorio___index__">Sim</label>
+
+                            <input type="hidden"
+                                   name="CategoriasAcompanhamentoSelecionadas[__index__].Obrigatorio"
+                                   value="false" />
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-md-3">
+                        <label class="form-label small text-muted">Mínimo</label>
+                        <input type="number"
+                               min="0"
+                               class="form-control form-control-sm input-min"
+                               name="CategoriasAcompanhamentoSelecionadas[__index__].MinSelecionados"
+                               value="0" />
+                    </div>
+
+                    <div class="col-6 col-md-3">
+                        <label class="form-label small text-muted">Máximo</label>
+                        <input type="number"
+                               min="1"
+                               class="form-control form-control-sm input-max"
+                               name="CategoriasAcompanhamentoSelecionadas[__index__].MaxSelecionados"
+                               value="1" />
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small text-muted">Ordem</label>
+                        <input type="number"
+                               min="0"
+                               class="form-control form-control-sm input-ordem"
+                               name="CategoriasAcompanhamentoSelecionadas[__index__].Ordem"
+                               value="0" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="categoria-acompanhamento-regras d-flex flex-wrap gap-2 px-1 mb-3">
+                <span class="badge-rule badge-obrigatorio">Obrigatório: Não</span>
+                <span class="badge-rule badge-min">Mínimo: 0</span>
+                <span class="badge-rule badge-max">Máximo: 1</span>
+                <span class="badge-rule badge-ordem">Ordem: 0</span>
+            </div>
+
+            <input type="hidden"
+                   name="CategoriasAcompanhamentoSelecionadas[__index__].NomeCategoria"
+                   value=""
+                   class="input-nome-categoria" />
+
+            <div class="acompanhamentos-vinculados mt-3"></div>
         </div>
-    </script>
-    
-    @section Scripts {
+    </div>
+</script>
+
+@section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <partial name="_ValidationScriptsPartial" />
 
     <script>
         $(document).ready(function () {
-            const container = document.getElementById("categorias-acompanhamento-container");
-            const btnAdicionar = document.getElementById("btnAdicionarCategoriaAcompanhamento");
-            const template = document.getElementById("template-categoria-acompanhamento").innerHTML;
-            const mensagemSemCategorias = document.getElementById("mensagemSemCategorias");
+            const produtoId = document.getElementById('Id')?.value || null;
+            const container = document.getElementById('categorias-acompanhamento-container');
+            const btnAdicionar = document.getElementById('btnAdicionarCategoriaAcompanhamento');
+            const template = document.getElementById('template-categoria-acompanhamento').innerHTML;
+            const mensagemSemCategorias = document.getElementById('mensagemSemCategorias');
+            const inputJson = document.getElementById('PersonalizacaoJson');
+
+            const personalizacaoState = {
+                produtoId: produtoId,
+                produtoAcompanhamentoCategorias: []
+            };
+
+            console.log('[INIT] produtoId:', produtoId);
+            console.log('[INIT] inputJson encontrado:', !!inputJson);
+            console.log('[INIT] container encontrado:', !!container);
 
             $('.money').mask('#.##0,00', { reverse: true });
 
             window.previewImage = function (input) {
                 if (input.files && input.files[0]) {
                     const reader = new FileReader();
+
                     reader.onload = function (e) {
                         $('#imgPreview').attr('src', e.target.result).show();
                         $('#placeholderIcon').hide();
                     };
+
                     reader.readAsDataURL(input.files[0]);
                 }
             };
 
-            function atualizarMensagemVazia() {
-                const total = container.querySelectorAll(".categoria-acompanhamento-item").length;
-                mensagemSemCategorias.style.display = total > 0 ? "none" : "block";
+            function escapeHtml(texto) {
+                return String(texto ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#39;');
             }
 
-            function atualizarBadges(item) {
-                const obrigatorio = item.querySelector(".input-obrigatorio-checkbox")?.checked ?? false;
-                const min = item.querySelector(".input-min")?.value ?? 0;
-                const max = item.querySelector(".input-max")?.value ?? 1;
+            function atualizarJsonPersonalizacao(origem = 'desconhecida') {
+                if (inputJson) {
+                    inputJson.value = JSON.stringify(personalizacaoState);
+                }
 
-                item.querySelector(".badge-obrigatorio").textContent = `Obrigatório: ${obrigatorio ? 'Sim' : 'Não'}`;
-                item.querySelector(".badge-min").textContent = `Mínimo: ${min}`;
-                item.querySelector(".badge-max").textContent = `Máximo: ${max}`;
+                console.log(`[JSON][${origem}] PersonalizacaoJson atualizado`);
+                console.log('[JSON] valor hidden:', inputJson?.value ?? null);
+                console.log('[JSON] objeto state:', structuredClone(personalizacaoState));
+            }
+
+            function atualizarMensagemVazia() {
+                const total = container.querySelectorAll('.categoria-acompanhamento-item').length;
+                mensagemSemCategorias.style.display = total > 0 ? 'none' : 'block';
+                console.log('[UI] total grupos na tela:', total);
+            }
+
+            function atualizarResumoRegras(item) {
+                const obrigatorio = item.querySelector('.input-obrigatorio-checkbox')?.checked ?? false;
+                const min = item.querySelector('.input-min')?.value ?? '0';
+                const max = item.querySelector('.input-max')?.value ?? '1';
+                const ordem = item.querySelector('.input-ordem')?.value ?? '0';
+
+                item.querySelector('.badge-obrigatorio').textContent = `Obrigatório: ${obrigatorio ? 'Sim' : 'Não'}`;
+                item.querySelector('.badge-min').textContent = `Mínimo: ${min}`;
+                item.querySelector('.badge-max').textContent = `Máximo: ${max}`;
+                item.querySelector('.badge-ordem').textContent = `Ordem: ${ordem}`;
+            }
+
+            function formatarPrecoInput(valor) {
+                const numero = Number(String(valor ?? '0').replace(/\./g, '').replace(',', '.')) || 0;
+                return numero.toFixed(2).replace('.', ',');
+            }
+
+            function obterProximoIndice() {
+                return container.querySelectorAll('.categoria-acompanhamento-item').length;
             }
 
             function reindexar() {
-                container.querySelectorAll(".categoria-acompanhamento-item").forEach((item, index) => {
-                    item.querySelectorAll("select, input").forEach(campo => {
+                const itens = container.querySelectorAll('.categoria-acompanhamento-item');
+
+                console.log('[REINDEX] iniciando. Total grupos:', itens.length);
+
+                itens.forEach((item, index) => {
+                    item.dataset.index = index;
+
+                    item.querySelectorAll('select, input').forEach(campo => {
                         if (campo.name) {
-                            campo.name = campo.name.replace(
-                                /CategoriasAcompanhamentoSelecionadas\[\d+\]/g,
-                                `CategoriasAcompanhamentoSelecionadas[${index}]`
-                            );
+                            campo.name = campo.name
+                                .replace(/CategoriasAcompanhamentoSelecionadas\[\d+\]/g, `CategoriasAcompanhamentoSelecionadas[${index}]`)
+                                .replace(/CategoriasAcompanhamentoSelecionadas\[__index__\]/g, `CategoriasAcompanhamentoSelecionadas[${index}]`);
                         }
 
-                        if (campo.id) {
-                            campo.id = campo.id.replace(/check_obrigatorio_\d+/g, `check_obrigatorio_${index}`);
+                        if (campo.id && campo.id.startsWith('check_obrigatorio_')) {
+                            campo.id = `check_obrigatorio_${index}`;
                         }
                     });
 
                     const labelObrigatorio = item.querySelector('label[for^="check_obrigatorio_"]');
                     if (labelObrigatorio) {
-                        labelObrigatorio.setAttribute("for", `check_obrigatorio_${index}`);
+                        labelObrigatorio.setAttribute('for', `check_obrigatorio_${index}`);
                     }
+
+                    item.querySelectorAll('.acompanhamento-item-row').forEach((linha, itemIndex) => {
+                        linha.querySelectorAll('input, select, textarea').forEach(campo => {
+                            if (!campo.name) return;
+
+                            campo.name = campo.name.replace(
+                                /CategoriasAcompanhamentoSelecionadas\[\d+\]\.Acompanhamentos\[\d+\]/g,
+                                `CategoriasAcompanhamentoSelecionadas[${index}].Acompanhamentos[${itemIndex}]`
+                            );
+                        });
+
+                        const checkbox = linha.querySelector('.input-selecionado-check');
+                        const label = linha.querySelector('label[for^="cat_"]');
+
+                        if (checkbox) {
+                            checkbox.id = `cat_${index}_acom_${itemIndex}`;
+                        }
+
+                        if (label) {
+                            label.setAttribute('for', `cat_${index}_acom_${itemIndex}`);
+                        }
+                    });
+
+                    atualizarResumoRegras(item);
                 });
+
+                console.log('[REINDEX] finalizado');
             }
+
+            function syncStateFromDom(origem = 'desconhecida') {
+                const grupos = [];
+
+                container.querySelectorAll('.categoria-acompanhamento-item').forEach((item, index) => {
+                    const select = item.querySelector('.select-categoria-acompanhamento');
+                    const option = select?.options[select.selectedIndex];
+
+                    const grupo = {
+                        id: item.dataset.grupoId || crypto.randomUUID(),
+                        produtoId: produtoId,
+                        acompanhamentoCategoriaId: select?.value || null,
+                        nomeCategoria: item.querySelector('.input-nome-categoria')?.value || option?.text || '',
+                        descricaoCategoria: '',
+                        obrigatorio: item.querySelector('.input-obrigatorio-checkbox')?.checked ?? false,
+                        minSelecionados: Number(item.querySelector('.input-min')?.value || 0),
+                        maxSelecionados: Number(item.querySelector('.input-max')?.value || 1),
+                        ordem: Number(item.querySelector('.input-ordem')?.value || index),
+                        produtoAcompanhamentos: []
+                    };
+
+                    item.querySelectorAll('.acompanhamento-item-row').forEach((linha) => {
+                        grupo.produtoAcompanhamentos.push({
+                            id: linha.querySelector('.input-id')?.value || '',
+                            produtoId: produtoId,
+                            acompanhamentoCategoriaId: grupo.acompanhamentoCategoriaId,
+                            acompanhamentoId: linha.querySelector('.input-acompanhamento-id-base')?.value || '',
+                            nome: linha.querySelector('.input-nome')?.value || '',
+                            descricao: linha.querySelector('.input-descricao')?.value || '',
+                            preco: linha.querySelector('.input-preco')?.value || '0,00',
+                            ativo: linha.querySelector('.input-ativo')?.checked ?? false,
+                            ordem: Number(linha.querySelector('.input-ordem-item')?.value || 0),
+                            selecionado: linha.querySelector('.input-selecionado-check')?.checked ?? false
+                        });
+                    });
+
+                    grupos.push(grupo);
+                });
+
+                personalizacaoState.produtoAcompanhamentoCategorias = grupos;
+
+                console.log(`[SYNC][${origem}] grupos coletados da DOM:`, grupos.length);
+                console.log(`[SYNC][${origem}] state montado:`, structuredClone(personalizacaoState));
+
+                atualizarJsonPersonalizacao(origem);
+            }
+
+            /*function montarHtmlAcompanhamentos(acompanhamentos, grupoIndex) {
+                if (!acompanhamentos || acompanhamentos.length === 0) {
+                    return `
+                        <div class="border rounded-3 p-3 bg-light text-muted small">
+                            Nenhum acompanhamento cadastrado nesta categoria.
+                        </div>
+                    `;
+                }
+
+                let html = `
+                    <div class="border rounded-3 overflow-hidden">
+                        <div class="bg-light px-3 py-2 border-bottom fw-semibold small text-dark">
+                            Itens da categoria
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 110px;">Selecionado</th>
+                                        <th>Nome</th>
+                                        <th>Descrição</th>
+                                        <th style="width: 140px;">Preço</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+
+                acompanhamentos
+                    .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+                    .forEach((acomp, itemIndex) => {
+                        html += `
+                            <tr class="acompanhamento-item-row">
+                                <td class="text-center">
+                                    ${acomp.id ? `
+                                        <input type="hidden"
+                                            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Id"
+                                            value="${escapeHtml(acomp.id)}"
+                                            class="input-id" />
+                                    ` : ''}
+
+                                    <input type="hidden"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].AcompanhamentoId"
+                                        value="${escapeHtml(acomp.acompanhamentoId ?? acomp.id ?? '')}"
+                                        class="input-acompanhamento-id-base" />
+
+                                    <input type="hidden"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ativo"
+                                        value="${acomp.ativo ? 'true' : 'false'}"
+                                        class="input-ativo" />
+
+                                    <input type="hidden"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ordem"
+                                        value="${acomp.ordem ?? 0}"
+                                        class="input-ordem-item" />
+
+                                    <input type="checkbox"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Selecionado"
+                                        value="true"
+                                        class="form-check-input input-selecionado-check"
+                                        id="cat_${grupoIndex}_acom_${itemIndex}"
+                                        ${acomp.selecionado ? 'checked' : ''} />
+                                </td>
+
+                                <td>
+                                    <label class="d-none" for="cat_${grupoIndex}_acom_${itemIndex}">
+                                        Selecionar ${escapeHtml(acomp.nome ?? '')}
+                                    </label>
+                                    <input type="text"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Nome"
+                                        value="${escapeHtml(acomp.nome ?? '')}"
+                                        class="form-control form-control-sm input-nome"
+                                        disabled />
+                                </td>
+
+                                <td>
+                                    <input type="text"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Descricao"
+                                        value="${escapeHtml(acomp.descricao ?? '')}"
+                                        class="form-control form-control-sm input-descricao"
+                                        disabled />
+                                </td>
+
+                                <td>
+                                    <input type="text"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Preco"
+                                        value="${escapeHtml(formatarPrecoInput(acomp.preco ?? '0,00'))}"
+                                        class="form-control form-control-sm input-preco"
+                                        disabled />
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                return html;
+            }
+            */
 
             function montarHtmlAcompanhamentos(acompanhamentos, grupoIndex) {
-            if (!acompanhamentos || acompanhamentos.length === 0) {
-            return `
-            <div class="border rounded-3 p-3 bg-light text-muted small">
-            Nenhum acompanhamento cadastrado nesta categoria.
-            </div>
-            `;
+                if (!acompanhamentos || acompanhamentos.length === 0) {
+                    return `
+                        <div class="border rounded-3 p-3 bg-light text-muted small">
+                            Nenhum acompanhamento cadastrado nesta categoria.
+                        </div>
+                    `;
+                }
+
+                let html = `
+                    <div class="acompanhamentos-header">
+                        <div>
+                            <p class="acompanhamentos-header-title">Itens da categoria</p>
+                            <p class="acompanhamentos-header-subtitle">
+                                Selecione os acompanhamentos disponíveis para este grupo.
+                            </p>
+                        </div>
+                        <span class="badge-rule">${acompanhamentos.length} item(ns)</span>
+                    </div>
+
+                    <div class="acompanhamentos-grid">
+                `;
+
+                acompanhamentos
+                    .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+                    .forEach((acomp, itemIndex) => {
+                        html += `
+                            <div class="acompanhamento-card-option ${acomp.selecionado ? 'is-checked' : ''}" data-acompanhamento-card>
+                                <div class="acompanhamento-check">
+                                    ${acomp.id ? `
+                                        <input type="hidden"
+                                            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Id"
+                                            value="${escapeHtml(acomp.id)}"
+                                            class="input-id" />
+                                    ` : ''}
+
+                                    <input type="hidden"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].AcompanhamentoId"
+                                        value="${escapeHtml(acomp.acompanhamentoId ?? acomp.id ?? '')}"
+                                        class="input-acompanhamento-id-base" />
+
+                                    <input type="hidden"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ativo"
+                                        value="${acomp.ativo ? 'true' : 'false'}"
+                                        class="input-ativo" />
+
+                                    <input type="hidden"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ordem"
+                                        value="${acomp.ordem ?? 0}"
+                                        class="input-ordem-item" />
+
+                                    <input type="checkbox"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Selecionado"
+                                        value="true"
+                                        class="form-check-input input-selecionado-check"
+                                        id="cat_${grupoIndex}_acom_${itemIndex}"
+                                        ${acomp.selecionado ? 'checked' : ''} />
+                                </div>
+
+                                <label class="acompanhamento-card-content mb-0" for="cat_${grupoIndex}_acom_${itemIndex}">
+                                    <input type="hidden"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Nome"
+                                        value="${escapeHtml(acomp.nome ?? '')}"
+                                        class="input-nome" />
+
+                                    <input type="hidden"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Descricao"
+                                        value="${escapeHtml(acomp.descricao ?? '')}"
+                                        class="input-descricao" />
+
+                                    <input type="hidden"
+                                        name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Preco"
+                                        value="${escapeHtml(formatarPrecoInput(acomp.preco ?? '0,00'))}"
+                                        class="input-preco" />
+
+                                    <div class="acompanhamento-card-title">${escapeHtml(acomp.nome ?? '')}</div>
+                                    <div class="acompanhamento-card-description">
+                                        ${escapeHtml(acomp.descricao ?? '') || 'Sem descrição cadastrada.'}
+                                    </div>
+
+                                    <div class="acompanhamento-card-meta">
+                                        <span class="acompanhamento-meta-badge">R$ ${escapeHtml(formatarPrecoInput(acomp.preco ?? '0,00'))}</span>
+                                    </div>
+                                </label>
+                            </div>
+                        `;
+                    });
+
+                html += `</div>`;
+                return html;
             }
 
-            let html = `
-            <div class="border rounded-3 overflow-hidden">
-            <div class="bg-light px-3 py-2 border-bottom fw-semibold small text-dark">
-            Itens da categoria
-            </div>
-            <div class="table-responsive">
-            <table class="table table-sm align-middle mb-0">
-            <thead>
-            <tr>
-            <th style="width: 70px;">Selecionado</th>
-            <th>Nome</th>
-            <th>Descrição</th>
-            <th>Preço</th>
-            <th>Ativo</th>
-            <th>Ordem</th>
-            <th class="text-end pe-3" style="width: 110px;">Ações</th>
-            </tr>
-            </thead>
-            <tbody>
-            `;
-
-            acompanhamentos.forEach((acomp, itemIndex) => {
-            html += `
-            <tr class="acompanhamento-item-row">
-            <td class="text-center">
-            <input type="hidden"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Id"
-            value="${acomp.id ?? ''}"
-            class="input-acompanhamento-id" />
-
-            <input type="hidden"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].AcompanhamentoId"
-            value="${acomp.acompanhamentoId ?? ''}" />
-
-            <input type="checkbox"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Selecionado"
-            value="true"
-            class="form-check-input"
-            ${acomp.selecionado ? 'checked' : ''} />
-            <input type="hidden"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Selecionado"
-            value="false" />
-            </td>
-
-            <td>
-            <input type="text"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Nome"
-            value="${acomp.nome ?? ''}"
-            class="form-control form-control-sm" />
-            </td>
-
-            <td>
-            <input type="text"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Descricao"
-            value="${acomp.descricao ?? ''}"
-            class="form-control form-control-sm" />
-            </td>
-
-            <td style="min-width: 130px;">
-            <input type="text"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Preco"
-            value="${acomp.preco ?? '0,00'}"
-            class="form-control form-control-sm money-acomp" />
-            </td>
-
-            <td class="text-center">
-            <input type="checkbox"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ativo"
-            value="true"
-            class="form-check-input"
-            ${acomp.ativo ? 'checked' : ''} />
-            <input type="hidden"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ativo"
-            value="false" />
-            </td>
-
-            <td style="min-width: 90px;">
-            <input type="number"
-            name="CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}].Ordem"
-            value="${acomp.ordem ?? 0}"
-            class="form-control form-control-sm" />
-            </td>
-
-            <td class="text-end">
-            <button type="button"
-            class="btn btn-link text-danger text-decoration-none btn-remover-acompanhamento p-0">
-            <i class="fas fa-trash-alt me-1"></i>Remover
-            </button>
-            </td>
-            </tr>
-            `;
-            });
-
-            html += `
-            </tbody>
-            </table>
-            </div>
-            </div>
-            `;
-
-            return html;
+            function escapeHtml(texto) {
+                return String(texto ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#39;');
             }
-
-            async function carregarAcompanhamentos(item) {
-            const select = item.querySelector(".select-categoria-acompanhamento");
-            const categoriaId = select.value;
-            const index = Array.from(container.querySelectorAll(".categoria-acompanhamento-item")).indexOf(item);
-
-            const inputNome = item.querySelector(".input-nome-categoria");
-            const acompanhamentosBox = item.querySelector(".acompanhamentos-vinculados");
-
-            if (!categoriaId) {
-            inputNome.value = "";
-            acompanhamentosBox.innerHTML = "";
-            atualizarBadges(item);
-            return;
-            }
-
-            try {
-            const response = await fetch(`@Url.Action("ObterAcompanhamentosPorCategoria", "Produtos", new { area = "Admin" })?categoriaId=${categoriaId}`);
-
-            if (!response.ok) {
-            acompanhamentosBox.innerHTML = `<div class="alert alert-danger mb-0">Não foi possível carregar os acompanhamentos.</div>`;
-            return;
-            }
-
-            const data = await response.json();
-
-            inputNome.value = data.categoria?.nome ?? "";
-            acompanhamentosBox.innerHTML = montarHtmlAcompanhamentos(data.acompanhamentos ?? [], index);
-            aplicarMascaraAcompanhamentos(item);
-            reindexarAcompanhamentos(item);
-            } catch (error) {
-            acompanhamentosBox.innerHTML = `<div class="alert alert-danger mb-0">Erro ao carregar os acompanhamentos.</div>`;
-            }
-            }
-
-            function reindexarAcompanhamentos(itemGrupo) {
-                const grupoIndexMatch = itemGrupo
-                .querySelector('.select-categoria-acompanhamento')
-                ?.name.match(/CategoriasAcompanhamentoSelecionadas\[(\d+)\]/);
-
-                if (!grupoIndexMatch) return;
-
-                const grupoIndex = grupoIndexMatch[1];
-                const linhas = itemGrupo.querySelectorAll(".acompanhamento-item-row");
-
-                linhas.forEach((linha, itemIndex) => {
-                linha.querySelectorAll("input, select, textarea").forEach(campo => {
-                if (!campo.name) return;
-
-                campo.name = campo.name.replace(
-                /CategoriasAcompanhamentoSelecionadas\[\d+\]\.Acompanhamentos\[\d+\]/g,
-                `CategoriasAcompanhamentoSelecionadas[${grupoIndex}].Acompanhamentos[${itemIndex}]`
-                );
-                });
-                });
-            }
-
-            container.addEventListener("click", function (e) {
-            const btnRemoverAcompanhamento = e.target.closest(".btn-remover-acompanhamento");
-            if (btnRemoverAcompanhamento) {
-            const linha = btnRemoverAcompanhamento.closest(".acompanhamento-item-row");
-            const itemGrupo = btnRemoverAcompanhamento.closest(".categoria-acompanhamento-item");
-            const acompanhamentoId = linha.querySelector(".input-acompanhamento-id")?.value;
-            const produtoId = itemGrupo.querySelector(".input-produto-id")?.value;
-            const acompanhamentoCategoriaId = itemGrupo.querySelector(".select-categoria-acompanhamento")?.value;
-            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-
-            Swal.fire({
-            title: "Deseja excluir?",
-            text: "Esse acompanhamento será removido.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Sim, excluir",
-            cancelButtonText: "Cancelar",
-            reverseButtons: true
-            }).then(async (result) => {
-            if (!result.isConfirmed) return;
-
-            // item novo, ainda não salvo no banco
-            if (!acompanhamentoId) {
-            linha.remove();
-            reindexarAcompanhamentos(itemGrupo);
-
-            Swal.fire({
-            title: "Removido!",
-            text: "O acompanhamento foi removido do formulário.",
-            icon: "success",
-            timer: 1200,
-            showConfirmButton: false
-            });
-
-            return;
-            }
-
-            try {
-            const response = await fetch('@Url.Action("RemoverAcompanhamento", "Produtos", new { area = "Admin" })', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'RequestVerificationToken': token
-            },
-            body: new URLSearchParams({
-            produtoId: produtoId,
-            acompanhamentoCategoriaId: acompanhamentoCategoriaId,
-            acompanhamentoId: acompanhamentoId,
-            __RequestVerificationToken: token
-            })
-            });
-
-            const data = await response.json();
-
-            if (!data.sucesso) {
-            Swal.fire("Erro", data.mensagem || "Não foi possível excluir o acompanhamento.", "error");
-            return;
-            }
-
-            await Swal.fire({
-            title: "Excluído!",
-            text: "O acompanhamento foi excluído com sucesso.",
-            icon: "success",
-            confirmButtonText: "OK"
-            });
-
-            location.reload();
-            } catch (error) {
-            Swal.fire("Erro", "Falha ao processar a exclusão do acompanhamento.", "error");
-            }
-            });
-
-            return;
-            }
-
-            const btnRemover = e.target.closest(".btnRemoverCategoriaAcompanhamento");
-            if (!btnRemover) return;
-
-            const item = btnRemover.closest(".categoria-acompanhamento-item");
-            const produtoId = item.querySelector(".input-produto-id")?.value;
-            const acompanhamentoCategoriaId = item.querySelector(".select-categoria-acompanhamento")?.value;
-            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-
-            Swal.fire({
-            title: "Deseja excluir?",
-            text: "Essa ação removerá o grupo de acompanhamento.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Sim, excluir",
-            cancelButtonText: "Cancelar",
-            reverseButtons: true
-            }).then(async (result) => {
-            if (!result.isConfirmed) return;
-
-            if (!produtoId || !acompanhamentoCategoriaId) {
-            item.remove();
-            reindexar();
-            atualizarMensagemVazia();
-
-            Swal.fire({
-            title: "Removido!",
-            text: "O grupo foi removido do formulário.",
-            icon: "success",
-            timer: 1200,
-            showConfirmButton: false
-            });
-
-            return;
-            }
-
-            try {
-            const response = await fetch('@Url.Action("RemoverCategoriaAcompanhamento", "Produtos", new { area = "Admin" })', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'RequestVerificationToken': token
-            },
-            body: new URLSearchParams({
-            produtoId: produtoId,
-            acompanhamentoCategoriaId: acompanhamentoCategoriaId,
-            __RequestVerificationToken: token
-            })
-            });
-
-            const data = await response.json();
-
-            if (!data.sucesso) {
-            Swal.fire("Erro", data.mensagem || "Não foi possível excluir.", "error");
-            return;
-            }
-
-            await Swal.fire({
-            title: "Excluído!",
-            text: "O grupo foi excluído com sucesso.",
-            icon: "success",
-            confirmButtonText: "OK"
-            });
-
-            location.reload();
-            } catch (error) {
-            Swal.fire("Erro", "Falha ao processar a exclusão.", "error");
-            }
-            });
-            });
 
             function formatarPrecoInput(valor) {
-                const numero = Number(valor || 0);
+                const numero = Number(String(valor ?? '0').replace(/\./g, '').replace(',', '.')) || 0;
                 return numero.toFixed(2).replace('.', ',');
+            }
+
+            function atualizarCardSelecionado(checkbox) {
+                const card = checkbox.closest('[data-acompanhamento-card]');
+                if (!card) return;
+
+                card.classList.toggle('is-checked', checkbox.checked);
+            }
+
+            function inicializarEstadoVisualAcompanhamentos(contexto) {
+                contexto.querySelectorAll('.input-selecionado-check').forEach(checkbox => {
+                    atualizarCardSelecionado(checkbox);
+                });
             }
 
             function aplicarMascaraAcompanhamentos(item) {
                 $(item).find('.money-acomp').mask('#.##0,00', { reverse: true });
             }
 
-            function adicionarGrupo(categoria) {
-                const index = container.querySelectorAll(".categoria-acompanhamento-item").length;
-                const html = template.replaceAll("__index__", index);
-                container.insertAdjacentHTML("beforeend", html);
+            async function buscarAcompanhamentosDaCategoria(categoriaId) {
+                console.log('[FETCH] buscando acompanhamentos da categoria:', categoriaId);
+
+                const response = await fetch(`@Url.Action("ObterAcompanhamentosPorCategoria", "Produtos", new { area = "Admin" })?categoriaId=${categoriaId}`);
+
+                if (!response.ok) {
+                    console.error('[FETCH] erro ao buscar acompanhamentos. Status:', response.status);
+                    throw new Error('Não foi possível carregar os acompanhamentos.');
+                }
+
+                const json = await response.json();
+                console.log('[FETCH] retorno acompanhamentos:', structuredClone(json));
+                return json;
+            }
+
+            async function carregarAcompanhamentos(item, acompanhamentosExistentes = []) {
+                const select = item.querySelector('.select-categoria-acompanhamento');
+                const categoriaId = select.value;
+                const index = Array.from(container.querySelectorAll('.categoria-acompanhamento-item')).indexOf(item);
+                const inputNome = item.querySelector('.input-nome-categoria');
+                const acompanhamentosBox = item.querySelector('.acompanhamentos-vinculados');
+
+                if (!categoriaId) {
+                    inputNome.value = '';
+                    acompanhamentosBox.innerHTML = '';
+                    atualizarResumoRegras(item);
+                    syncStateFromDom('carregarAcompanhamentos-sem-categoria');
+                    return;
+                }
+
+                try {
+                    const data = await buscarAcompanhamentosDaCategoria(categoriaId);
+                    inputNome.value = data.categoria?.nome ?? '';
+
+                    const base = (data.acompanhamentos ?? []).map(ac => {
+                        const existente = acompanhamentosExistentes.find(x =>
+                            (x.acompanhamentoId || x.id) === ac.id
+                        );
+
+                        return {
+                            id: existente?.id ?? '',
+                            acompanhamentoId: ac.id,
+                            nome: existente?.nome ?? ac.nome,
+                            descricao: existente?.descricao ?? ac.descricao,
+                            preco: existente?.preco ?? ac.preco,
+                            ativo: existente?.ativo ?? ac.ativo,
+                            ordem: existente?.ordem ?? ac.ordem,
+                            selecionado: existente?.selecionado ?? false
+                        };
+                    });
+
+                    acompanhamentosExistentes.forEach(existente => {
+                        const jaExiste = base.some(x => x.acompanhamentoId === existente.acompanhamentoId);
+                        if (!jaExiste) {
+                            base.push(existente);
+                        }
+                    });
+
+                    acompanhamentosBox.innerHTML = montarHtmlAcompanhamentos(base, index);
+                    inicializarEstadoVisualAcompanhamentos(acompanhamentosBox);
+                    reindexar();
+                    syncStateFromDom('carregarAcompanhamentos');
+                } catch (error) {
+                    console.error('[LOAD] erro em carregarAcompanhamentos:', error);
+                    acompanhamentosBox.innerHTML = `<div class="alert alert-danger mb-0">Não foi possível carregar os acompanhamentos.</div>`;
+                }
+            }
+
+            function adicionarGrupoVazio() {
+                const index = obterProximoIndice();
+                const html = template.replaceAll('__index__', index);
+                container.insertAdjacentHTML('beforeend', html);
 
                 const item = container.lastElementChild;
+                item.dataset.grupoId = crypto.randomUUID();
+                item.querySelector('.input-produto-id').value = produtoId || '';
 
-                if (categoria) {
-                    const inputProdutoId = item.querySelector(".input-produto-id");
-                    if (inputProdutoId) {
-                        inputProdutoId.value = categoria.produtoId ?? "";
-                    }
+                console.log('[ADD] novo grupo criado. index:', index, 'grupoId:', item.dataset.grupoId);
 
-                    item.querySelector(".select-categoria-acompanhamento").value = categoria.acompanhamentoCategoriaId;
-                    item.querySelector(".input-obrigatorio-checkbox").checked = categoria.obrigatorio;
-                    item.querySelector(".input-min").value = categoria.minSelecionados;
-                    item.querySelector(".input-max").value = categoria.maxSelecionados;
-                    item.querySelector(".input-ordem").value = categoria.ordem;
-                    item.querySelector(".input-nome-categoria").value = categoria.nomeCategoria ?? "";
-
-                    const wrap = item.querySelector(".acompanhamentos-vinculados");
-                    wrap.innerHTML = montarHtmlAcompanhamentos(categoria.acompanhamentos, index);
-                    aplicarMascaraAcompanhamentos(item);
-                }
-
-                atualizarBadges(item);
+                atualizarResumoRegras(item);
                 atualizarMensagemVazia();
+                reindexar();
+                syncStateFromDom('adicionarGrupoVazio');
             }
 
-            btnAdicionar.addEventListener("click", function () {
-                adicionarGrupo(null);
-            });
+            async function adicionarGrupoExistente(grupo) {
+                const index = obterProximoIndice();
+                const html = template.replaceAll('__index__', index);
+                container.insertAdjacentHTML('beforeend', html);
 
-            container.addEventListener("click", function (e) {
-                const btnRemover = e.target.closest(".btnRemoverCategoriaAcompanhamento");
-                if (!btnRemover) return;
+                const item = container.lastElementChild;
+                item.dataset.grupoId = grupo.id ?? crypto.randomUUID();
 
-                const item = btnRemover.closest(".categoria-acompanhamento-item");
-                const produtoId = item.querySelector(".input-produto-id")?.value;
-                const acompanhamentoCategoriaId = item.querySelector(".select-categoria-acompanhamento")?.value;
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                console.log('[INIT] adicionando grupo existente:', structuredClone(grupo));
 
-                Swal.fire({
-                    title: "Deseja excluir?",
-                    text: "Essa ação removerá o grupo de acompanhamento.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Sim, excluir",
-                    cancelButtonText: "Cancelar",
-                    reverseButtons: true
-                }).then(async (result) => {
-                    if (!result.isConfirmed) return;
+                item.querySelector('.input-produto-id').value = grupo.produtoId ?? '';
+                item.querySelector('.select-categoria-acompanhamento').value = grupo.acompanhamentoCategoriaId ?? '';
+                item.querySelector('.input-obrigatorio-checkbox').checked = !!grupo.obrigatorio;
+                item.querySelector('.input-min').value = grupo.minSelecionados ?? 0;
+                item.querySelector('.input-max').value = grupo.maxSelecionados ?? 1;
+                item.querySelector('.input-ordem').value = grupo.ordem ?? 0;
+                item.querySelector('.input-nome-categoria').value = grupo.nomeCategoria ?? '';
 
-                    // grupo novo, ainda não salvo
-                    if (!produtoId || !acompanhamentoCategoriaId) {
-                        item.remove();
-                        reindexar();
-                        atualizarMensagemVazia();
+                atualizarResumoRegras(item);
 
-                        Swal.fire({
-                            title: "Removido!",
-                            text: "O grupo foi removido do formulário.",
-                            icon: "success",
-                            timer: 1200,
-                            showConfirmButton: false
-                        });
+                const acompanhamentosExistentes = (grupo.produtoAcompanhamentos ?? []).map(x => ({
+                    id: x.id ?? '',
+                    acompanhamentoId: x.acompanhamentoId,
+                    nome: x.nome ?? '',
+                    descricao: x.descricao ?? '',
+                    preco: x.preco ?? '0,00',
+                    ativo: x.ativo ?? true,
+                    ordem: x.ordem ?? 0,
+                    selecionado: x.selecionado ?? true
+                }));
 
-                        return;
+                await carregarAcompanhamentos(item, acompanhamentosExistentes);
+
+                atualizarMensagemVazia();
+                reindexar();
+                syncStateFromDom('adicionarGrupoExistente');
+            }
+
+            async function carregarPersonalizacaoInicial() {
+                if (!produtoId) {
+                    console.warn('[INIT] produtoId vazio');
+                    atualizarMensagemVazia();
+                    atualizarJsonPersonalizacao('carregarPersonalizacaoInicial-sem-produto');
+                    return;
+                }
+
+                try {
+                    const url = `@Url.Action("ObterPersonalizacao", "Produtos", new { area = "Admin" })/${produtoId}`;
+                    console.log('[INIT] carregando personalização inicial:', url);
+
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        console.error('[INIT] erro ao carregar personalização. Status:', response.status);
+                        throw new Error('Erro ao carregar personalização.');
                     }
 
-                    try {
-                        const response = await fetch('@Url.Action("RemoverCategoriaAcompanhamento", "Produtos", new { area = "Admin" })', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                'RequestVerificationToken': token
-                            },
-                            body: new URLSearchParams({
-                                produtoId: produtoId,
-                                acompanhamentoCategoriaId: acompanhamentoCategoriaId,
-                                __RequestVerificationToken: token
-                            })
-                        });
+                    const data = await response.json();
+                    const grupos = data?.produtoAcompanhamentoCategorias ?? [];
 
-                        const data = await response.json();
+                    console.log('[INIT] JSON inicial recebido:', structuredClone(data));
+                    console.log('[INIT] total grupos iniciais:', grupos.length);
 
-                        if (!data.sucesso) {
-                            Swal.fire("Erro", data.mensagem || "Não foi possível excluir.", "error");
-                            return;
-                        }
+                    container.innerHTML = '';
 
-                        await Swal.fire({
-                            title: "Excluído!",
-                            text: "O grupo foi excluído com sucesso.",
-                            icon: "success",
-                            confirmButtonText: "OK"
-                        });
-
-                        location.reload();
-                    } catch (error) {
-                        Swal.fire("Erro", "Falha ao processar a exclusão.", "error");
+                    for (const grupo of grupos.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))) {
+                        await adicionarGrupoExistente(grupo);
                     }
-                });
+
+                    atualizarMensagemVazia();
+                    syncStateFromDom('carregarPersonalizacaoInicial');
+                } catch (error) {
+                    console.error('[INIT] falha ao carregar personalização inicial:', error);
+                    container.innerHTML = '';
+                    atualizarMensagemVazia();
+                    atualizarJsonPersonalizacao('carregarPersonalizacaoInicial-erro');
+                }
+            }
+
+            btnAdicionar.addEventListener('click', function () {
+                console.log('[EVENT] click em Novo Grupo');
+                adicionarGrupoVazio();
             });
 
-            container.addEventListener("change", async function (e) {
-                const item = e.target.closest(".categoria-acompanhamento-item");
+            container.addEventListener('click', function (e) {
+                const btnRemoverGrupo = e.target.closest('.btnRemoverCategoriaAcompanhamento');
+                if (btnRemoverGrupo) {
+                    const grupo = btnRemoverGrupo.closest('.categoria-acompanhamento-item');
+                    console.log('[EVENT] removendo grupo. grupoId:', grupo?.dataset?.grupoId);
+                    grupo.remove();
+                    reindexar();
+                    atualizarMensagemVazia();
+                    syncStateFromDom('removerGrupo');
+                    return;
+                }
+
+                const btnRemoverAcompanhamento = e.target.closest('.btn-remover-acompanhamento');
+                if (btnRemoverAcompanhamento) {
+                    const linha = btnRemoverAcompanhamento.closest('.acompanhamento-item-row');
+                    console.log('[EVENT] removendo acompanhamento da linha:', linha);
+                    linha.remove();
+                    reindexar();
+                    syncStateFromDom('removerAcompanhamento');
+                }
+            });
+
+            container.addEventListener('change', async function (e) {
+                const item = e.target.closest('.categoria-acompanhamento-item');
                 if (!item) return;
 
+                console.log('[EVENT][change] classe alvo:', e.target.className, 'valor:', e.target.value);
+
+                if (e.target.classList.contains('select-categoria-acompanhamento')) {
+                    await carregarAcompanhamentos(item, []);
+                    return;
+                }
+
                 if (
-                e.target.classList.contains("input-obrigatorio-checkbox") ||
-                e.target.classList.contains("input-min") ||
-                e.target.classList.contains("input-max")
+                    e.target.classList.contains('input-min') ||
+                    e.target.classList.contains('input-max') ||
+                    e.target.classList.contains('input-ordem') ||
+                    e.target.classList.contains('input-obrigatorio-checkbox') ||
+                    e.target.classList.contains('input-selecionado-check') ||
+                    e.target.classList.contains('input-ativo') ||
+                    e.target.classList.contains('input-ordem-item')
                 ) {
-                atualizarBadges(item);
+                    atualizarResumoRegras(item);
+                    syncStateFromDom('change');
                 }
-
-                if (e.target.classList.contains("select-categoria-acompanhamento")) {
-                await carregarAcompanhamentos(item);
-                }
-
-            if (e.target.matches('input[name*=".Selecionado"]')) {
-            await salvarSelecaoAcompanhamentoAjax(e.target, item);
-            }
             });
 
-            const categoriasExistentes = [
-            @if (Model.CategoriasAcompanhamentoSelecionadas?.Any() == true)
-            {
-                for (int i = 0; i < Model.CategoriasAcompanhamentoSelecionadas.Count; i++)
-                {
-                    var cat = Model.CategoriasAcompanhamentoSelecionadas[i];
-                    <text>
-                        {
-                        produtoId: "@cat.ProdutoId",
-                        acompanhamentoCategoriaId: "@cat.AcompanhamentoCategoriaId",
-                        nomeCategoria: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(cat.NomeCategoria ?? "")),
-                        obrigatorio: @(cat.Obrigatorio.ToString().ToLower()),
-                        minSelecionados: @cat.MinSelecionados,
-                        maxSelecionados: @cat.MaxSelecionados,
-                        ordem: @cat.Ordem,
-                        acompanhamentos: [
-                        @{
-                            var acompanhamentos = cat.Acompanhamentos ?? new List<AcompanhamentoItemViewModel>();
-                        }
-                        @for (int j = 0; j < acompanhamentos.Count; j++)
-                        {
-                            var acomp = acompanhamentos[j];
-                            <text>
-                                {
-                                id: "@acomp.Id",
-                                acompanhamentoId: "@acomp.AcompanhamentoId",
-                                nome: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acomp.Nome ?? "")),
-                                descricao: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acomp.Descricao ?? "")),
-                                preco: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acomp.Preco ?? "0,00")),
-                                ativo: @(acomp.Ativo.ToString().ToLower()),
-                                ordem: @acomp.Ordem,
-                                selecionado: @(acomp.Selecionado.ToString().ToLower())
-                                }@(j < acompanhamentos.Count - 1 ? "," : "")
-                            </text>
-                        }
-                        ]
-                        }@(i < Model.CategoriasAcompanhamentoSelecionadas.Count - 1 ? "," : "")
-                    </text>
+            container.addEventListener('input', function (e) {
+                if (
+                    e.target.classList.contains('input-nome') ||
+                    e.target.classList.contains('input-descricao') ||
+                    e.target.classList.contains('input-preco') ||
+                    e.target.classList.contains('input-min') ||
+                    e.target.classList.contains('input-max') ||
+                    e.target.classList.contains('input-ordem')
+                ) {
+                    console.log('[EVENT][input] classe alvo:', e.target.className, 'valor:', e.target.value);
+                    syncStateFromDom('input');
                 }
-            }
-            ];
-
-            categoriasExistentes.forEach(cat => adicionarGrupo(cat));
-            atualizarMensagemVazia();
-
-
-            async function salvarSelecaoAcompanhamentoAjax(checkbox, itemGrupo) {
-            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-
-            const produtoId = document.querySelector('input[name="Id"]')?.value || itemGrupo.querySelector(".input-produto-id")?.value;
-            const acompanhamentoCategoriaId = itemGrupo.querySelector(".select-categoria-acompanhamento")?.value;
-
-            const linha = checkbox.closest(".acompanhamento-item-row");
-            const acompanhamentoId = linha.querySelector('input[name*=".AcompanhamentoId"]')?.value;
-
-            const obrigatorio = itemGrupo.querySelector(".input-obrigatorio-checkbox")?.checked ?? false;
-            const minSelecionados = itemGrupo.querySelector(".input-min")?.value ?? 0;
-            const maxSelecionados = itemGrupo.querySelector(".input-max")?.value ?? 1;
-            const ordemGrupo = itemGrupo.querySelector(".input-ordem")?.value ?? 0;
-
-            const ativo = linha.querySelector('input[name*=".Ativo"][type="checkbox"]')?.checked ?? true;
-            const ordemItem = linha.querySelector('input[name*=".Ordem"]')?.value ?? 0;
-            const selecionado = checkbox.checked;
-
-            if (!produtoId || !acompanhamentoCategoriaId || !acompanhamentoId) {
-            Swal.fire("Atenção", "Produto, categoria ou acompanhamento inválido.", "warning");
-            checkbox.checked = !selecionado;
-            return;
-            }
-
-            try {
-            const response = await fetch('@Url.Action("SalvarSelecaoAcompanhamento", "Produtos", new { area = "Admin" })', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'RequestVerificationToken': token
-            },
-            body: new URLSearchParams({
-            produtoId: produtoId,
-            acompanhamentoCategoriaId: acompanhamentoCategoriaId,
-            acompanhamentoId: acompanhamentoId,
-            selecionado: selecionado,
-            obrigatorio: obrigatorio,
-            minSelecionados: minSelecionados,
-            maxSelecionados: maxSelecionados,
-            ordemGrupo: ordemGrupo,
-            ativo: ativo,
-            ordemItem: ordemItem,
-            __RequestVerificationToken: token
-            })
             });
 
-            const data = await response.json();
+            $('#formProdutoEdit').submit(function () {
+                console.log('[SUBMIT] submit iniciado');
+                reindexar();
+                syncStateFromDom('submit');
+                $('#feedbackMessages').remove();
+                console.log('[SUBMIT] hidden PersonalizacaoJson antes do post:', inputJson?.value ?? null);
 
-            if (!data.sucesso) {
-            checkbox.checked = !selecionado;
-            Swal.fire("Erro", data.mensagem || "Não foi possível salvar a seleção.", "error");
-            return;
-            }
-            } catch (error) {
-            checkbox.checked = !selecionado;
-            Swal.fire("Erro", "Falha ao salvar automaticamente a seleção.", "error");
-            }
-            }
+                if ($(this).valid()) {
+                    if (typeof window.addLoading === 'function') {
+                        window.addLoading('Salvando produto...');
+                    }
+                }
+            });
 
-
+            carregarPersonalizacaoInicial();
         });
     </script>
 }
