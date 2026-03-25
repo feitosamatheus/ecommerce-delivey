@@ -169,6 +169,33 @@
                             </ul>
                         </li>
 
+                        @* SEÇÃO DE USUÁRIOS *@
+                        <li class="nav-item @(controller == "Usuarios" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(controller == "Usuarios" ? "active" : "")">
+                                <i class="nav-icon bi bi-people"></i>
+                                <p>
+                                    Pessoas
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Usuarios", new { area = "Admin" })"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && controller == "Usuarios" ? "active" : "")">
+                                        <i class="nav-icon bi bi-person-lines-fill"></i>
+                                        <p>Listar Usuários</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Create", "Usuarios", new { area = "Admin" })"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Create" && controller == "Usuarios" ? "active" : "")">
+                                        <i class="nav-icon bi bi-person-plus"></i>
+                                        <p>Novo Usuário</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
                     </ul>
                 </nav>
             </div>

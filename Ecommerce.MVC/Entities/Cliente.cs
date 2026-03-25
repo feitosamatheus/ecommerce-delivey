@@ -35,7 +35,7 @@ public class Cliente
     public string IdClientePagamento { get; set; }
     
     [Required]
-    public string Role { get; set; } = "Cliente";
+    public string Role { get; set; } = "cliente";
 
     [Column(TypeName = "timestamp without time zone")]
     public DateTime DataCadastro { get; set; } = DateTime.Now;

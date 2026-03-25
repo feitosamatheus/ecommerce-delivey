@@ -1,0 +1,130 @@
+﻿@using static UsuariosController
+@model UsuariosIndexViewModel
+@{
+    ViewData["Title"] = "Usuários e Permissões";
+    ViewData["Description"] = "Gerencie os acessos de clientes, administradores e equipe da cozinha.";
+}
+
+<div class="container-fluid px-0">
+    <div class="w-100 d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fs-4 fw-bold mb-0 text-dark">Gestão de Usuários</h2>
+        <a asp-action="Create" class="btn btn-primary btn-sm shadow-sm btn-filter-action">
+            <i class="fas fa-user-plus"></i> Novo Usuário
+        </a>
+    </div>
+
+    @* Filtros *@
+    <div class="card card-filter-clean mb-4">
+        <div class="card-body">
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-xl-5">
+                        <label class="form-label">Nome, E-mail ou CPF</label>
+                        <input type="text" name="busca" class="form-control" placeholder="Pesquisar..." value="@Model.Busca">
+                    </div>
+                    <div class="col-xl-4">
+                        <label class="form-label">Nível de Acesso (Role)</label>
+                        <select name="role" class="form-select">
+                            <option value="">Todos os níveis</option>
+                            <option value="Cliente">Cliente</option>
+                            <option value="administrador">Administrador</option>
+                            <option value="gerente">Gerente</option>
+                            <option value="atendente">Atendente</option>
+                            <option value="cozinha">Cozinha</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-secondary shadow-sm btn-filter-action w-100">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* Tabela *@
+    <div class="card card-table-clean">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-muted small text-uppercase">
+                            <th class="ps-4">Nome / E-mail</th>
+                            <th>CPF</th>
+                            <th>Nível</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Itens)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">@item.Nome</div>
+                                    <small class="text-muted">@item.Email</small>
+                                </td>
+                                <td>@item.CPF</td>
+                                <td>
+                                    <span class="badge bg-info-subtle text-info text-uppercase" style="font-size: 0.7rem;">
+                                        @item.Role
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @(item.Ativo ? "bg-success-subtle text-success" : "bg-light text-muted") badge-status">
+                                        @(item.Ativo ? "Ativo" : "Inativo")
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group shadow-sm">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-white text-primary"><i class="fas fa-pen"></i></a>
+                                        <button type="button" class="btn btn-sm btn-white text-danger" onclick="confirmarExclusao('@item.Id')"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmarExclusao(id) {
+            Swal.fire({
+                title: 'Remover Usuário?',
+                text: "Esta ação não pode ser desfeita e o acesso será revogado.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2c180d', // Cor do seu tema
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sim, remover!',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Cria um form dinâmico para o POST do Delete
+                    var form = document.createElement("form");
+                    form.method = "post";
+                    form.action = "/Admin/Usuarios/Delete/" + id;
+
+                    // Adiciona o AntiForgeryToken (importante!)
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+                    var inputToken = document.createElement("input");
+                    inputToken.type = "hidden";
+                    inputToken.name = "__RequestVerificationToken";
+                    inputToken.value = token;
+                    
+                    form.appendChild(inputToken);
+                    document.body.appendChild(form);
+                    
+                    if (typeof window.addLoading === "function") window.addLoading("Removendo...");
+                    form.submit();
+                }
+            });
+        }
+    </script>
+}
