@@ -91,6 +91,7 @@ public class CarrinhoService : ICarrinhoService
                 .ThenInclude(pc => pc.Categoria)
             .Include(p => p.AcompanhamentoCategorias)
                 .ThenInclude(pc => pc.ProdutoAcompanhamentos)
+                    .ThenInclude(px=> px.Acompanhamento)
             .FirstOrDefaultAsync(p => p.Id == req.ProdutoId && p.Ativo, ct);
 
         if (produto == null)

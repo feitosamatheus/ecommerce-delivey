@@ -85,36 +85,36 @@ public class CarrinhoController : Controller
     }
 
     [HttpPost]
-public async Task<IActionResult> RemoverItem(Guid itemId)
-{
-    try
+    public async Task<IActionResult> RemoverItem(Guid itemId)
     {
-        var item = await _context.CarrinhoItems.FindAsync(itemId);
+        try
+        {
+            var item = await _context.CarrinhoItems.FindAsync(itemId);
 
-        if (item == null)
+            if (item == null)
+            {
+                return Json(new
+                {
+                    sucesso = false,
+                    mensagem = "Item não encontrado."
+                });
+            }
+
+            _context.CarrinhoItems.Remove(item);
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                sucesso = true
+            });
+        }
+        catch (Exception ex)
         {
             return Json(new
             {
                 sucesso = false,
-                mensagem = "Item não encontrado."
+                mensagem = ex.Message
             });
         }
-
-        _context.CarrinhoItems.Remove(item);
-        await _context.SaveChangesAsync();
-
-        return Json(new
-        {
-            sucesso = true
-        });
     }
-    catch (Exception ex)
-    {
-        return Json(new
-        {
-            sucesso = false,
-            mensagem = ex.Message
-        });
-    }
-}
 }

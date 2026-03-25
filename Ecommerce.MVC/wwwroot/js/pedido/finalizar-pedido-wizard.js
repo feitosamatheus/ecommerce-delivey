@@ -233,6 +233,7 @@
     };
 
     $(document).on("change", ".btn-check-dia", function () {
+        debugger
         const target = $(this).val();
         $(".grade-horarios").addClass("d-none");
 
@@ -934,5 +935,23 @@
         $("#wizardValorRestanteRetirada").text(formatBRL(valorRestanteRetirada));
         $("#wizardTotalPedido").text(formatBRL(totalPedido));
     }
+
+    //document.querySelector('.js-cal-prev').addEventListener('click', function () {
+    //    window.scrollCal(-200); // Ajuste a quantidade conforme necessário
+    //});
+
+    //document.querySelector('.js-cal-next').addEventListener('click', function () {
+    //    window.scrollCal(200); // Ajuste a quantidade conforme necessário
+    //});
+
+    $(document).on('click', '.js-cal-prev', function () {
+        document.getElementById('calendarioBlocos').scrollBy({ left: -200, behavior: 'smooth' });
+    });
+
+    $(document).on('click', '.js-cal-next', function () {
+        debugger
+        document.getElementById('calendarioBlocos').scrollBy({ left: 200, behavior: 'smooth' });
+    });
+
 
 })();

@@ -5,273 +5,287 @@
 @{
     var pt = new CultureInfo("pt-BR");
     var precoBase = Model.Preco;
-    var imagem = string.IsNullOrWhiteSpace(Model.ImagemUrl)
-        ? "/img/sem-imagem.png"
-        : Model.ImagemUrl;
+    var partesPreco = Model.Preco.ToString("N2", pt).Split(',');
+    var imagem = string.IsNullOrWhiteSpace(Model.ImagemUrl) ? "/img/sem-imagem.png" : Model.ImagemUrl;
 }
+
 <style>
+    /* 1. Layout e Containers */
     .custom-scroll-container {
         max-height: none;
         overflow-y: visible;
         padding-right: 0;
     }
 
-    /* A partir do breakpoint MD (768px), aplicamos a trava de altura */
     @@media (min-width: 768px) {
         .custom-scroll-container {
-            max-height: 515px; /* Ajuste conforme necessário */
+            max-height: 445px;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-right: 8px; /* Espaço para a scrollbar não cobrir o conteúdo */
+            padding-right: 8px;
         }
-
-        /* Opcional: Deixar a scrollbar mais elegante */
-        .custom-scroll-container::-webkit-scrollbar {
-            width: 5px;
-        }
+        .custom-scroll-container::-webkit-scrollbar { width: 5px; }
         .custom-scroll-container::-webkit-scrollbar-thumb {
             background: #3c1e0a50;
             border-radius: 10px;
         }
     }
+
+    /* 2. Tipografia e Identidade (Barriga Cheia) */
+    .product-info-column { padding-right: 1.5rem; }
+    
+    .product-name-v5 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #3c1e0a;
+        letter-spacing: -0.8px;
+        line-height: 1.2;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-desc-v5 {
+        font-size: 0.95rem;
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    /* 3. Componentes de Imagem Premium */
+    .img-container-premium {
+        position: relative; /* Necessário para posicionar a estrela */
+        overflow: hidden;
+        border-radius: 1rem;
+        /* background-color: #000; */
+    }
+
+    .img-zoom-depth {
+        transition: transform 0.8s cubic-bezier(0.15, 1, 0.3, 1), filter 0.5s ease;
+        display: block;
+    }
+
+    /* O hover agora é no container da imagem */
+    .img-container-premium:hover .img-zoom-depth {
+        transform: scale(1.09);
+        filter: brightness(1.05) contrast(1.05);
+    }
+
+    /* Estilo da Estrela */
+    .product-star-badge {
+        position: absolute;
+        top: 15px; /* Distância do topo */
+        right: 15px; /* Distância da direita */
+        background-color: rgba(255, 255, 255, 0.9); /* Fundo branco semi-transparente */
+        color: #ffc107; /* Cor Amarela (Bootstrap warning) */
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%; /* Círculo */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        font-size: 1.1rem;
+        z-index: 10; /* Garante que fique acima da imagem */
+        transition: all 0.3s ease;
+    }
+
+    /* Efeito na estrela ao passar o mouse na imagem */
+    .img-container-premium:hover .product-star-badge {
+        transform: scale(1.1);
+        background-color: rgba(255, 255, 255, 1);
+    }
+
+
+    /* 4. Precificação Visual */
+    .price-wrapper-v6 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 1;
+        padding: 6px 16px;
+        background: linear-gradient(90deg, #fdfaf8 0%, #ffffff 100%);
+        border-radius: 12px;
+        /* border-left: 4px solid #198754; */
+    }
+
+    .price-v6 {
+        display: flex;
+        align-items: baseline;
+        color: #198754;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .price-v6 .currency { font-size: 0.9rem; font-weight: 700; margin-top: 6px; }
+    .price-v6 .amount { font-size: 2.6rem; font-weight: 900; line-height: 1; letter-spacing: -1.5px; }
+    .price-v6 .decimals { font-size: 1.2rem; font-weight: 700; margin-top: 6px; }
+
+    .price-info-tag .label { font-size: 0.6rem; text-transform: uppercase; color: #999; font-weight: 800; }
+    .price-info-tag .badge-unit { font-size: 0.7rem; color: #3c1e0a; font-weight: 700; opacity: 0.8; }
+
+    .btn-barriga-cheia {
+        background: #3c1e0a;
+        border: none;
+        border-radius: 14px; /* Cantos arredondados modernos */
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        cursor:pointer;
+    }
+
+    /* O efeito de Hover */
+    .btn-barriga-cheia:hover {
+        background: #5a2d0f; /* Marrom um pouco mais claro */
+        transform: translateY(-2px); /* Sobe levemente */
+        box-shadow: 0 8px 15px rgba(60, 30, 10, 0.3); /* Sombra mais profunda */
+        color: #fff;
+    }
+
+    /* Efeito de clique */
+    .btn-barriga-cheia:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
 </style>
+
 <div class="modal fade" id="modalAddProduto" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius:18px; overflow:hidden;">
+            
             <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold" style="color:#3c1e0a;">Adicionar produto</h5>
+                <h5 class="modal-title fw-bold" style="color:#3c1e0a;">Adicionar ao pedido</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
 
             <div class="modal-body pt-2">
                 <div class="row g-4">
-                    @* <div class="col-lg-5">
-                        <div class="position-relative">
-                            <img src="@imagem"
-                                 alt="@Model.Nome"
-                                 class="img-fluid w-100"
-                                 style="border-radius:16px; object-fit:cover; height:320px;" />
-                        </div>
+                    <!-- Contêiner para toasts -->
+                    <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;"></div>
 
-                        <div class="mt-3">
-                            <h4 class="fw-bold mb-1" style="color:#3c1e0a;">@Model.Nome</h4>
+                    <!-- Contêiner para mensagens de feedback (substitui TempData dinamicamente) -->
+                    <div id="feedback-alerts"></div>
 
-                            @if (!string.IsNullOrWhiteSpace(Model.Descricao))
-                            {
-                                <p class="text-muted mb-2">@Model.Descricao</p>
-                            }
-
-                            <div class="fw-bold fs-5" style="color:#198754;">
-                                Unitário: <span id="valorUnitarioProduto">@precoBase.ToString("C", pt)</span>
+                    <div class="col-lg-12 product-info-column">
+                        <div class="d-flex justify-content-center">
+                            <div class="img-container-premium shadow-sm mb-4 d-flex justify-content-center">
+                                <img src="@imagem" class="img-fluid w-100 img-zoom-depth" style="height: 300px; object-fit: cover;" alt="@Model.Nome">
                             </div>
                         </div>
-                    </div> *@
-<div class="col-lg-5">
-    <div class="position-relative shadow-sm" style="border-radius: 20px; overflow: hidden; height: 320px;">
-        <img src="@imagem"
-             alt="@Model.Nome"
-             class="img-fluid w-100 h-100"
-             style="object-fit: cover; transition: transform 0.5s ease;" 
-             onmouseover="this.style.transform='scale(1.08)'"
-             onmouseout="this.style.transform='scale(1)'" />
-        
-        <span class="position-absolute top-0 start-0 m-3 badge rounded-pill bg-white text-dark shadow-sm fw-bold px-3 py-2" style="opacity: 0.9;">
-            Produto
-        </span>
-    </div>
+    
+                        <h3 class="product-name-v5">@Model.Nome</h3>
+    
+                        @if (!string.IsNullOrWhiteSpace(Model.Descricao))
+                        {
+                            <span class="product-desc-v5">@Model.Descricao</span>
+                        }
 
-    <div class="mt-4 px-2">
-        <h3 class="fw-bold mb-2" style="color: #3c1e0a; letter-spacing: -0.5px; line-height: 1.2;">
-            @Model.Nome
-        </h3>
+                        <div class="price-wrapper-v6 mb-1">
+                            <div class="price-v6">
+                                <span class="currency">R$</span>
+                                <span class="amount">@partesPreco[0]</span>
+                                <span class="decimals">,@partesPreco[1]</span>
+                            </div>
+                            <div class="price-info-tag">
+                                <span class="label">Preço</span>
+                                <span class="badge-unit">Unitário</span>
+                            </div>
+                        </div>
+                    </div>
 
-        @if (!string.IsNullOrWhiteSpace(Model.Descricao))
-        {
-            <p class="text-muted mb-4 small" style="line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">
-                @Model.Descricao
-            </p>
-        }
-
-        <div class="d-flex align-items-center p-3 rounded-4" style="background-color: #f8fdfa; border: 1px solid #e1f2e8;">
-            <div class="flex-shrink-0 me-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: #198754; color: white;">
-                    <i class="bi bi-tag-fill"></i> <span class="fw-bold">$</span>
-                </div>
-            </div>
-            <div>
-                <small class="text-muted d-block" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Preço Unitário</small>
-                <span class="fw-bold fs-4 text-success" id="valorUnitarioProduto" style="line-height: 1;">
-                    @precoBase.ToString("C", pt)
-                </span>
-            </div>
-        </div>
-    </div>
-</div>
-                    <div class="col-lg-7">
+                    <div class="col-lg-12">
                         <form id="formAdicionarProdutoCarrinho">
-                            <div class="custom-scroll-container">
-
                             <input type="hidden" id="modalPrecoBase" value="@Model.Preco.ToString(CultureInfo.InvariantCulture)" />
                             <input type="hidden" name="ProdutoId" value="@Model.Id" />
 
-                            @if (Model.AcompanhamentoCategorias?.Any() == true)
-                            {
-                                <div class="mt-2">
-                                    @foreach (var pc in Model.AcompanhamentoCategorias
-                                                                .OrderBy(x => x.Ordem)
-                                                                .ThenBy(x => x.Categoria.Nome))
-                                    {
-                                        var cat = pc.Categoria;
-                                        var tipoSelecao = (pc.MaxSelecionados <= 1) ? "checkbox" : "checkbox";
-                                        var requiredLabel = pc.Obrigatorio ? "Obrigatório" : "Opcional";
-                                        var inputName = $"acomp_{pc.AcompanhamentoCategoriaId:N}";
+                            <div class="custom-scroll-container">
+                                @if (Model.AcompanhamentoCategorias?.Any() == true)
+                                {
+                                    <div class="mt-2">
+                                        @foreach (var pc in Model.AcompanhamentoCategorias.OrderBy(x => x.Ordem).ThenBy(x => x.Categoria.Nome))
+                                        {
+                                            var cat = pc.Categoria;
+                                            var requiredLabel = pc.Obrigatorio ? "Obrigatório" : "Opcional";
+                                            var inputName = $"acomp_{pc.AcompanhamentoCategoriaId:N}";
+                                            var itens = (pc.ProdutoAcompanhamentos ?? new List<ProdutoAcompanhamento>())
+                                                        .Where(a => a.Ativo).OrderBy(a => a.Ordem).ToList();
 
-                                        var itens = (pc.ProdutoAcompanhamentos ?? new List<ProdutoAcompanhamento>())
-                                            .Where(a => a.Ativo)
-                                            .OrderBy(a => a.Ordem)
-                                            .ThenBy(a => a.Acompanhamento.Nome)
-                                            .ToList();
-
-                                        <div class="card border-0 shadow-sm mb-3" style="border-radius:14px; overflow:hidden;">
-                                            <div class="card-body" style="background:#f7f7f7;">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div class="pe-3">
-                                                        <div class="fw-bold" style="color:#3c1e0a;">@cat.Nome</div>
-
-                                                        <div class="text-muted small">
-                                                            @requiredLabel
-                                                            @if (pc.MinSelecionados > 0)
-                                                            {
-                                                                <span> • Mín. @pc.MinSelecionados</span>
-                                                            }
-                                                            @if (pc.MaxSelecionados > 0)
-                                                            {
-                                                                <span> • Máx. @pc.MaxSelecionados</span>
-                                                            }
+                                            <div class="card border-0 shadow-sm mb-3" style="border-radius:14px; overflow:hidden;">
+                                                <div class="card-body" style="background:#f7f7f7;">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <div class="fw-bold" style="color:#3c1e0a;">@cat.Nome</div>
+                                                            <div class="text-muted small">
+                                                                @requiredLabel 
+                                                                @if (pc.MinSelecionados > 0) { <span>• Mín. @pc.MinSelecionados</span> }
+                                                                @if (pc.MaxSelecionados > 0) { <span>• Máx. @pc.MaxSelecionados</span> }
+                                                            </div>
                                                         </div>
-
-                                                        @if (!string.IsNullOrWhiteSpace(cat.Descricao))
-                                                        {
-                                                            <div class="text-muted small">@cat.Descricao</div>
-                                                        }
+                                                        <span class="badge rounded-pill" style="background:#3c1e0a; color:#fff;">@requiredLabel</span>
                                                     </div>
-
-                                                    <span class="badge rounded-pill" style="background:#3c1e0a; color:#fff;">
-                                                        @requiredLabel
-                                                    </span>
                                                 </div>
-                                            </div>
 
-                                            <div class="list-group list-group-flush"
-                                                 data-acomp-categoria
-                                                 data-categoria-id="@pc.AcompanhamentoCategoriaId"
-                                                 data-min="@pc.MinSelecionados"
-                                                 data-max="@pc.MaxSelecionados"
-                                                 data-obrigatorio="@(pc.Obrigatorio ? "1" : "0")"
-                                                 style="overflow-y:auto; max-height:320px;">
-
-                                                @if (itens.Any())
-                                                {
+                                                <div class="list-group list-group-flush" 
+                                                     data-acomp-categoria 
+                                                     data-categoria-id="@pc.AcompanhamentoCategoriaId"
+                                                     data-min="@pc.MinSelecionados" 
+                                                     data-max="@pc.MaxSelecionados"
+                                                     style="max-height:320px; overflow-y:auto;">
+                                                    
                                                     @foreach (var item in itens)
                                                     {
                                                         var inputId = $"acomp_{pc.AcompanhamentoCategoriaId:N}_{item.Id:N}";
                                                         var temAdicional = item.Acompanhamento.Preco > 0;
 
-                                                        <label class="list-group-item d-flex justify-content-between align-items-center py-3 acomp-item"
-                                                               for="@inputId"
-                                                               style="cursor:pointer;">
+                                                        <label class="list-group-item d-flex justify-content-between align-items-center py-3" style="cursor:pointer;">
                                                             <div class="d-flex flex-column">
                                                                 <span class="fw-semibold">@item.Acompanhamento.Nome</span>
-
                                                                 @if (!string.IsNullOrWhiteSpace(item.Acompanhamento.Descricao))
                                                                 {
                                                                     <span class="text-muted small">@item.Acompanhamento.Descricao</span>
                                                                 }
                                                             </div>
-
                                                             <div class="d-flex align-items-center gap-3">
                                                                 <div class="fw-bold @(temAdicional ? "text-success" : "text-muted")">
                                                                     @(temAdicional ? $"+ {item.Acompanhamento.Preco.ToString("C", pt)}" : "Incluso")
                                                                 </div>
-
-                                                                <input id="@inputId"
-                                                                       type="@tipoSelecao"
-                                                                       name="@inputName"
-                                                                       class="form-check-input acomp-input"
-                                                                       value="@item.AcompanhamentoId"
-                                                                       data-preco="@item.Acompanhamento.Preco.ToString(CultureInfo.InvariantCulture)"
-                                                                       data-categoria-id="@pc.AcompanhamentoCategoriaId"
-                                                                       aria-label="Selecionar @item.Acompanhamento.Nome" />
+                                                                <input id="@inputId" type="checkbox" name="@inputName" class="form-check-input acomp-input" 
+                                                                       value="@item.Id" data-categoria-id="@pc.AcompanhamentoCategoriaId" data-preco="@item.Acompanhamento.Preco.ToString(CultureInfo.InvariantCulture)">
                                                             </div>
                                                         </label>
                                                     }
-                                                }
-                                                else
-                                                {
-                                                    <div class="p-3 text-muted small">
-                                                        Nenhum item disponível nesta categoria.
-                                                    </div>
-                                                }
+                                                </div>
+                                                <div class="text-danger small px-3 pb-3 d-none" data-acomp-erro="@pc.AcompanhamentoCategoriaId">
+                                                    Selecione no mínimo @pc.MinSelecionados item(ns).
+                                                </div>
                                             </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
 
-                                            <div class="text-danger small px-3 pb-3 d-none"
-                                                 data-acomp-erro="@pc.AcompanhamentoCategoriaId">
-                                                Selecione no mínimo @pc.MinSelecionados item(ns).
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-                            }
-
-                            <div class="mb-3">
+                            <div class="mt-3">
                                 <label class="form-label fw-semibold" style="color:#3c1e0a;">Observações</label>
-                                <textarea name="Observacao"
-                                          class="form-control"
-                                          rows="3"
-                                          maxlength="500"
-                                          placeholder="Ex: tirar cebola, caprichar no molho..."></textarea>
-                            </div>
+                                <textarea name="Observacao" class="form-control" rows="2" maxlength="500" placeholder="Ex: tirar cebola, caprichar no molho..."></textarea>
                             </div>
 
-                            <div class="d-flex align-items-center justify-content-between border rounded-4 p-3 mb-3">
-                                <div>
-                                    <div class="small text-muted">Quantidade</div>
+                            <div class="mt-2">
+                                <div class="d-flex align-items-center justify-content-between border rounded-3 p-2 mb-3">
+                                    <span class="small text-muted ps-2">Quantidade</span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnDiminuirQtd">-</button>
+                                        <input type="number" name="Quantidade" id="quantidadeProduto" class="form-control text-center border-0 fw-bold" value="1" min="1" style="width:50px;">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnAumentarQtd">+</button>
+                                    </div>
                                 </div>
 
-                                <div class="d-flex align-items-center gap-2">
-                                    <button type="button"
-                                            class="btn btn-outline-secondary btn-sm"
-                                            id="btnDiminuirQtd">
-                                        -
-                                    </button>
-
-                                    <input type="number"
-                                           name="Quantidade"
-                                           id="quantidadeProduto"
-                                           class="form-control text-center"
-                                           value="1"
-                                           min="1"
-                                           step="1"
-                                           style="width:70px;" />
-
-                                    <button type="button"
-                                            class="btn btn-outline-secondary btn-sm"
-                                            id="btnAumentarQtd">
-                                        +
+                                <div class="d-grid">
+                                    <button type="button" id="btnAdicionarCarrinho" class="btn text-white fw-bold py-3 btn-barriga-cheia" style="background:#3c1e0a;">
+                                        Adicionar ao carrinho • <span id="valorTotalProduto">@precoBase.ToString("C", pt)</span>
                                     </button>
                                 </div>
-                            </div>
-
-                            <div class="d-grid">
-                                <button type="button"
-                                        id="btnAdicionarCarrinho"
-                                        class="btn btn-lg text-white fw-bold"
-                                        style="background:#3c1e0a; border-radius:14px;">
-                                    Adicionar ao carrinho • <span id="valorTotalProduto">@precoBase.ToString("C", pt)</span>
-                                </button>
                             </div>
                         </form>
                     </div>
+
                 </div>
             </div>
         </div>

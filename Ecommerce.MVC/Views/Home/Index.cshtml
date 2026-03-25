@@ -870,342 +870,149 @@
     });
 
 })();
+
 </script>
+<script>
+    // Função que monta o payload e envia ao back‑end
+    async function adicionarAoCarrinho() {
+        const form = document.getElementById('formAdicionarProdutoCarrinho');
+        if (!form) return;
 
-@* <script>
-    
-
-(function () {
-
-        // =========================
-      // Helpers
-      // =========================
-      const norm = (s) =>
-        (s || "")
-          .toString()
-          .trim()
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, ""); // remove acentos
-
-      function getAllPanels() {
-        return Array.from(document.querySelectorAll('.bc-panel[data-categoria-id]'));
-      }
-
-        function getAllProductCols(panelEl) {
-          return Array.from(panelEl.querySelectorAll('.bc-prod-col[data-produto-id][data-nome]'));
+        // exibe spinner de carregamento, se a função existir
+        if (typeof window.addLoading === 'function') {
+            window.addLoading('Processando...');
         }
 
-      function refreshCarousel(panelEl) {
-        // Ajuste para carrosséis: esconde slides vazios
-        const carousel = panelEl.querySelector(".carousel");
-        if (!carousel) return;
+        // Captura dados do formulário
+        const produtoId  = form.querySelector('input[name="ProdutoId"]').value;
+        const quantidade = parseInt(form.querySelector('input[name="Quantidade"]').value, 10) || 1;
+        const observacao = form.querySelector('textarea[name="Observacao"]').value.trim();
 
-        const slides = Array.from(carousel.querySelectorAll(".carousel-item"));
-        slides.forEach((slide) => {
-          const anyVisibleCard = slide.querySelector('.bc-product[data-produto-id][data-nome]:not(.d-none)');
-          slide.classList.toggle("d-none", !anyVisibleCard);
-        });
-
-        // Se o slide ativo ficou oculto, move para o primeiro slide visível
-        const active = carousel.querySelector(".carousel-item.active");
-        if (active && active.classList.contains("d-none")) {
-          active.classList.remove("active");
-          const firstVisible = slides.find((s) => !s.classList.contains("d-none"));
-          if (firstVisible) firstVisible.classList.add("active");
-        }
-
-        // Indicadores/controles: opcional esconder se só restou 1 slide visível
-        const visibleSlides = slides.filter((s) => !s.classList.contains("d-none")).length;
-
-        const indicators = carousel.querySelector(".carousel-indicators");
-        const prevBtn = carousel.querySelector(".carousel-control-prev");
-        const nextBtn = carousel.querySelector(".carousel-control-next");
-
-        if (indicators) indicators.classList.toggle("d-none", visibleSlides <= 1);
-        if (prevBtn) prevBtn.classList.toggle("d-none", visibleSlides <= 1);
-        if (nextBtn) nextBtn.classList.toggle("d-none", visibleSlides <= 1);
-      }
-
-      // Estado único para desktop+mobile (mantém filtros sincronizados)
-      const filterState = {
-        categoriaId: "", // string
-        texto: ""        // string normalizada
-      };
-
-          function applyFilters() {
-      const categoriaId = (filterState.categoriaId || "").trim();
-      const texto = norm(filterState.texto);
-    const emptyState = document.getElementById('emptySearchState');
-    const emptySearchStateDesktop = document.getElementById('emptySearchStateDesktop');
-
-      const panels = getAllPanels();
-    let totalPanelsVisible = 0;
-      panels.forEach((panel) => {
-        const panelCategoriaId = (panel.getAttribute("data-categoria-id") || "").trim();
-
-        // 1) Categoria
-        const categoriaOk = !categoriaId || panelCategoriaId === categoriaId;
-        if (!categoriaOk) {
-          panel.classList.add("d-none");
-          return;
-        }
-
-        const cols = getAllProductCols(panel);
-
-        // 2) Texto vazio: mostra tudo (COL e card interno)
-        if (!texto) {
-          cols.forEach((col) => {
-            col.classList.remove("d-none");
-            col.querySelector(".bc-product")?.classList.remove("d-none");
-          });
-
-          panel.classList.remove("d-none");
-          refreshCarousel(panel);
-          return;
-        }
-
-        // 3) Texto preenchido: filtra por data-nome da COLUNA
-        let anyVisible = false;
-
-        cols.forEach((col) => {
-          const nome = norm(col.getAttribute("data-nome"));
-          const match = nome.includes(texto);
-
-          col.classList.toggle("d-none", !match);
-
-          // opcional (não é necessário se a coluna já some, mas mantém coerência)
-          col.querySelector(".bc-product")?.classList.toggle("d-none", !match);
-
-          if (match) {
-            anyVisible = true;
-            totalPanelsVisible++;
-            }
-        });
-
-        // 4) Painel: some se nada visível
-        panel.classList.toggle("d-none", !anyVisible);
-
-        refreshCarousel(panel);
-
-        if (emptyState) {
-            if (totalPanelsVisible === 0) {
-                emptyState.classList.remove('d-none');
-                emptyState.classList.add('d-flex');
-            } else {
-                emptyState.classList.add('d-none');
-                emptyState.classList.remove('d-flex');
-            }
-        }
-
-        if (emptySearchStateDesktop) {
-            if (totalPanelsVisible === 0) {
-                emptySearchStateDesktop.classList.remove('d-none');
-                emptySearchStateDesktop.classList.add('d-flex');
-            } else {
-                emptySearchStateDesktop.classList.add('d-none');
-                emptySearchStateDesktop.classList.remove('d-flex');
-            }
-        }
-      });
-    }
-
-
-      // =========================
-      // UI (Select custom + Busca)
-      // =========================
-      function setupFilterLogic(suffix = "") {
-        const btnPesquisar = document.getElementById("btnPesquisar" + suffix);
-        const btnFecharBusca = document.getElementById("btnFecharBusca" + suffix);
-        const filtroCategoria = document.getElementById("filtroCategoria" + suffix);
-        const filtroTexto = document.getElementById("filtroTexto" + suffix);
-        const inputBusca = document.getElementById("filtroNome" + suffix);
-
-        let modoBuscaTexto = false;
-
-        function abrirBuscaTexto() {
-          filtroCategoria?.classList.add("d-none");
-          filtroTexto?.classList.remove("d-none");
-          btnPesquisar?.classList.add("d-none");
-          modoBuscaTexto = true;
-          setTimeout(() => inputBusca?.focus(), 50);
-        }
-
-        function fecharBuscaTexto() {
-          filtroTexto?.classList.add("d-none");
-          filtroCategoria?.classList.remove("d-none");
-          btnPesquisar?.classList.remove("d-none");
-          modoBuscaTexto = false;
-
-          if (inputBusca) {
-            inputBusca.value = "";
-            filterState.texto = "";
-            const emptyState = document.getElementById('emptySearchState');
-            emptyState?.classList.add('d-none');
-            emptyState?.classList.remove('d-flex');
-
-            const emptySearchStateDesktop = document.getElementById('emptySearchStateDesktop');
-            emptySearchStateDesktop?.classList.add('d-none');
-            emptySearchStateDesktop?.classList.remove('d-flex');
-        
-            applyFilters();
-          }
-        }
-
-        btnPesquisar?.addEventListener("click", () => {
-          if (!modoBuscaTexto) abrirBuscaTexto();
-          else inputBusca?.focus();
-        });
-
-        btnFecharBusca?.addEventListener("click", fecharBuscaTexto);
-
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && modoBuscaTexto) fecharBuscaTexto();
-        });
-
-        // ---- Select customizado (desktop e mobile) ----
-        const selectWrap = document.getElementById("filtroCategoria" + suffix);
-        if (selectWrap) {
-          const trigger = selectWrap.querySelector(".bc-select__trigger");
-          const optionsList = Array.from(selectWrap.querySelectorAll(".bc-select__options li"));
-          const valueSpan = selectWrap.querySelector(".bc-select__value");
-          const nativeSelect = selectWrap.querySelector("select"); // pode ser null no mobile
-
-          trigger?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const isOpen = selectWrap.classList.contains("is-open");
-            document.querySelectorAll(".bc-select").forEach((s) => s.classList.remove("is-open"));
-            if (!isOpen) selectWrap.classList.add("is-open");
-          });
-
-          optionsList.forEach((option) => {
-            option.addEventListener("click", (e) => {
-              e.stopPropagation();
-
-              optionsList.forEach((o) => o.classList.remove("is-selected"));
-              option.classList.add("is-selected");
-
-              if (valueSpan) valueSpan.textContent = option.textContent;
-
-              const categoriaId = option.dataset.value || "";
-
-              // Atualiza nativo (se existir) só para manter consistência
-              if (nativeSelect) {
-                nativeSelect.value = categoriaId;
-              }
-
-              // Atualiza estado global e aplica filtro
-              filterState.categoriaId = categoriaId;
-              applyFilters();
-
-              selectWrap.classList.remove("is-open");
+        // Monta lista de acompanhamentos selecionados
+        const acompanhamentos = [];
+        form.querySelectorAll('.acomp-input:checked').forEach(input => {
+            acompanhamentos.push({
+                CategoriaId: input.dataset.categoriaId,
+                AcompanhamentoId: input.value
             });
-          });
-        }
-
-        // ---- Texto ----
-        inputBusca?.addEventListener("input", () => {
-          filterState.texto = inputBusca.value || "";
-          applyFilters();
-        });
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        setupFilterLogic("");
-        setupFilterLogic("Mobile");
-
-        document.addEventListener("click", () => {
-          document.querySelectorAll(".bc-select").forEach((s) => s.classList.remove("is-open"));
         });
 
-        // aplica estado inicial (caso queira iniciar com tudo visível)
-        applyFilters();
-      });
-
-    const host = document.getElementById('modalHost');
-
-    async function abrirModalProduto(produtoId) {
-
-        if (!host) return;
-
-        // Remove modal anterior
-        const old = document.getElementById('modalAddProduto');
-        if (old) old.remove();
+        // Payload compatível com seu ViewModel
+        const payload = {
+            produtoId: produtoId,
+            quantidade: quantidade,
+            observacao: observacao || null,
+            acompanhamentos: acompanhamentos
+        };
 
         try {
-            addLoading("Carregando...");
-
-            const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
-            method: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            const response = await fetch('/Carrinho/Adicionar', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
             });
 
-            if (!resp.ok) {
-            throw new Error(`Erro HTTP ${resp.status}`);
+            const result = await response.json();
+            const type = result.success ? 'success' : 'danger';
+            showToast(type, result.message);
+            updateFeedbackAlert(type, result.message);
+
+            if (result.success) {
+                // Aguarda alguns segundos para o usuário ler o toast
+                setTimeout(() => {
+                    // Exibe novo loading enquanto a página recarrega
+                    if (typeof window.addLoading === 'function') {
+                        window.addLoading('Atualizando página...');
+                    }
+
+                    // Atualiza a URL com o parâmetro itemAdicionado=true e recarrega
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('itemAdicionado', 'true');
+                    window.location.href = currentUrl.toString();
+                }, 1000); // 3 segundos (ajuste conforme necessário)
             }
-
-            const html = await resp.text();
-            host.insertAdjacentHTML('beforeend', html);
-
-            const modalEl = document.getElementById('modalAddProduto');
-            if (!modalEl) return;
-
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-
-            modalEl.addEventListener('hidden.bs.modal', () => {
-            modalEl.remove();
-            }, { once: true });
-
-            modal.show();
-
-
-        } catch (err) {
-            console.error('Erro ao carregar modal:', err);
-            alert('Não foi possível carregar o produto. Tente novamente.');
-            removeLoading();
+        } catch (error) {
+            console.error(error);
+            showToast('danger', 'Ocorreu um problema ao adicionar o produto ao carrinho.');
+            updateFeedbackAlert('danger', 'Ocorreu um problema ao adicionar o produto ao carrinho.');
         } finally {
-            removeLoading();
+            // sempre remove o loading (se existir) ao final
+            if (typeof window.removeLoading === 'function') {
+                window.removeLoading();
+            }
         }
     }
 
+    // Delegação de eventos: captura cliques em todo o documento e verifica se foi no botão
     document.addEventListener('click', (e) => {
-        const el = e.target.closest('.bc-product-clickable');
-        if (!el) return;
-
-        console.log('CLICK:', el, 'produtoId:', el.dataset.produtoId);
-
-        const produtoId = el.dataset.produtoId;
-        if (!produtoId) return;
-
-        abrirModalProduto(produtoId);
+        const btn = e.target.closest('#btnAdicionarCarrinho');
+        if (btn) {
+            e.preventDefault();
+            clearToasts();
+            clearFeedbackAlerts();
+            adicionarAoCarrinho();
+        }
     });
 
-    window.limparFiltroTexto = function (suffix = "") {
-        const inputBusca = document.getElementById("filtroNome");
-        const inputBuscaMobile = document.getElementById("filtroNomeMobile");
+    // Mostra um toast Bootstrap com cor conforme o tipo ('success', 'danger' etc.)
+    function showToast(type, message) {
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+        toastEl.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
 
-        if (inputBusca) inputBusca.value = "";
-        if (inputBuscaMobile) inputBuscaMobile.value = "";
+        const container = document.getElementById('toast-container');
+        container.appendChild(toastEl);
 
-        filterState.texto = "";
-        
-        // Dentro da sua applyFilters...
-        const emptyState = document.getElementById('emptySearchState');
-        emptyState?.classList.add('d-none');
-        emptyState?.classList.remove('d-flex');
+        // Inicializa e exibe o toast com autohide e delay personalizados
+        // autohide: true garante que o toast se feche sozinho:contentReference[oaicite:1]{index=1}
+        // delay: 3000 define a duração em milissegundos (3 segundos)
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {
+            autohide: true,
+            delay: 3000
+        });
+        toast.show();
+    }
 
-        // Dentro da sua applyFilters...
-        const emptySearchStateDesktop = document.getElementById('emptySearchStateDesktop');
-        emptySearchStateDesktop?.classList.add('d-none');
-        emptySearchStateDesktop?.classList.remove('d-flex');
+    // Atualiza o bloco fixo de feedback com uma mensagem
+    function updateFeedbackAlert(type, message) {
+        const feedback = document.getElementById('feedback-alerts');
+        if (feedback) {
+            feedback.innerHTML = `<div class="alert alert-${type} border-0 shadow-sm mb-0">${message}</div>`;
+        }
+    }
 
-        // Agora ele ENXERGA a applyFilters porque estão no mesmo escopo
-        applyFilters(); 
-    };
-})();
+    function clearToasts() {
+        const container = document.getElementById('toast-container');
+        if (container) {
+            container.querySelectorAll('.toast').forEach(el => {
+                const t = bootstrap.Toast.getInstance(el);
+                if (t) {
+                    t.hide();        // esconde imediatamente
+                    t.dispose();     // destrói a instância
+                }
+                el.remove();          // remove do DOM
+            });
+        }
+    }
 
-</script> *@
+    function clearFeedbackAlerts() {
+        const feedbackDiv = document.getElementById('feedback-alerts');
+        if (feedbackDiv) {
+            feedbackDiv.innerHTML = '';
+        }
+    }
 
-
+</script>
 
 

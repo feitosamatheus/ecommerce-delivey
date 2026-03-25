@@ -43,6 +43,11 @@
     flex-shrink: 0;
 }
 
+.btn-check {
+    position: relative !important;
+    display: none !important;
+}
+
 .btn-check:checked + .card-option {
     border-color: var(--bh-primary);
     box-shadow: 0 4px 12px rgba(60, 30, 10, 0.08);
