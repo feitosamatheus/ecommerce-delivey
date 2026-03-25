@@ -9,7 +9,32 @@
         ? "/img/sem-imagem.png"
         : Model.ImagemUrl;
 }
+<style>
+    .custom-scroll-container {
+        max-height: none;
+        overflow-y: visible;
+        padding-right: 0;
+    }
 
+    /* A partir do breakpoint MD (768px), aplicamos a trava de altura */
+    @@media (min-width: 768px) {
+        .custom-scroll-container {
+            max-height: 515px; /* Ajuste conforme necessário */
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 8px; /* Espaço para a scrollbar não cobrir o conteúdo */
+        }
+
+        /* Opcional: Deixar a scrollbar mais elegante */
+        .custom-scroll-container::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll-container::-webkit-scrollbar-thumb {
+            background: #3c1e0a50;
+            border-radius: 10px;
+        }
+    }
+</style>
 <div class="modal fade" id="modalAddProduto" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius:18px; overflow:hidden;">
@@ -20,12 +45,12 @@
 
             <div class="modal-body pt-2">
                 <div class="row g-4">
-                    <div class="col-lg-5">
+                    @* <div class="col-lg-5">
                         <div class="position-relative">
                             <img src="@imagem"
                                  alt="@Model.Nome"
                                  class="img-fluid w-100"
-                                 style="border-radius:16px; object-fit:cover; max-height:320px;" />
+                                 style="border-radius:16px; object-fit:cover; height:320px;" />
                         </div>
 
                         <div class="mt-3">
@@ -37,13 +62,56 @@
                             }
 
                             <div class="fw-bold fs-5" style="color:#198754;">
-                                @precoBase.ToString("C", pt)
+                                Unitário: <span id="valorUnitarioProduto">@precoBase.ToString("C", pt)</span>
                             </div>
                         </div>
-                    </div>
+                    </div> *@
+<div class="col-lg-5">
+    <div class="position-relative shadow-sm" style="border-radius: 20px; overflow: hidden; height: 320px;">
+        <img src="@imagem"
+             alt="@Model.Nome"
+             class="img-fluid w-100 h-100"
+             style="object-fit: cover; transition: transform 0.5s ease;" 
+             onmouseover="this.style.transform='scale(1.08)'"
+             onmouseout="this.style.transform='scale(1)'" />
+        
+        <span class="position-absolute top-0 start-0 m-3 badge rounded-pill bg-white text-dark shadow-sm fw-bold px-3 py-2" style="opacity: 0.9;">
+            Produto
+        </span>
+    </div>
 
+    <div class="mt-4 px-2">
+        <h3 class="fw-bold mb-2" style="color: #3c1e0a; letter-spacing: -0.5px; line-height: 1.2;">
+            @Model.Nome
+        </h3>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Descricao))
+        {
+            <p class="text-muted mb-4 small" style="line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">
+                @Model.Descricao
+            </p>
+        }
+
+        <div class="d-flex align-items-center p-3 rounded-4" style="background-color: #f8fdfa; border: 1px solid #e1f2e8;">
+            <div class="flex-shrink-0 me-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: #198754; color: white;">
+                    <i class="bi bi-tag-fill"></i> <span class="fw-bold">$</span>
+                </div>
+            </div>
+            <div>
+                <small class="text-muted d-block" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Preço Unitário</small>
+                <span class="fw-bold fs-4 text-success" id="valorUnitarioProduto" style="line-height: 1;">
+                    @precoBase.ToString("C", pt)
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
                     <div class="col-lg-7">
                         <form id="formAdicionarProdutoCarrinho">
+                            <div class="custom-scroll-container">
+
+                            <input type="hidden" id="modalPrecoBase" value="@Model.Preco.ToString(CultureInfo.InvariantCulture)" />
                             <input type="hidden" name="ProdutoId" value="@Model.Id" />
 
                             @if (Model.AcompanhamentoCategorias?.Any() == true)
@@ -54,7 +122,7 @@
                                                                 .ThenBy(x => x.Categoria.Nome))
                                     {
                                         var cat = pc.Categoria;
-                                        var tipoSelecao = (pc.MaxSelecionados <= 1) ? "radio" : "checkbox";
+                                        var tipoSelecao = (pc.MaxSelecionados <= 1) ? "checkbox" : "checkbox";
                                         var requiredLabel = pc.Obrigatorio ? "Obrigatório" : "Opcional";
                                         var inputName = $"acomp_{pc.AcompanhamentoCategoriaId:N}";
 
@@ -130,7 +198,7 @@
                                                                        type="@tipoSelecao"
                                                                        name="@inputName"
                                                                        class="form-check-input acomp-input"
-                                                                       value="@item.Id"
+                                                                       value="@item.AcompanhamentoId"
                                                                        data-preco="@item.Acompanhamento.Preco.ToString(CultureInfo.InvariantCulture)"
                                                                        data-categoria-id="@pc.AcompanhamentoCategoriaId"
                                                                        aria-label="Selecionar @item.Acompanhamento.Nome" />
@@ -163,6 +231,7 @@
                                           maxlength="500"
                                           placeholder="Ex: tirar cebola, caprichar no molho..."></textarea>
                             </div>
+                            </div>
 
                             <div class="d-flex align-items-center justify-content-between border rounded-4 p-3 mb-3">
                                 <div>
@@ -182,6 +251,7 @@
                                            class="form-control text-center"
                                            value="1"
                                            min="1"
+                                           step="1"
                                            style="width:70px;" />
 
                                     <button type="button"
@@ -207,161 +277,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    (function () {
-        const form = document.getElementById('formAdicionarProdutoCarrinho');
-        if (!form) return;
-
-        const precoBase = @precoBase.ToString(CultureInfo.InvariantCulture).Replace(",", ".");
-        const inputQtd = document.getElementById('quantidadeProduto');
-        const btnMenos = document.getElementById('btnDiminuirQtd');
-        const btnMais = document.getElementById('btnAumentarQtd');
-        const btnAdicionar = document.getElementById('btnAdicionarCarrinho');
-        const valorTotal = document.getElementById('valorTotalProduto');
-
-        function moedaBR(valor) {
-            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        function obterAcompanhamentosSelecionados() {
-            const selecionados = [];
-            const inputs = form.querySelectorAll('.acomp-input:checked');
-
-            inputs.forEach(input => {
-                selecionados.push({
-                    AcompanhamentoId: input.value,
-                    CategoriaId: input.dataset.categoriaId
-                });
-            });
-
-            return selecionados;
-        }
-
-        function calcularTotal() {
-            let adicional = 0;
-
-            const selecionados = form.querySelectorAll('.acomp-input:checked');
-            selecionados.forEach(input => {
-                const preco = parseFloat(input.dataset.preco || '0');
-                adicional += preco;
-            });
-
-            const qtd = Math.max(parseInt(inputQtd.value || '1'), 1);
-            const total = (precoBase + adicional) * qtd;
-
-            valorTotal.textContent = moedaBR(total);
-        }
-
-        function validarCategorias() {
-            let valido = true;
-
-            const categorias = form.querySelectorAll('[data-acomp-categoria]');
-            categorias.forEach(cat => {
-                const categoriaId = cat.dataset.categoriaId;
-                const min = parseInt(cat.dataset.min || '0');
-                const max = parseInt(cat.dataset.max || '0');
-                const obrigatorio = cat.dataset.obrigatorio === '1';
-
-                const marcados = cat.querySelectorAll('.acomp-input:checked').length;
-                const erro = form.querySelector(`[data-acomp-erro="${categoriaId}"]`);
-
-                let temErro = false;
-
-                if (obrigatorio && marcados === 0) {
-                    temErro = true;
-                }
-
-                if (marcados < min) {
-                    temErro = true;
-                }
-
-                if (max > 0 && marcados > max) {
-                    temErro = true;
-                }
-
-                if (erro) {
-                    erro.classList.toggle('d-none', !temErro);
-                }
-
-                if (temErro) {
-                    valido = false;
-                }
-            });
-
-            return valido;
-        }
-
-        function montarPayload() {
-            return {
-                ProdutoId: form.querySelector('input[name="ProdutoId"]').value,
-                Quantidade: parseInt(inputQtd.value || '1'),
-                Observacao: form.querySelector('textarea[name="Observacao"]').value,
-                Acompanhamentos: obterAcompanhamentosSelecionados()
-            };
-        }
-
-        btnMenos?.addEventListener('click', function () {
-            const atual = Math.max(parseInt(inputQtd.value || '1'), 1);
-            inputQtd.value = Math.max(atual - 1, 1);
-            calcularTotal();
-        });
-
-        btnMais?.addEventListener('click', function () {
-            const atual = Math.max(parseInt(inputQtd.value || '1'), 1);
-            inputQtd.value = atual + 1;
-            calcularTotal();
-        });
-
-        inputQtd?.addEventListener('input', function () {
-            if (!inputQtd.value || parseInt(inputQtd.value) < 1) {
-                inputQtd.value = 1;
-            }
-            calcularTotal();
-        });
-
-        form.addEventListener('change', function (e) {
-            if (e.target.classList.contains('acomp-input')) {
-                calcularTotal();
-                validarCategorias();
-            }
-        });
-
-        btnAdicionar?.addEventListener('click', async function () {
-            if (!validarCategorias()) {
-                return;
-            }
-
-            const payload = montarPayload();
-
-            try {
-                const response = await fetch('/Carrinho/Adicionar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await response.json();
-
-                if (!response.ok || data.sucesso === false) {
-                    alert(data.mensagem || 'Não foi possível adicionar o produto ao carrinho.');
-                    return;
-                }
-
-                const modalEl = document.getElementById('modalAddProduto');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                modal?.hide();
-
-                if (typeof window.atualizarBadgeCarrinho === 'function') {
-                    window.atualizarBadgeCarrinho();
-                }
-            } catch {
-                alert('Erro ao adicionar produto ao carrinho.');
-            }
-        });
-
-        calcularTotal();
-    })();
-</script>

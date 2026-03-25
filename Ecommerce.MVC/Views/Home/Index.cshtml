@@ -459,6 +459,420 @@
 
 <div id="modalHost"></div>
 <script>
+(function () {
+
+    // =========================
+    // Helpers gerais
+    // =========================
+    const norm = (s) =>
+        (s || "")
+            .toString()
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+    function getAllPanels() {
+        return Array.from(document.querySelectorAll('.bc-panel[data-categoria-id]'));
+    }
+
+    function getAllProductCols(panelEl) {
+        return Array.from(panelEl.querySelectorAll('.bc-prod-col[data-produto-id][data-nome]'));
+    }
+
+    function refreshCarousel(panelEl) {
+        const carousel = panelEl.querySelector(".carousel");
+        if (!carousel) return;
+
+        const slides = Array.from(carousel.querySelectorAll(".carousel-item"));
+
+        slides.forEach((slide) => {
+            const anyVisibleCard = slide.querySelector('.bc-product[data-produto-id][data-nome]:not(.d-none)');
+            slide.classList.toggle("d-none", !anyVisibleCard);
+        });
+
+        const active = carousel.querySelector(".carousel-item.active");
+        if (active && active.classList.contains("d-none")) {
+            active.classList.remove("active");
+            const firstVisible = slides.find((s) => !s.classList.contains("d-none"));
+            if (firstVisible) firstVisible.classList.add("active");
+        }
+
+        const visibleSlides = slides.filter((s) => !s.classList.contains("d-none")).length;
+
+        const indicators = carousel.querySelector(".carousel-indicators");
+        const prevBtn = carousel.querySelector(".carousel-control-prev");
+        const nextBtn = carousel.querySelector(".carousel-control-next");
+
+        if (indicators) indicators.classList.toggle("d-none", visibleSlides <= 1);
+        if (prevBtn) prevBtn.classList.toggle("d-none", visibleSlides <= 1);
+        if (nextBtn) nextBtn.classList.toggle("d-none", visibleSlides <= 1);
+    }
+
+    // =========================
+    // Estado do filtro
+    // =========================
+    const filterState = {
+        categoriaId: "",
+        texto: ""
+    };
+
+    function applyFilters() {
+        const categoriaId = (filterState.categoriaId || "").trim();
+        const texto = norm(filterState.texto);
+
+        const emptyState = document.getElementById('emptySearchState');
+        const emptySearchStateDesktop = document.getElementById('emptySearchStateDesktop');
+
+        const panels = getAllPanels();
+        let totalPanelsVisible = 0;
+
+        panels.forEach((panel) => {
+            const panelCategoriaId = (panel.getAttribute("data-categoria-id") || "").trim();
+
+            const categoriaOk = !categoriaId || panelCategoriaId === categoriaId;
+            if (!categoriaOk) {
+                panel.classList.add("d-none");
+                return;
+            }
+
+            const cols = getAllProductCols(panel);
+
+            if (!texto) {
+                cols.forEach((col) => {
+                    col.classList.remove("d-none");
+                    col.querySelector(".bc-product")?.classList.remove("d-none");
+                });
+
+                panel.classList.remove("d-none");
+                totalPanelsVisible++;
+                refreshCarousel(panel);
+                return;
+            }
+
+            let anyVisible = false;
+
+            cols.forEach((col) => {
+                const nome = norm(col.getAttribute("data-nome"));
+                const match = nome.includes(texto);
+
+                col.classList.toggle("d-none", !match);
+                col.querySelector(".bc-product")?.classList.toggle("d-none", !match);
+
+                if (match) {
+                    anyVisible = true;
+                }
+            });
+
+            panel.classList.toggle("d-none", !anyVisible);
+
+            if (anyVisible) {
+                totalPanelsVisible++;
+            }
+
+            refreshCarousel(panel);
+        });
+
+        if (emptyState) {
+            if (totalPanelsVisible === 0) {
+                emptyState.classList.remove('d-none');
+                emptyState.classList.add('d-flex');
+            } else {
+                emptyState.classList.add('d-none');
+                emptyState.classList.remove('d-flex');
+            }
+        }
+
+        if (emptySearchStateDesktop) {
+            if (totalPanelsVisible === 0) {
+                emptySearchStateDesktop.classList.remove('d-none');
+                emptySearchStateDesktop.classList.add('d-flex');
+            } else {
+                emptySearchStateDesktop.classList.add('d-none');
+                emptySearchStateDesktop.classList.remove('d-flex');
+            }
+        }
+    }
+
+    // =========================
+    // Filtro desktop/mobile
+    // =========================
+    function setupFilterLogic(suffix = "") {
+        const btnPesquisar = document.getElementById("btnPesquisar" + suffix);
+        const btnFecharBusca = document.getElementById("btnFecharBusca" + suffix);
+        const filtroCategoria = document.getElementById("filtroCategoria" + suffix);
+        const filtroTexto = document.getElementById("filtroTexto" + suffix);
+        const inputBusca = document.getElementById("filtroNome" + suffix);
+
+        let modoBuscaTexto = false;
+
+        function abrirBuscaTexto() {
+            filtroCategoria?.classList.add("d-none");
+            filtroTexto?.classList.remove("d-none");
+            btnPesquisar?.classList.add("d-none");
+            modoBuscaTexto = true;
+            setTimeout(() => inputBusca?.focus(), 50);
+        }
+
+        function fecharBuscaTexto() {
+            filtroTexto?.classList.add("d-none");
+            filtroCategoria?.classList.remove("d-none");
+            btnPesquisar?.classList.remove("d-none");
+            modoBuscaTexto = false;
+
+            if (inputBusca) {
+                inputBusca.value = "";
+                filterState.texto = "";
+
+                document.getElementById('emptySearchState')?.classList.add('d-none');
+                document.getElementById('emptySearchState')?.classList.remove('d-flex');
+
+                document.getElementById('emptySearchStateDesktop')?.classList.add('d-none');
+                document.getElementById('emptySearchStateDesktop')?.classList.remove('d-flex');
+
+                applyFilters();
+            }
+        }
+
+        btnPesquisar?.addEventListener("click", () => {
+            if (!modoBuscaTexto) abrirBuscaTexto();
+            else inputBusca?.focus();
+        });
+
+        btnFecharBusca?.addEventListener("click", fecharBuscaTexto);
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && modoBuscaTexto) {
+                fecharBuscaTexto();
+            }
+        });
+
+        const selectWrap = document.getElementById("filtroCategoria" + suffix);
+        if (selectWrap) {
+            const trigger = selectWrap.querySelector(".bc-select__trigger");
+            const optionsList = Array.from(selectWrap.querySelectorAll(".bc-select__options li"));
+            const valueSpan = selectWrap.querySelector(".bc-select__value");
+            const nativeSelect = selectWrap.querySelector("select");
+
+            trigger?.addEventListener("click", (e) => {
+                e.stopPropagation();
+
+                const isOpen = selectWrap.classList.contains("is-open");
+                document.querySelectorAll(".bc-select").forEach((s) => s.classList.remove("is-open"));
+
+                if (!isOpen) {
+                    selectWrap.classList.add("is-open");
+                }
+            });
+
+            optionsList.forEach((option) => {
+                option.addEventListener("click", (e) => {
+                    e.stopPropagation();
+
+                    optionsList.forEach((o) => o.classList.remove("is-selected"));
+                    option.classList.add("is-selected");
+
+                    if (valueSpan) {
+                        valueSpan.textContent = option.textContent;
+                    }
+
+                    const categoriaId = option.dataset.value || "";
+
+                    if (nativeSelect) {
+                        nativeSelect.value = categoriaId;
+                    }
+
+                    filterState.categoriaId = categoriaId;
+                    applyFilters();
+
+                    selectWrap.classList.remove("is-open");
+                });
+            });
+        }
+
+        inputBusca?.addEventListener("input", () => {
+            filterState.texto = inputBusca.value || "";
+            applyFilters();
+        });
+    }
+
+    // =========================
+    // Inicialização do modal de produto
+    // =========================
+    window.iniciarModalAdicionarProduto = function () {
+        const modalEl = document.getElementById('modalAddProduto');
+        if (!modalEl) return;
+
+        const form = modalEl.querySelector('#formAdicionarProdutoCarrinho');
+        if (!form) return;
+
+        const inputPrecoBase = modalEl.querySelector('#modalPrecoBase');
+        const inputQtd = modalEl.querySelector('#quantidadeProduto');
+        const btnMenos = modalEl.querySelector('#btnDiminuirQtd');
+        const btnMais = modalEl.querySelector('#btnAumentarQtd');
+        const totalEl = modalEl.querySelector('#valorTotalProduto');
+
+        if (!inputPrecoBase || !inputQtd || !btnMenos || !btnMais || !totalEl) return;
+
+        const precoBase = Number(inputPrecoBase.value || 0);
+
+        function moedaBR(valor) {
+            return valor.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+        }
+
+        function obterAdicionalSelecionado() {
+            let adicional = 0;
+
+            const selecionados = form.querySelectorAll('.acomp-input:checked');
+            selecionados.forEach(input => {
+                adicional += Number(input.dataset.preco || 0);
+            });
+
+            return adicional;
+        }
+
+        function calcularTotal() {
+            let qtd = parseInt(inputQtd.value, 10) || 1;
+
+            if (qtd < 1) {
+                qtd = 1;
+                inputQtd.value = 1;
+            }
+
+            const adicional = obterAdicionalSelecionado();
+            const total = (precoBase + adicional) * qtd;
+
+            totalEl.textContent = moedaBR(total);
+        }
+
+        btnMenos.onclick = function () {
+            let qtdAtual = parseInt(inputQtd.value, 10) || 1;
+            qtdAtual = Math.max(qtdAtual - 1, 1);
+            inputQtd.value = qtdAtual;
+            calcularTotal();
+        };
+
+        btnMais.onclick = function () {
+            let qtdAtual = parseInt(inputQtd.value, 10) || 1;
+            qtdAtual = qtdAtual + 1;
+            inputQtd.value = qtdAtual;
+            calcularTotal();
+        };
+
+        inputQtd.oninput = calcularTotal;
+        inputQtd.onchange = calcularTotal;
+        inputQtd.onblur = calcularTotal;
+
+        form.querySelectorAll('.acomp-input').forEach(input => {
+            input.onchange = calcularTotal;
+        });
+
+        calcularTotal();
+    };
+
+    // =========================
+    // Modal - carregar produto
+    // =========================
+    const host = document.getElementById('modalHost');
+
+    async function abrirModalProduto(produtoId) {
+        if (!host) return;
+
+        const old = document.getElementById('modalAddProduto');
+        if (old) old.remove();
+
+        try {
+            addLoading("Carregando...");
+
+            const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!resp.ok) {
+                throw new Error(`Erro HTTP ${resp.status}`);
+            }
+
+            const html = await resp.text();
+            host.innerHTML = html;
+
+            iniciarModalAdicionarProduto();
+
+            const modalEl = document.getElementById('modalAddProduto');
+            if (!modalEl) return;
+
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                modalEl.remove();
+            }, { once: true });
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+
+        } catch (err) {
+            console.error('Erro ao carregar modal:', err);
+            alert('Não foi possível carregar o produto. Tente novamente.');
+        } finally {
+            removeLoading();
+        }
+    }
+
+    // =========================
+    // Clique nos produtos
+    // =========================
+    document.addEventListener('click', (e) => {
+        const el = e.target.closest('.bc-product-clickable');
+        if (!el) return;
+
+        const produtoId = el.dataset.produtoId;
+        if (!produtoId) return;
+
+        abrirModalProduto(produtoId);
+    });
+
+    // =========================
+    // Limpar filtro
+    // =========================
+    window.limparFiltroTexto = function () {
+        const inputBusca = document.getElementById("filtroNome");
+        const inputBuscaMobile = document.getElementById("filtroNomeMobile");
+
+        if (inputBusca) inputBusca.value = "";
+        if (inputBuscaMobile) inputBuscaMobile.value = "";
+
+        filterState.texto = "";
+
+        document.getElementById('emptySearchState')?.classList.add('d-none');
+        document.getElementById('emptySearchState')?.classList.remove('d-flex');
+
+        document.getElementById('emptySearchStateDesktop')?.classList.add('d-none');
+        document.getElementById('emptySearchStateDesktop')?.classList.remove('d-flex');
+
+        applyFilters();
+    };
+
+    // =========================
+    // Boot
+    // =========================
+    document.addEventListener("DOMContentLoaded", () => {
+        setupFilterLogic("");
+        setupFilterLogic("Mobile");
+
+        document.addEventListener("click", () => {
+            document.querySelectorAll(".bc-select").forEach((s) => s.classList.remove("is-open"));
+        });
+
+        applyFilters();
+    });
+
+})();
+</script>
+
+@* <script>
     
 
 (function () {
@@ -790,7 +1204,7 @@
     };
 })();
 
-</script>
+</script> *@
 
 
 
