@@ -17,25 +17,49 @@ public class UsuariosController : Controller
 
     public UsuariosController(DatabaseContext context) => _context = context;
 
-    public async Task<IActionResult> Index(string busca, string role)
+    public async Task<IActionResult> Index(string busca, string role, int pagina = 1)
+{
+    // 1. Configurações básicas
+    const int itensPorPagina = 10;
+    var query = _context.Clientes.AsQueryable();
+
+    // 2. Filtros (Sua lógica original mantida)
+    if (!string.IsNullOrEmpty(busca))
     {
-        var query = _context.Clientes.AsQueryable();
-
-        if (!string.IsNullOrEmpty(busca))
-            query = query.Where(x => x.Nome.Contains(busca) || x.Email.Contains(busca) || x.CPF.Contains(busca));
-
-        if (!string.IsNullOrEmpty(role))
-            query = query.Where(x => x.Role == role);
-
-        var model = new UsuariosIndexViewModel
-        {
-            Itens = await query.OrderByDescending(x => x.DataCadastro).ToListAsync(),
-            Busca = busca,
-            Role = role
-        };
-
-        return View(model);
+        query = query.Where(x => x.Nome.Contains(busca) || 
+                                 x.Email.Contains(busca) || 
+                                 x.CPF.Contains(busca));
     }
+
+    if (!string.IsNullOrEmpty(role))
+    {
+        query = query.Where(x => x.Role == role);
+    }
+
+    // 3. Contagem total ANTES da paginação (para saber o total de registros filtrados)
+    int totalRegistros = await query.CountAsync();
+
+    // 4. Execução da Paginação
+    // Pulamos (pagina - 1 * itens) e pegamos a quantidade definida
+    var itensPaginados = await query
+        .OrderByDescending(x => x.DataCadastro)
+        .Skip((pagina - 1) * itensPorPagina)
+        .Take(itensPorPagina)
+        .ToListAsync();
+
+    // 5. Mapeamento para a ViewModel ajustada
+    var model = new UsuariosIndexViewModel
+    {
+        Itens = itensPaginados,
+        Busca = busca,
+        Role = role, // Usando o nome ajustado na ViewModel
+        PaginaAtual = pagina,
+        TotalItens = totalRegistros,
+        TotalPaginas = (int)Math.Ceiling(totalRegistros / (double)itensPorPagina)
+    };
+
+    return View(model);
+}
 
     public IActionResult Create() => View(new UsuarioFormViewModel());
 
@@ -146,9 +170,22 @@ public class UsuariosController : Controller
 
     public class UsuariosIndexViewModel
     {
+        // A lista de itens que será exibida na página atual
         public IEnumerable<Cliente> Itens { get; set; } = new List<Cliente>();
+
+        // Filtros para persistência na busca
         public string Busca { get; set; }
+        
+        // Renomeado para RoleSelecionada para clareza na View e facilitar o binding
         public string Role { get; set; }
+
+        // Propriedades de Paginação
+        public int PaginaAtual { get; set; }
+        public int TotalPaginas { get; set; }
+        public int TotalItens { get; set; }
+        
+        // Itens por página (opcional, caso queira tornar dinâmico)
+        public int ItensPorPagina { get; set; } = 10;
     }
 
     public class UsuarioFormViewModel
