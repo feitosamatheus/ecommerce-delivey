@@ -55,14 +55,14 @@
     <div id="conteudo-dinamico"></div>
 
     @await Html.PartialAsync("Partials/_ModalVerMais.cshtml")
-    @await Html.PartialAsync("Partials/_ModalAlterarSenha.cshtml")
     @await Component.InvokeAsync("Footer")
 
     <style>
         /* Estilo Personalizado "Barriga Cheia" */
         .modal-barriga-cheia .modal-content {
             /* background-color: #F9F5F0; */
-            border-radius: 2rem;
+            /* border-radius: 2rem; */
+            border-radius: 20px;
             border: none;
         }
 
@@ -104,6 +104,40 @@
         .modal-barriga-cheia .text-titulo {
             color: #4A321F;
             font-weight: 800;
+        }
+
+        .swal2-container {
+            z-index: 10000 !important;
+        }
+
+        .btn-close-custom {
+            background: transparent;
+            border: none;
+            color: #a1a1a1; /* Cor neutra inicial */
+            font-size: 1.25rem;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%; /* Faz o fundo ficar circular no hover */
+            width: 32px;
+            height: 32px;
+        }
+
+        .btn-close-custom:hover {
+            color: #4A321F; /* Cor principal do seu tema */
+            background-color: rgba(0, 0, 0, 0.05); /* Fundo sutil ao passar o mouse */
+            transform: rotate(90deg); /* Efeito visual moderno */
+        }
+
+        /* Ajuste de posicionamento no topo do modal */
+        .modal-header-custom {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0.5rem 0.5rem 0 0;
         }
     </style>
 
@@ -199,6 +233,97 @@
             </div>
         </div>
         </div>
+    <div class="modal fade modal-barriga-cheia" id="modalSucessoLogin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered px-4">
+            <div class="modal-content shadow-lg">
+                <div class="modal-body text-center p-4">
+
+                    <div class="circle-check mb-4 animate__animated animate__bounceIn">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+
+                    <h2 class="text-titulo mb-3" id="loginTitulo">Bem-vindo!</h2>
+
+                    <p class="text-muted px-2" id="loginMensagem">
+                        Seu login foi realizado com sucesso.
+                    </p>
+
+                    <div class="info-box p-3 my-4 d-flex align-items-center text-start">
+                        <i class="fa-solid fa-circle-info fa-2x me-3" style="color: #B26528;"></i>
+                        <span class="small">
+                            Agora você já pode navegar pela plataforma e finalizar seus pedidos com segurança.
+                        </span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" class="btn btn-principal" data-bs-dismiss="modal">
+                            Continuar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-barriga-cheia" id="modalAlterarSenhaGenerico" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered px-4">
+            <div class="modal-content shadow-lg">
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-end" id="containerBtnFechar">
+                        <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <div class="circle-check mb-4 animate__animated animate__bounceIn" style="background-color: #fff3cd; color: #B26528;">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+
+                        <h2 class="text-titulo mb-3" id="tituloModalSenha">Alterar Senha</h2>
+
+                        <p class="text-muted px-2 mb-0" id="subtituloModalSenha">
+                            Defina uma nova senha para sua conta.
+                        </p>
+                    </div>
+
+                    <div id="alterarSenhaAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                    <form id="formAlterarSenhaUnificado">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="senhaAtual" class="form-label fw-semibold" style="color: #4A321F;">Senha atual</label>
+                            <input type="password" class="form-control" id="senhaAtual" name="senhaAtual" placeholder="Digite sua senha atual" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="novaSenha" class="form-label fw-semibold" style="color: #4A321F;">Nova senha</label>
+                            <input type="password" class="form-control" id="novaSenha" name="novaSenha" placeholder="Digite a nova senha" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirmarNovaSenha" class="form-label fw-semibold" style="color: #4A321F;">Confirmar nova senha</label>
+                            <input type="password" class="form-control" id="confirmarNovaSenha" name="confirmarNovaSenha" placeholder="Confirme a nova senha" required />
+                        </div>
+
+                        <div class="info-box p-3 my-4 d-flex align-items-center text-start">
+                            <i class="fa-solid fa-shield-halved fa-2x me-3" style="color: #B26528;"></i>
+                            <span class="small">
+                                Use uma senha segura para proteger sua conta.
+                            </span>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" id="btnSalvarNovaSenha" class="btn btn-principal">
+                                Salvar nova senha
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @await RenderSectionAsync("Scripts", required: false)
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -212,6 +337,7 @@
 
         $(document).ready(function () {
             const urlParams = new URLSearchParams(window.location.search);
+            const precisaTrocarSenha = @Json.Serialize(ViewBag.ExibirModalTrocaSenha ?? false);
 
             function toBool(v) {
                 if (v == null) return false;
@@ -229,24 +355,8 @@
                 limparUrl();
             }
 
-            if (urlParams.has('loginSucesso')) {
-                const primeiroAcesso = toBool(urlParams.get('primeiroAcesso'));
-                const nome = (window.appUser?.primeiroNome || '').trim();
-                const sufixoNome = nome ? `, ${nome}` : '';
-
-                const titulo = primeiroAcesso
-                ? `Seja bem-vindo${sufixoNome}!`
-                : `Bem-vindo de volta${sufixoNome}!`;
-
-                const mensagem = primeiroAcesso
-                ? 'Seu acesso foi criado com sucesso. Agora você pode finalizar seus pedidos.'
-                : 'Seu login foi realizado com sucesso. Agora você pode finalizar seus pedidos.';
-
-                $('#loginTitulo').text(titulo);
-                $('#loginMensagem').text(mensagem);
-
-                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalSucessoLogin')).show();
-                limparUrl();
+            if (precisaTrocarSenha) {
+                abrirModalSenha(true);
             }
 
             if (urlParams.has('itemAdicionado')) {
@@ -296,8 +406,99 @@
                 }, 800);
             }
 
-        });
 
+            $(document).on('submit', '#formAlterarSenhaUnificado', function (e) {
+                e.preventDefault();
+
+                $('#alterarSenhaAlert').addClass('d-none').text('');
+
+                const $form = $(this);
+                const $btn = $('#btnSalvarNovaSenha');
+                const $alert = $('#alterarSenhaAlert');
+
+                const data = {
+                    SenhaAtual: $('#senhaAtual').val(), 
+                    NovaSenha: $('#novaSenha').val()
+                };
+
+                if (data.NovaSenha !== $('#confirmarNovaSenha').val()) {
+                    $alert.text("As senhas não coincidem!").removeClass('d-none');
+                    return;
+                }
+
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Salvando...');
+
+                $.ajax({
+                    url: '/Cliente/AlterarSenha',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    headers: {
+                        // Envia o Token de segurança no cabeçalho para o .NET Core validar
+                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            const modalElement = document.getElementById('modalAlterarSenhaGenerico');
+                            const inst = bootstrap.Modal.getInstance(modalElement);
+        
+                            if (inst) {
+                                inst.hide();
+                            }
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Sucesso!',
+                                text: response.message,
+                                confirmButtonColor: '#B26528',
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $('#formAlterarSenhaUnificado')[0].reset();
+                                    $('#alterarSenhaAlert').addClass('d-none');
+                
+                                    $btn.prop('disabled', false).text('Salvar nova senha');
+                                }
+                            });
+
+                        } else {
+                            $alert.text(response.message).removeClass('d-none');
+                            $btn.prop('disabled', false).text('Salvar nova senha');
+                        }
+                    },
+                    error: function () {
+                        $alert.text("Erro de comunicação com o servidor.").removeClass('d-none');
+                        $btn.prop('disabled', false).text('Salvar nova senha');
+                    }
+                });
+            });
+        });
+        
+        function abrirModalSenha(ePrimeiroAcesso = false) {
+                const modalEl = document.getElementById('modalAlterarSenhaGenerico');
+                const titulo = document.getElementById('tituloModalSenha');
+                const subtitulo = document.getElementById('subtituloModalSenha');
+                const containerFechar = document.getElementById('containerBtnFechar');
+
+                if (ePrimeiroAcesso) {
+                    titulo.innerText = "Primeiro Acesso";
+                    subtitulo.innerText = "Para sua segurança, é necessário definir uma nova senha no seu primeiro acesso.";
+                    containerFechar.classList.add('d-none'); // Esconde o "X"
+        
+                    // Configura o modal para não fechar clicando fora ou ESC
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    modal.show();
+                } else {
+                    titulo.innerText = "Alterar Senha";
+                    subtitulo.innerText = "Preencha os campos abaixo para atualizar sua senha de acesso.";
+                    containerFechar.classList.remove('d-none'); // Mostra o "X"
+        
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                }
+            }
     </script>
 </body>
 </html>

@@ -66,16 +66,7 @@ public class ClienteService : IClienteService
         var ok = BCrypt.Net.BCrypt.Verify(model.Senha, cliente.SenhaHash);
         if (!ok) return null;
 
-        // Snapshot do valor ANTES de alterar
-        var foiPrimeiroAcesso = cliente.PrimeiroAcesso;
-
-        if (foiPrimeiroAcesso)
-        {
-            cliente.PrimeiroAcesso = false;
-            await _context.SaveChangesAsync();
-        }
-
-        return new LoginResultadoViewModel(cliente, foiPrimeiroAcesso);
+        return new LoginResultadoViewModel(cliente, cliente.PrimeiroAcessoRedefinir);
     }
 
     private bool CpfEhValido(string cpf)

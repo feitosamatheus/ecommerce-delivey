@@ -1,0 +1,1019 @@
+﻿@using Ecommerce.MVC.Enums
+@model List<Ecommerce.MVC.Entities.Pedido>
+@using Ecommerce.MVC.Entities
+
+@{
+    ViewData["Title"] = "Painel da Cozinha";
+    ViewData["Description"] = "Acompanhe os pedidos por etapa e por data de retirada.";
+
+    var confirmados = Model.Where(p => p.Status == EPedidoStatus.Confirmado).ToList();
+    var emPreparo = Model.Where(p => p.Status == EPedidoStatus.EmPreparo).ToList();
+    var prontos = Model.Where(p => p.Status == EPedidoStatus.Pronto).ToList();
+    var concluidos = Model.Where(p => p.Status == EPedidoStatus.Concluido).ToList();
+
+    var gruposConfirmados = confirmados
+        .GroupBy(p => ObterGrupoData(p.HorarioRetirada))
+        .OrderBy(g => ObterOrdemGrupo(g.Key))
+        .ToList();
+
+    var gruposEmPreparo = emPreparo
+        .GroupBy(p => ObterGrupoData(p.HorarioRetirada))
+        .OrderBy(g => ObterOrdemGrupo(g.Key))
+        .ToList();
+
+    var gruposProntos = prontos
+        .GroupBy(p => ObterGrupoData(p.HorarioRetirada))
+        .OrderBy(g => ObterOrdemGrupo(g.Key))
+        .ToList();
+}
+
+@functions {
+    public string ObterGrupoData(DateTime dataHora)
+    {
+        var data = dataHora.ToLocalTime().Date;
+        var hoje = DateTime.Now.Date;
+
+        if (data < hoje)
+            return "Vencido";
+
+        if (data == hoje)
+            return "Hoje";
+
+        if (data == hoje.AddDays(1))
+            return "Amanhã";
+
+        return "Futuro";
+    }
+
+    public string ObterClasseGrupo(string grupo)
+    {
+        return grupo switch
+        {
+            "Vencido" => "danger",
+            "Hoje" => "primary",
+            "Amanhã" => "success",
+            "Futuro" => "secondary",
+            _ => "secondary"
+        };
+    }
+
+    public int ObterOrdemGrupo(string grupo)
+    {
+        return grupo switch
+        {
+            "Vencido" => 0,
+            "Hoje" => 1,
+            "Amanhã" => 2,
+            "Futuro" => 3,
+            _ => 4
+        };
+    }
+
+    public string ObterTextoHorario(DateTime dataHora)
+    {
+        return dataHora.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+    }
+
+    public string ObterTextoDataNullable(DateTime? dataHora)
+    {
+        if (!dataHora.HasValue)
+            return "-";
+
+        return dataHora.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+    }
+
+    public string NormalizarId(string texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+            return "grupo";
+
+        return texto
+            .ToLowerInvariant()
+            .Replace("ã", "a")
+            .Replace("á", "a")
+            .Replace("à", "a")
+            .Replace("â", "a")
+            .Replace("é", "e")
+            .Replace("ê", "e")
+            .Replace("í", "i")
+            .Replace("ó", "o")
+            .Replace("ô", "o")
+            .Replace("õ", "o")
+            .Replace("ú", "u")
+            .Replace("ç", "c")
+            .Replace(" ", "-")
+            .Replace("/", "-");
+    }
+}
+
+@section Styles {
+    <style>
+        .cozinha-resumo-card {
+            border-radius: 16px;
+        }
+
+        .cozinha-coluna-card {
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+            .cozinha-coluna-card .card-header {
+                border-bottom: 1px solid rgba(0,0,0,.06);
+            }
+
+        .grupo-data-card {
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+            .grupo-data-card .card-header {
+                border-bottom: 1px solid rgba(0,0,0,.05);
+            }
+
+        .pedido-item-card {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            background: #fff;
+        }
+
+            .pedido-item-card:last-child {
+                margin-bottom: 0 !important;
+            }
+
+        .toggle-card {
+            min-width: 34px;
+            height: 34px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contador-pill {
+            min-width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        .lista-itens {
+            padding-left: 1rem;
+            margin-bottom: 0;
+        }
+
+            .lista-itens li {
+                margin-bottom: .35rem;
+            }
+
+        .lista-acompanhamentos {
+            margin-top: .35rem;
+            margin-bottom: 0;
+            padding-left: 1.25rem;
+        }
+
+            .lista-acompanhamentos li {
+                margin-bottom: .2rem;
+            }
+
+        .observacao-box {
+            background: #f8f9fa;
+            border: 1px solid rgba(0,0,0,.06);
+            border-radius: 12px;
+        }
+
+        .subtitulo-coluna {
+            font-size: .82rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            font-size: .72rem;
+            padding: .45rem .6rem;
+            border-radius: 999px;
+        }
+
+        .filtro-interno-label {
+            font-size: .78rem;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: .35rem;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .info-pedido-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: .25rem;
+        }
+
+        .card-header .col-6:first-child {
+            min-width: 0;
+        }
+    </style>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 cozinha-resumo-card h-100">
+            <div class="card-body">
+                <div class="subtitulo-coluna mb-2">Confirmados</div>
+                <div class="display-6 fw-bold mb-1">@confirmados.Count</div>
+                <div class="text-muted">Pedidos aguardando início do preparo.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 cozinha-resumo-card h-100">
+            <div class="card-body">
+                <div class="subtitulo-coluna mb-2">Em preparo</div>
+                <div class="display-6 fw-bold mb-1">@emPreparo.Count</div>
+                <div class="text-muted">Pedidos em produção na cozinha.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 cozinha-resumo-card h-100">
+            <div class="card-body">
+                <div class="subtitulo-coluna mb-2">Prontos</div>
+                <div class="display-6 fw-bold mb-1">@prontos.Count</div>
+                <div class="text-muted">Pedidos prontos para entrega ou retirada.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 cozinha-resumo-card h-100">
+            <div class="card-body">
+                <div class="subtitulo-coluna mb-2">Concluídos</div>
+                <div class="display-6 fw-bold mb-1">@concluidos.Count</div>
+                <div class="text-muted">Pedidos já finalizados e entregues.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- CONFIRMADOS -->
+    <div class="col-xl-3 col-lg-6">
+        <div class="card shadow-sm border-0 cozinha-coluna-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="col-6">
+                    <h5 class="mb-0">Confirmados</h5>
+                    <small class="text-muted">Aguardando preparo</small>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+                    <span class="badge bg-secondary contador-pill">@confirmados.Count</span>
+                    <button type="button" class="btn btn-sm btn-light toggle-card" data-target="card-confirmados">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body d-none" id="card-confirmados">
+                <div class="mb-3">
+                    <label class="filtro-interno-label">Filtrar grupo</label>
+                    <select class="form-select form-select-sm filtro-grupo-coluna" data-container="confirmados-container">
+                        <option value="Todos">Todos</option>
+                        <option value="Vencido">Vencido</option>
+                        <option value="Hoje">Hoje</option>
+                        <option value="Amanhã">Amanhã</option>
+                        <option value="Futuro">Futuro</option>
+                    </select>
+                </div>
+
+                <div id="confirmados-container">
+                    @if (gruposConfirmados.Any())
+                    {
+                        @foreach (var grupo in gruposConfirmados)
+                        {
+                            var grupoId = $"confirmados-{NormalizarId(grupo.Key)}";
+
+                            <div class="card border-0 shadow-sm mb-3 grupo-data-card grupo-filtravel" data-grupo="@grupo.Key">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                    <div class="col-6">
+                                        <span class="fw-semibold text-@ObterClasseGrupo(grupo.Key)">@grupo.Key</span>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+                                        <span class="badge bg-@ObterClasseGrupo(grupo.Key) contador-pill">@grupo.Count()</span>
+                                        <button type="button" class="btn btn-sm btn-light toggle-card" data-target="@grupoId">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="card-body p-2" id="@grupoId">
+                                    @foreach (var pedido in grupo.OrderBy(p => p.HorarioRetirada))
+                                    {
+                                        <div class="pedido-item-card p-3 mb-2">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <div class="fw-bold">Pedido @pedido.Codigo</div>
+                                                    <div class="text-muted small">@pedido.Cliente?.Nome</div>
+                                                </div>
+                                                <span class="badge bg-primary status-badge">Confirmado</span>
+                                            </div>
+
+                                            <div class="small text-muted mb-2 info-pedido-grid">
+                                                <div><strong>Entrega:</strong> @pedido.MetodoEntrega</div>
+                                                <div><strong>Retirada:</strong> @ObterTextoHorario(pedido.HorarioRetirada)</div>
+                                                <div><strong>Criado em:</strong> @ObterTextoHorario(pedido.CriadoEmUtc)</div>
+                                                <div><strong>Em preparo em:</strong> @ObterTextoDataNullable(pedido.EmpreparoEmUtc)</div>
+                                                <div><strong>Concluído em:</strong> @ObterTextoDataNullable(pedido.ConcluidoEmUtc)</div>
+                                                <div><strong>Entregue em:</strong> @ObterTextoDataNullable(pedido.EntregueEmUtc)</div>
+                                            </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
+                                            {
+                                                <div class="observacao-box small p-2 mb-2">
+                                                    <strong>Obs.:</strong> @pedido.Observacao
+                                                </div>
+                                            }
+
+                                            <div class="mb-3">
+                                                <strong>Itens</strong>
+                                                <ul class="lista-itens">
+                                                    @foreach (var item in pedido.Itens)
+                                                    {
+                                                        <li>
+                                                            <div>
+                                                                <strong>@item.Quantidade x @(item.ProdutoNomeSnapshot ?? "Item do pedido")</strong>
+                                                            </div>
+
+                                                            @if (item.Acompanhamentos != null && item.Acompanhamentos.Any())
+                                                            {
+                                                                <ul class="lista-acompanhamentos">
+                                                                    @foreach (var acomp in item.Acompanhamentos)
+                                                                    {
+                                                                        <li class="small text-muted">
+                                                                            + @(acomp.NomeSnapshot ?? "Acompanhamento")
+                                                                        </li>
+                                                                    }
+                                                                </ul>
+                                                            }
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+
+                                            <form asp-action="IniciarPreparo" method="post">
+                                                <input type="hidden" name="id" value="@pedido.Id" />
+                                                <button type="submit" class="btn btn-warning btn-sm w-100">
+                                                    Iniciar preparo
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Nenhum pedido confirmado.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EM PREPARO -->
+    <div class="col-xl-3 col-lg-6">
+        <div class="card shadow-sm border-0 cozinha-coluna-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="col-6">
+                    <h5 class="mb-0">Em preparo</h5>
+                    <small class="text-muted">Pedidos em produção</small>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+                    <span class="badge bg-secondary contador-pill">@emPreparo.Count</span>
+                    <button type="button" class="btn btn-sm btn-light toggle-card" data-target="card-em-preparo">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body d-none" id="card-em-preparo">
+                <div class="mb-3">
+                    <label class="filtro-interno-label">Filtrar grupo</label>
+                    <select class="form-select form-select-sm filtro-grupo-coluna" data-container="em-preparo-container">
+                        <option value="Todos">Todos</option>
+                        <option value="Vencido">Vencido</option>
+                        <option value="Hoje">Hoje</option>
+                        <option value="Amanhã">Amanhã</option>
+                        <option value="Futuro">Futuro</option>
+                    </select>
+                </div>
+
+                <div id="em-preparo-container">
+                    @if (gruposEmPreparo.Any())
+                    {
+                        @foreach (var grupo in gruposEmPreparo)
+                        {
+                            var grupoId = $"em-preparo-{NormalizarId(grupo.Key)}";
+
+                            <div class="card border-0 shadow-sm mb-3 grupo-data-card grupo-filtravel" data-grupo="@grupo.Key">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                    <div class="col-6">
+                                        <span class="fw-semibold text-@ObterClasseGrupo(grupo.Key)">@grupo.Key</span>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+                                        <span class="badge bg-@ObterClasseGrupo(grupo.Key) contador-pill">@grupo.Count()</span>
+                                        <button type="button" class="btn btn-sm btn-light toggle-card" data-target="@grupoId">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="card-body p-2" id="@grupoId">
+                                    @foreach (var pedido in grupo.OrderBy(p => p.HorarioRetirada))
+                                    {
+                                        <div class="pedido-item-card p-3 mb-2">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <div class="fw-bold">Pedido @pedido.Codigo</div>
+                                                    <div class="text-muted small">@pedido.Cliente?.Nome</div>
+                                                </div>
+                                                <span class="badge bg-warning text-dark status-badge">Em preparo</span>
+                                            </div>
+
+                                            <div class="small text-muted mb-2 info-pedido-grid">
+                                                <div><strong>Entrega:</strong> @pedido.MetodoEntrega</div>
+                                                <div><strong>Retirada:</strong> @ObterTextoHorario(pedido.HorarioRetirada)</div>
+                                                <div><strong>Criado em:</strong> @ObterTextoHorario(pedido.CriadoEmUtc)</div>
+                                                <div><strong>Em preparo em:</strong> @ObterTextoDataNullable(pedido.EmpreparoEmUtc)</div>
+                                                <div><strong>Concluído em:</strong> @ObterTextoDataNullable(pedido.ConcluidoEmUtc)</div>
+                                                <div><strong>Entregue em:</strong> @ObterTextoDataNullable(pedido.EntregueEmUtc)</div>
+                                            </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
+                                            {
+                                                <div class="observacao-box small p-2 mb-2">
+                                                    <strong>Obs.:</strong> @pedido.Observacao
+                                                </div>
+                                            }
+
+                                            <div class="mb-3">
+                                                <strong>Itens</strong>
+                                                <ul class="lista-itens">
+                                                    @foreach (var item in pedido.Itens)
+                                                    {
+                                                        <li>
+                                                            <div>
+                                                                <strong>@item.Quantidade x @(item.ProdutoNomeSnapshot ?? "Item do pedido")</strong>
+                                                            </div>
+
+                                                            @if (item.Acompanhamentos != null && item.Acompanhamentos.Any())
+                                                            {
+                                                                <ul class="lista-acompanhamentos">
+                                                                    @foreach (var acomp in item.Acompanhamentos)
+                                                                    {
+                                                                        <li class="small text-muted">
+                                                                            + @(acomp.NomeSnapshot ?? "Acompanhamento")
+                                                                        </li>
+                                                                    }
+                                                                </ul>
+                                                            }
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+
+                                            <div class="d-flex gap-2">
+                                                <form asp-action="VoltarParaConfirmado" method="post" class="w-50">
+                                                    <input type="hidden" name="id" value="@pedido.Id" />
+                                                    <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
+                                                        <i class="bi bi-arrow-left"></i> Voltar
+                                                    </button>
+                                                </form>
+
+                                                <form asp-action="MarcarPronto" method="post" class="w-50">
+                                                    <input type="hidden" name="id" value="@pedido.Id" />
+                                                    <button type="submit" class="btn btn-success btn-sm w-100">
+                                                        Marcar como pronto
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Nenhum pedido em preparo.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRONTOS -->
+    <div class="col-xl-3 col-lg-6">
+        <div class="card shadow-sm border-0 cozinha-coluna-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="col-6">
+                    <h5 class="mb-0">Prontos</h5>
+                    <small class="text-muted">Aguardando conclusão</small>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+                    <span class="badge bg-secondary contador-pill">@prontos.Count</span>
+                    <button type="button" class="btn btn-sm btn-light toggle-card" data-target="card-prontos">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body d-none" id="card-prontos">
+                <div class="mb-3">
+                    <label class="filtro-interno-label">Filtrar grupo</label>
+                    <select class="form-select form-select-sm filtro-grupo-coluna" data-container="prontos-container">
+                        <option value="Todos">Todos</option>
+                        <option value="Vencido">Vencido</option>
+                        <option value="Hoje">Hoje</option>
+                        <option value="Amanhã">Amanhã</option>
+                        <option value="Futuro">Futuro</option>
+                    </select>
+                </div>
+
+                <div id="prontos-container">
+                    @if (gruposProntos.Any())
+                    {
+                        @foreach (var grupo in gruposProntos)
+                        {
+                            var grupoId = $"prontos-{NormalizarId(grupo.Key)}";
+
+                            <div class="card border-0 shadow-sm mb-3 grupo-data-card grupo-filtravel" data-grupo="@grupo.Key">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                    <div class="col-6">
+                                        <span class="fw-semibold text-@ObterClasseGrupo(grupo.Key)">@grupo.Key</span>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+                                        <span class="badge bg-@ObterClasseGrupo(grupo.Key) contador-pill">@grupo.Count()</span>
+                                        <button type="button" class="btn btn-sm btn-light toggle-card" data-target="@grupoId">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="card-body p-2" id="@grupoId">
+                                    @foreach (var pedido in grupo.OrderBy(p => p.HorarioRetirada))
+                                    {
+                                        <div class="pedido-item-card p-3 mb-2">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <div class="fw-bold">Pedido @pedido.Codigo</div>
+                                                    <div class="text-muted small">@pedido.Cliente?.Nome</div>
+                                                </div>
+                                                <span class="badge bg-success status-badge">Pronto</span>
+                                            </div>
+
+                                            <div class="small text-muted mb-2 info-pedido-grid">
+                                                <div><strong>Entrega:</strong> @pedido.MetodoEntrega</div>
+                                                <div><strong>Retirada:</strong> @ObterTextoHorario(pedido.HorarioRetirada)</div>
+                                                <div><strong>Criado em:</strong> @ObterTextoHorario(pedido.CriadoEmUtc)</div>
+                                                <div><strong>Em preparo em:</strong> @ObterTextoDataNullable(pedido.EmpreparoEmUtc)</div>
+                                                <div><strong>Concluído em:</strong> @ObterTextoDataNullable(pedido.ConcluidoEmUtc)</div>
+                                                <div><strong>Entregue em:</strong> @ObterTextoDataNullable(pedido.EntregueEmUtc)</div>
+                                            </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
+                                            {
+                                                <div class="observacao-box small p-2 mb-2">
+                                                    <strong>Obs.:</strong> @pedido.Observacao
+                                                </div>
+                                            }
+
+                                            <div class="mb-3">
+                                                <strong>Itens</strong>
+                                                <ul class="lista-itens">
+                                                    @foreach (var item in pedido.Itens)
+                                                    {
+                                                        <li>
+                                                            <div>
+                                                                <strong>@item.Quantidade x @(item.ProdutoNomeSnapshot ?? "Item do pedido")</strong>
+                                                            </div>
+
+                                                            @if (item.Acompanhamentos != null && item.Acompanhamentos.Any())
+                                                            {
+                                                                <ul class="lista-acompanhamentos">
+                                                                    @foreach (var acomp in item.Acompanhamentos)
+                                                                    {
+                                                                        <li class="small text-muted">
+                                                                            + @(acomp.NomeSnapshot ?? "Acompanhamento")
+                                                                        </li>
+                                                                    }
+                                                                </ul>
+                                                            }
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+
+                                            <div class="d-flex gap-2">
+                                                <form asp-action="VoltarParaEmPreparo" method="post" class="w-50">
+                                                    <input type="hidden" name="id" value="@pedido.Id" />
+                                                    <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
+                                                        <i class="bi bi-arrow-left"></i> Voltar
+                                                    </button>
+                                                </form>
+
+                                                <form asp-action="Concluir" method="post" class="w-50">
+                                                    <input type="hidden" name="id" value="@pedido.Id" />
+                                                    <button type="submit" class="btn btn-dark btn-sm w-100">
+                                                        Concluir pedido
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Nenhum pedido pronto.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONCLUÍDOS -->
+    <div class="col-xl-3 col-lg-6">
+        <div class="card shadow-sm border-0 cozinha-coluna-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="col-6">
+                    <h5 class="mb-0">Concluídos</h5>
+                    <small class="text-muted">Pedidos finalizados</small>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+                    <span class="badge bg-dark contador-pill">@concluidos.Count</span>
+                    <button type="button" class="btn btn-sm btn-light toggle-card" data-target="card-concluidos">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body d-none" id="card-concluidos">
+                @if (concluidos.Any())
+                {
+                    @foreach (var pedido in concluidos.OrderByDescending(p => p.EntregueEmUtc ?? p.ConcluidoEmUtc ?? p.CriadoEmUtc))
+                    {
+                        <div class="pedido-item-card p-3 mb-2">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="fw-bold">Pedido @pedido.Codigo</div>
+                                    <div class="text-muted small">@pedido.Cliente?.Nome</div>
+                                </div>
+                                <span class="badge bg-dark status-badge">Concluído</span>
+                            </div>
+
+                            <div class="small text-muted mb-2 info-pedido-grid">
+                                <div><strong>Entrega:</strong> @pedido.MetodoEntrega</div>
+                                <div><strong>Retirada:</strong> @ObterTextoHorario(pedido.HorarioRetirada)</div>
+                                <div><strong>Criado em:</strong> @ObterTextoHorario(pedido.CriadoEmUtc)</div>
+                                <div><strong>Em preparo em:</strong> @ObterTextoDataNullable(pedido.EmpreparoEmUtc)</div>
+                                <div><strong>Concluído em:</strong> @ObterTextoDataNullable(pedido.ConcluidoEmUtc)</div>
+                                <div><strong>Entregue em:</strong> @ObterTextoDataNullable(pedido.EntregueEmUtc)</div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
+                            {
+                                <div class="observacao-box small p-2 mb-2">
+                                    <strong>Obs.:</strong> @pedido.Observacao
+                                </div>
+                            }
+
+                            <div class="mb-0">
+                                <strong>Itens</strong>
+                                <ul class="lista-itens">
+                                    @foreach (var item in pedido.Itens)
+                                    {
+                                        <li>
+                                            <div>
+                                                <strong>@item.Quantidade x @(item.ProdutoNomeSnapshot ?? "Item do pedido")</strong>
+                                            </div>
+
+                                            @if (item.Acompanhamentos != null && item.Acompanhamentos.Any())
+                                            {
+                                                <ul class="lista-acompanhamentos">
+                                                    @foreach (var acomp in item.Acompanhamentos)
+                                                    {
+                                                        <li class="small text-muted">
+                                                            + @(acomp.NomeSnapshot ?? "Acompanhamento")
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Nenhum pedido concluído.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        const STORAGE_KEY = 'cozinha-ui-state';
+
+        function obterEstadoUI() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : { cards: {}, filtros: {} };
+            } catch {
+                return { cards: {}, filtros: {} };
+            }
+        }
+
+        function salvarEstadoUI(estado) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+        }
+
+        function atualizarIcone(targetId, fechado) {
+            const button = document.querySelector(`.toggle-card[data-target="${targetId}"]`);
+            const icon = button ? button.querySelector('i') : null;
+            if (!icon) return;
+
+            if (fechado) {
+                icon.classList.remove('bi-chevron-down');
+                icon.classList.add('bi-chevron-right');
+            } else {
+                icon.classList.remove('bi-chevron-right');
+                icon.classList.add('bi-chevron-down');
+            }
+        }
+
+        function definirEstadoCard(targetId, fechado) {
+            const body = document.getElementById(targetId);
+            if (!body) return;
+
+            if (fechado) {
+                body.classList.add('d-none');
+            } else {
+                body.classList.remove('d-none');
+            }
+
+            atualizarIcone(targetId, fechado);
+        }
+
+        function ehGrupoInterno(targetId) {
+            return targetId.startsWith('confirmados-')
+                || targetId.startsWith('em-preparo-')
+                || targetId.startsWith('prontos-');
+        }
+
+        function ehCardPrincipal(targetId) {
+            return targetId === 'card-confirmados'
+                || targetId === 'card-em-preparo'
+                || targetId === 'card-prontos'
+                || targetId === 'card-concluidos';
+        }
+
+        function aplicarFiltro(containerId, valor) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const grupos = container.querySelectorAll('.grupo-filtravel');
+
+            grupos.forEach(function (grupo) {
+                const tipo = grupo.getAttribute('data-grupo');
+
+                if (valor === 'Todos' || tipo === valor) {
+                    grupo.classList.remove('d-none');
+                } else {
+                    grupo.classList.add('d-none');
+                }
+            });
+        }
+
+        function inicializarEstadosCards() {
+            const estado = obterEstadoUI();
+
+            document.querySelectorAll('.toggle-card').forEach(button => {
+                const targetId = button.getAttribute('data-target');
+                if (!targetId) return;
+
+                if (Object.prototype.hasOwnProperty.call(estado.cards, targetId)) {
+                    definirEstadoCard(targetId, estado.cards[targetId] === 'closed');
+                    return;
+                }
+
+                // Padrão inicial:
+                // grupos internos fechados no HTML
+                // cards principais abertos no HTML
+                if (ehGrupoInterno(targetId)) {
+                    atualizarIcone(targetId, true);
+                } else if (ehCardPrincipal(targetId)) {
+                    atualizarIcone(targetId, false);
+                }
+            });
+        }
+
+        function inicializarFiltros() {
+            const estado = obterEstadoUI();
+
+            document.querySelectorAll('.filtro-grupo-coluna').forEach(select => {
+                const containerId = select.getAttribute('data-container');
+                if (!containerId) return;
+
+                const valorSalvo = estado.filtros[containerId] || 'Todos';
+                select.value = valorSalvo;
+                aplicarFiltro(containerId, valorSalvo);
+            });
+        }
+
+        function alternarCard(targetId) {
+            const body = document.getElementById(targetId);
+            if (!body) return;
+
+            const estado = obterEstadoUI();
+            const estaFechado = body.classList.contains('d-none');
+            const novoEstadoFechado = !estaFechado;
+
+            definirEstadoCard(targetId, novoEstadoFechado);
+            estado.cards[targetId] = novoEstadoFechado ? 'closed' : 'open';
+            salvarEstadoUI(estado);
+        }
+
+        function salvarFiltro(containerId, valor) {
+            const estado = obterEstadoUI();
+            estado.filtros[containerId] = valor;
+            salvarEstadoUI(estado);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            inicializarEstadosCards();
+            inicializarFiltros();
+        });
+
+        document.addEventListener('click', function (e) {
+            const button = e.target.closest('.toggle-card');
+            if (!button) return;
+
+            const targetId = button.getAttribute('data-target');
+            if (!targetId) return;
+
+            alternarCard(targetId);
+        });
+
+        document.addEventListener('change', function (e) {
+            const select = e.target.closest('.filtro-grupo-coluna');
+            if (!select) return;
+
+            const valor = select.value;
+            const containerId = select.getAttribute('data-container');
+            if (!containerId) return;
+
+            aplicarFiltro(containerId, valor);
+            salvarFiltro(containerId, valor);
+        });
+    </script>
+}
+
+@* @section Scripts {
+    <script>
+        const STORAGE_KEY = 'cozinha-card-states';
+
+        function obterEstadosSalvos() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch {
+                return {};
+            }
+        }
+
+        function salvarEstados(estados) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(estados));
+        }
+
+        function definirEstadoCard(targetId, fechado) {
+            const body = document.getElementById(targetId);
+            if (!body) return;
+
+            const button = document.querySelector(`.toggle-card[data-target="${targetId}"]`);
+            const icon = button ? button.querySelector('i') : null;
+
+            if (fechado) {
+                body.classList.add('d-none');
+                if (icon) {
+                    icon.classList.remove('bi-chevron-down');
+                    icon.classList.add('bi-chevron-right');
+                }
+            } else {
+                body.classList.remove('d-none');
+                if (icon) {
+                    icon.classList.remove('bi-chevron-right');
+                    icon.classList.add('bi-chevron-down');
+                }
+            }
+        }
+
+        function ehGrupoInterno(targetId) {
+            return targetId.startsWith('confirmados-')
+                || targetId.startsWith('em-preparo-')
+                || targetId.startsWith('prontos-');
+        }
+
+        function inicializarEstadosCards() {
+            const estados = obterEstadosSalvos();
+
+            document.querySelectorAll('.toggle-card').forEach(button => {
+                const targetId = button.getAttribute('data-target');
+                if (!targetId) return;
+
+                if (Object.prototype.hasOwnProperty.call(estados, targetId)) {
+                    definirEstadoCard(targetId, estados[targetId] === 'closed');
+                    return;
+                }
+
+                if (ehGrupoInterno(targetId)) {
+                    definirEstadoCard(targetId, true);
+                } else {
+                    definirEstadoCard(targetId, false);
+                }
+            });
+        }
+
+        function alternarCard(targetId) {
+            const body = document.getElementById(targetId);
+            if (!body) return;
+
+            const estados = obterEstadosSalvos();
+            const estaFechado = body.classList.contains('d-none');
+            const novoEstadoFechado = !estaFechado;
+
+            definirEstadoCard(targetId, novoEstadoFechado);
+            estados[targetId] = novoEstadoFechado ? 'closed' : 'open';
+            salvarEstados(estados);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            inicializarEstadosCards();
+        });
+
+        document.addEventListener('click', function (e) {
+            const button = e.target.closest('.toggle-card');
+            if (!button) return;
+
+            const targetId = button.getAttribute('data-target');
+            if (!targetId) return;
+
+            alternarCard(targetId);
+        });
+
+        document.addEventListener('change', function (e) {
+            const select = e.target.closest('.filtro-grupo-coluna');
+            if (!select) return;
+
+            const valor = select.value;
+            const containerId = select.getAttribute('data-container');
+            const container = document.getElementById(containerId);
+
+            if (!container) return;
+
+            const grupos = container.querySelectorAll('.grupo-filtravel');
+
+            grupos.forEach(function (grupo) {
+                const tipo = grupo.getAttribute('data-grupo');
+
+                if (valor === 'Todos' || tipo === valor) {
+                    grupo.classList.remove('d-none');
+                } else {
+                    grupo.classList.add('d-none');
+                }
+            });
+        });
+    </script>
+} *@

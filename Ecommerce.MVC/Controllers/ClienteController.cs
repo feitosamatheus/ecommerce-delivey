@@ -1,3 +1,4 @@
+using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Helpers;
 using Ecommerce.MVC.Interfaces;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Security.Claims;
 
@@ -13,11 +15,13 @@ public class ClienteController : Controller
 {
     private readonly IClienteService _clienteService;
     private readonly ICarrinhoService _carrinhoService;
+    private readonly DatabaseContext _context;
 
-    public ClienteController(IClienteService clienteService, ICarrinhoService carrinhoService)
+    public ClienteController(IClienteService clienteService, ICarrinhoService carrinhoService, DatabaseContext context)
     {
         _clienteService = clienteService;
         _carrinhoService = carrinhoService;
+        _context = context;
     }
 
     [HttpGet]
@@ -117,8 +121,7 @@ public class ClienteController : Controller
 
         return Json(new { 
             success = true, 
-            message = "Login realizado com sucesso!" ,
-            foiPrimeiroAcesso = result.FoiPrimeiroAcesso
+            message = "Login realizado com sucesso!"
         });
     }
 
@@ -151,4 +154,64 @@ public class ClienteController : Controller
                 ExpiresUtc = DateTimeOffset.UtcNow.AddHours(2)
             });
     }
+
+    [HttpPost]
+    public async Task<IActionResult> AlterarSenha([FromBody] AlterarSenhaViewModel model)
+    {
+        try
+        {
+
+            if (model == null || string.IsNullOrWhiteSpace(model.SenhaAtual) || string.IsNullOrWhiteSpace(model.NovaSenha))
+            {
+                return Json(new { success = false, message = "Os campos de senha são obrigatórios." });
+            }
+
+            if (model.NovaSenha.Length < 6) 
+            {
+                return Json(new { success = false, message = "A nova senha deve ter pelo menos 6 caracteres." });
+            }
+
+            var clienteIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                                 ?? User.FindFirst("Id")?.Value;
+
+            if (string.IsNullOrEmpty(clienteIdClaim))
+            {
+                return Json(new { success = false, message = "Sessão expirada. Refaça o login." });
+            }
+
+            var clienteId = Guid.Parse(clienteIdClaim);
+
+            var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.Id == clienteId);
+
+            if (cliente == null)
+            {
+                return Json(new { success = false, message = "Usuário não encontrado no sistema." });
+            }
+
+            bool senhaValida = BCrypt.Net.BCrypt.Verify(model.SenhaAtual, cliente.SenhaHash);
+            if (!senhaValida)
+            {
+                return Json(new { success = false, message = "A senha atual informada está incorreta." });
+            }
+
+            cliente.SenhaHash = BCrypt.Net.BCrypt.HashPassword(model.NovaSenha);
+            cliente.PrimeiroAcessoRedefinir = false;
+
+            _context.Clientes.Update(cliente);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Senha atualizada com sucesso!" });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "Erro interno. Tente novamente mais tarde." });
+        }
+    }
+
+    public class AlterarSenhaViewModel
+    {
+        public string SenhaAtual { get; set; }
+        public string NovaSenha { get; set; }
+    }
+
 }

@@ -189,7 +189,40 @@
                                
                             </ul>
                         </li>
+                        <li class="nav-item @(controller == "Cozinha" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(controller == "Cozinha" ? "active" : "")">
+                                <i class="nav-icon bi bi-fire"></i>
+                                <p>
+                                    Cozinha
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Cozinha", new { area = "Admin" })"
+                                           class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                        <i class="nav-icon bi bi-receipt-cutoff"></i>
+                                        <p>Painel da Cozinha</p>
+                                    </a>
+                                </li>
 
+                                <li class="nav-item">
+                                    <a href="@Url.Action("EmPreparo", "Cozinha", new { area = "Admin" })"
+                                           class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "EmPreparo" ? "active" : "")">
+                                        <i class="nav-icon bi bi-clock-history"></i>
+                                        <p>Em Preparo</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Prontos", "Cozinha", new { area = "Admin" })"
+                                           class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Prontos" ? "active" : "")">
+                                        <i class="nav-icon bi bi-check2-circle"></i>
+                                        <p>Pedidos Prontos</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                     </ul>
                 </nav>
             </div>

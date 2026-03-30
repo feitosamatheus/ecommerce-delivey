@@ -24,8 +24,13 @@ public class Pedido
     public decimal TaxaEntrega { get; set; }
     public decimal Total { get; set; }
 
+
+
     public EPedidoStatus Status { get; set; }
     public DateTime CriadoEmUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? EntregueEmUtc { get; set; }
+    public DateTime? ConcluidoEmUtc { get; set; }
+    public DateTime? EmpreparoEmUtc { get; set; }
 
     public List<PedidoItem> Itens { get; set; } = new();
     public List<PedidoPagamento> Pagamentos { get; set; } = new();

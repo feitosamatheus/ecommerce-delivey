@@ -3,6 +3,7 @@ using System;
 using Ecommerce.MVC.Config;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ecommerce.MVC.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260330185704_adicionandoCriadoEm")]
+    partial class adicionandoCriadoEm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -240,9 +243,6 @@ namespace Ecommerce.MVC.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CriadoEmUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("EmpreparoEmUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("EntregueEmUtc")

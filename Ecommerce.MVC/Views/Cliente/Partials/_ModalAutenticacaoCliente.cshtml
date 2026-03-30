@@ -518,8 +518,8 @@
             success: function (result) {
                 if (result && result.success) {
                     uiNotify.toast.success('Login realizado com sucesso!');
-                    const foiPrimeiroAcesso = !!result.foiPrimeiroAcesso;
-                    window.location.href = `/Home/Index?loginSucesso=true&primeiroAcesso=${foiPrimeiroAcesso}`;
+
+                    window.location.href = '/Home/Index';
                     return;
                 }
 
