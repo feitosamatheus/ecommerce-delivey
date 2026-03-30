@@ -1,0 +1,92 @@
+﻿@using Ecommerce.MVC.Enums
+@model List<Ecommerce.MVC.Entities.Pedido>
+
+@{
+    ViewData["Title"] = "Em Preparo";
+    ViewData["Description"] = "Pedidos que estão atualmente em produção na cozinha.";
+}
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <div class="col-6">
+            <h5 class="mb-0">Pedidos em Preparo</h5>
+            <small class="text-muted">Lista operacional da cozinha</small>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+            <span class="badge bg-secondary contador-pill">@Model.Count</span>
+        </div>
+    </div>
+
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="row g-3">
+                @foreach (var pedido in Model)
+                {
+                    <div class="col-md-6 col-xl-4">
+                        <div class="border rounded-3 p-3 h-100 bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="fw-bold">Pedido @pedido.Codigo</div>
+                                    <div class="text-muted small">@pedido.Cliente?.Nome</div>
+                                </div>
+
+                                <span class="badge bg-warning text-dark">Em preparo</span>
+                            </div>
+
+                            <div class="small text-muted mb-2">
+                                <div><strong>Entrega:</strong> @pedido.MetodoEntrega</div>
+                                <div><strong>Retirada:</strong> @pedido.HorarioRetirada.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                                <div><strong>Criado em:</strong> @pedido.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                                <div><strong>Em preparo em:</strong> @(pedido.EmpreparoEmUtc?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
+                            {
+                                <div class="alert alert-light border small mb-3">
+                                    <strong>Obs.:</strong> @pedido.Observacao
+                                </div>
+                            }
+
+                            <div class="mb-3">
+                                <strong>Itens</strong>
+                                <ul class="mb-0 ps-3">
+                                    @foreach (var item in pedido.Itens)
+                                    {
+                                        <li class="mb-1">
+                                            <div>
+                                                @item.Quantidade x @(item.ProdutoNomeSnapshot ?? "Item do pedido")
+                                            </div>
+
+                                            @if (item.Acompanhamentos != null && item.Acompanhamentos.Any())
+                                            {
+                                                <ul class="small text-muted ps-3 mb-0">
+                                                    @foreach (var acomp in item.Acompanhamentos)
+                                                    {
+                                                        <li>+ @(acomp.NomeSnapshot ?? "Acompanhamento")</li>
+                                                    }
+                                                </ul>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+
+                            <form asp-action="MarcarPronto" method="post">
+                                <input type="hidden" name="id" value="@pedido.Id" />
+                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                    Marcar pronto
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-muted">Nenhum pedido em preparo no momento.</div>
+        }
+    </div>
+</div>

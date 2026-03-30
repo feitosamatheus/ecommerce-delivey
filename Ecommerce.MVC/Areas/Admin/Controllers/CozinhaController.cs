@@ -38,6 +38,24 @@ namespace Ecommerce.MVC.Areas.Admin.Controllers
             return View(pedidos);
         }
 
+        public async Task<IActionResult> EmPreparo()
+        {
+            ViewData["Title"] = "Em Preparo";
+            ViewData["Description"] = "Pedidos que estão atualmente em produção na cozinha.";
+
+            var pedidos = await _db.Pedidos
+                .AsNoTracking()
+                .Include(p => p.Cliente)
+                .Include(p => p.Itens)
+                    .ThenInclude(i => i.Acompanhamentos)
+                .Where(p => p.Status == EPedidoStatus.EmPreparo)
+                .OrderBy(p => p.HorarioRetirada)
+                .ThenByDescending(p => p.CriadoEmUtc)
+                .ToListAsync();
+
+            return View(pedidos);
+        }
+
         [HttpPost]
         public async Task<IActionResult> IniciarPreparo(Guid id)
         {
