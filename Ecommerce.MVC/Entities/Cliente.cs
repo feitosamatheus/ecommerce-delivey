@@ -44,6 +44,8 @@ public class Cliente
     
     public bool PrimeiroAcesso { get; set; } = true;
 
+    public bool PrimeiroAcessoRedefinir { get; set; } = true;
+
     public bool RecebeMarketing { get; set; }
 
 }

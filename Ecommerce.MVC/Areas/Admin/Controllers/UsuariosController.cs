@@ -18,48 +18,48 @@ public class UsuariosController : Controller
     public UsuariosController(DatabaseContext context) => _context = context;
 
     public async Task<IActionResult> Index(string busca, string role, int pagina = 1)
-{
-    // 1. Configurações básicas
-    const int itensPorPagina = 10;
-    var query = _context.Clientes.AsQueryable();
-
-    // 2. Filtros (Sua lógica original mantida)
-    if (!string.IsNullOrEmpty(busca))
     {
-        query = query.Where(x => x.Nome.Contains(busca) || 
-                                 x.Email.Contains(busca) || 
-                                 x.CPF.Contains(busca));
+        // 1. Configurações básicas
+        const int itensPorPagina = 10;
+        var query = _context.Clientes.AsQueryable();
+
+        // 2. Filtros (Sua lógica original mantida)
+        if (!string.IsNullOrEmpty(busca))
+        {
+            query = query.Where(x => x.Nome.Contains(busca) || 
+                                    x.Email.Contains(busca) || 
+                                    x.CPF.Contains(busca));
+        }
+
+        if (!string.IsNullOrEmpty(role))
+        {
+            query = query.Where(x => x.Role == role);
+        }
+
+        // 3. Contagem total ANTES da paginação (para saber o total de registros filtrados)
+        int totalRegistros = await query.CountAsync();
+
+        // 4. Execução da Paginação
+        // Pulamos (pagina - 1 * itens) e pegamos a quantidade definida
+        var itensPaginados = await query
+            .OrderByDescending(x => x.DataCadastro)
+            .Skip((pagina - 1) * itensPorPagina)
+            .Take(itensPorPagina)
+            .ToListAsync();
+
+        // 5. Mapeamento para a ViewModel ajustada
+        var model = new UsuariosIndexViewModel
+        {
+            Itens = itensPaginados,
+            Busca = busca,
+            Role = role, // Usando o nome ajustado na ViewModel
+            PaginaAtual = pagina,
+            TotalItens = totalRegistros,
+            TotalPaginas = (int)Math.Ceiling(totalRegistros / (double)itensPorPagina)
+        };
+
+        return View(model);
     }
-
-    if (!string.IsNullOrEmpty(role))
-    {
-        query = query.Where(x => x.Role == role);
-    }
-
-    // 3. Contagem total ANTES da paginação (para saber o total de registros filtrados)
-    int totalRegistros = await query.CountAsync();
-
-    // 4. Execução da Paginação
-    // Pulamos (pagina - 1 * itens) e pegamos a quantidade definida
-    var itensPaginados = await query
-        .OrderByDescending(x => x.DataCadastro)
-        .Skip((pagina - 1) * itensPorPagina)
-        .Take(itensPorPagina)
-        .ToListAsync();
-
-    // 5. Mapeamento para a ViewModel ajustada
-    var model = new UsuariosIndexViewModel
-    {
-        Itens = itensPaginados,
-        Busca = busca,
-        Role = role, // Usando o nome ajustado na ViewModel
-        PaginaAtual = pagina,
-        TotalItens = totalRegistros,
-        TotalPaginas = (int)Math.Ceiling(totalRegistros / (double)itensPorPagina)
-    };
-
-    return View(model);
-}
 
     public IActionResult Create() => View(new UsuarioFormViewModel());
 
@@ -77,7 +77,8 @@ public class UsuariosController : Controller
             Telefone = model.Telefone,
             Role = model.Role,
             Ativo = model.Ativo,
-            SenhaHash = BCrypt.Net.BCrypt.HashPassword(model.Senha) // Exemplo de Hash
+            SenhaHash = BCrypt.Net.BCrypt.HashPassword(model.Senha),
+            PrimeiroAcessoRedefinir = model.PrimeiroAcessoRedefinir // Exemplo de Hash
         };
 
         _context.Add(novo);
@@ -168,6 +169,40 @@ public class UsuariosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [Authorize(Roles = "administrador")] // Segurança extra: apenas admins redefinem senhas
+    public async Task<IActionResult> RedefinirSenha([FromBody] RedefinirSenhaRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.NovaSenha))
+        {
+            return Json(new { success = false, message = "Dados inválidos." });
+        }
+
+        var cliente = await _context.Clientes.FindAsync(request.Id);
+        if (cliente == null)
+        {
+            return Json(new { success = false, message = "Usuário não encontrado." });
+        }
+
+        try
+        {
+            // 1. Gera o novo Hash
+            cliente.SenhaHash = BCrypt.Net.BCrypt.HashPassword(request.NovaSenha);
+            
+            // 2. Define se o usuário deve trocar a senha no próximo login
+            cliente.PrimeiroAcessoRedefinir = request.ForcarTroca;
+
+            _context.Update(cliente);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Senha atualizada com sucesso!" });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "Erro ao atualizar: " + ex.Message });
+        }
+    }
+
     public class UsuariosIndexViewModel
     {
         // A lista de itens que será exibida na página atual
@@ -209,7 +244,16 @@ public class UsuariosController : Controller
 
         public bool Ativo { get; set; } = true;
 
+        public bool PrimeiroAcessoRedefinir { get; set; } = true;
+
         [DataType(DataType.Password)]
-        public string Senha { get; set; } // Opcional na edição
+        public string Senha { get; set; } = "temporaria@2026"; // Opcional na edição
+    }
+
+    public class RedefinirSenhaRequest
+    {
+        public Guid Id { get; set; }
+        public string NovaSenha { get; set; }
+        public bool ForcarTroca { get; set; }
     }
 }

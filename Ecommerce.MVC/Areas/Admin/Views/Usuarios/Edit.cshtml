@@ -1,9 +1,69 @@
 ﻿@using static UsuariosController
 @model UsuarioFormViewModel
+@{
+    ViewData["Title"] = "Editar Usuário";
+    ViewData["Description"] = "Gerencie as permissões e dados de acesso dos colaboradores e clientes.";
+}
+<style>
+    /* Design System Barriga Cheia - Form Extension */
+    .card-form-clean {
+        border: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05) !important;
+        border-radius: 0.75rem !important;
+        background-color: #ffffff;
+    }
 
+    .form-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 0.6rem 0.75rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #94a3b8;
+        box-shadow: none;
+    }
+
+    .btn-action {
+        border-radius: 0.5rem;
+        padding: 0.6rem 1rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-check-input:checked {
+        background-color: #2c180d;
+        border-color: #2c180d;
+    }
+
+    .text-danger.small {
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+</style>
+
+<div class="w-100 d-flex justify-content-start align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-light btn-sm border text-muted btn-action">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
 <div class="card card-form-clean">
     <div class="card-body p-4">
-        <form method="post">
+        <form method="post" id="formUsuario">
             <input asp-for="Id" type="hidden" />
             <div class="row g-4">
                 <div class="col-md-6">
@@ -28,13 +88,23 @@
                         <option value="cozinha">Cozinha</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end pb-2">
+                <div class="col-md-4 d-flex flex-column justify-content-end">
+                    <label class="form-label">Segurança</label>
+                    <button type="button" class="btn btn-outline-dark btn-action w-100" onclick="abrirPromptSenha()">
+                        <i class="fas fa-key text-warning"></i> Redefinir Senha
+                    </button>
+                </div>
+                <div class="col-md-12 d-flex gap-4 pb-2">
                     <div class="form-check form-switch">
-                        <input asp-for="Ativo" class="form-check-input" type="checkbox">
-                            <label class="form-check-label fw-bold ms-2">Usuário Ativo</label>
-                        </div>
+                        <input asp-for="Ativo" class="form-check-input" type="checkbox" role="switch">
+                        <label asp-for="Ativo" class="form-check-label fw-bold text-dark ms-2">Usuário Ativo</label>
                     </div>
-                
+
+                    <div class="form-check form-switch">
+                        <input asp-for="PrimeiroAcessoRedefinir" class="form-check-input" type="checkbox" role="switch">
+                        <label asp-for="PrimeiroAcessoRedefinir" class="form-check-label fw-bold text-dark ms-2">Forçar troca no próximo login</label>
+                    </div>
+                </div>
                     <div class="col-12 mt-5 d-flex justify-content-end gap-2 border-top pt-3">
                         <a asp-action="Index" class="btn btn-link text-muted text-decoration-none fw-bold px-4">Cancelar</a>
                         <button type="submit" class="btn btn-primary shadow-sm btn-action">
@@ -45,3 +115,92 @@
             </form>
         </div>
     </div>
+</div>
+    
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.getElementById('formUsuario').addEventListener('submit', function (e) {
+        // Exibe o SweetAlert de processamento
+        Swal.fire({
+            title: 'Salvando Usuário...',
+            text: 'Por favor, aguarde um momento.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        // O formulário seguirá o envio normal para o Controller após abrir o alerta
+    });
+    function abrirPromptSenha() {
+        Swal.fire({
+            title: 'Redefinir Senha',
+            html: `
+                <div class="text-start">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Nova Senha Temporária</label>
+                    <input type="password" id="swal-input-senha" class="form-control" placeholder="Digite a nova senha...">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Atualizar Senha',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#2c180d', // Cor Premium Barriga Cheia
+            focusConfirm: false,
+            preConfirm: () => {
+                const novaSenha = document.getElementById('swal-input-senha').value;
+                
+                if (!novaSenha || novaSenha.length < 6) {
+                    Swal.showValidationMessage('A senha deve ter pelo menos 6 caracteres');
+                    return false;
+                }
+                
+                return novaSenha;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                enviarNovaSenha(result.value);
+            }
+        });
+    }
+
+    function enviarNovaSenha(senha) {
+        const usuarioId = document.querySelector('input[name="Id"]').value;
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        Swal.fire({ 
+            title: 'Processando...', 
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading() } 
+        });
+
+        fetch('/Admin/Usuarios/RedefinirSenha', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token 
+            },
+            body: JSON.stringify({ 
+                id: usuarioId, 
+                novaSenha: senha,
+                forcarTroca: true // Enviamos como true por padrão, já que removemos a opção do usuário
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: data.message,
+                    confirmButtonColor: '#2c180d'
+                }).then(() => location.reload());
+            } else {
+                Swal.fire('Erro!', data.message, 'error');
+            }
+        })
+        .catch(() => Swal.fire('Erro!', 'Falha na comunicação com o servidor.', 'error'));
+    }
+</script>
