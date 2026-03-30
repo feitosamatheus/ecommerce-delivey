@@ -106,7 +106,10 @@
                     </select>
                     <span asp-validation-for="Role" class="text-danger small"></span>
                 </div>
-
+                 <div class="col-md-4">
+                    <label asp-for="Telefone" class="form-label">Telefone</label>
+                    <input asp-for="Telefone" class="form-control" id="telefone-mask" />
+                </div>
                 @* Senha Temporária *@
                 <div class="col-md-4">
                     <label asp-for="Senha" class="form-label">Senha Temporária</label>

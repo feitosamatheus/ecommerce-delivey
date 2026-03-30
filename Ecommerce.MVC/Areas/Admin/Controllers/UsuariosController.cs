@@ -69,6 +69,25 @@ public class UsuariosController : Controller
     {
         if (!ModelState.IsValid) return View(model);
 
+        // 1. Verificar se o E-mail ou CPF já existem no banco
+        var jaExiste = await _context.Clientes
+            .AnyAsync(c => c.Email == model.Email || c.CPF == model.CPF);
+
+        if (jaExiste)
+        {
+            // 2. Identificar qual campo está duplicado para dar um feedback melhor
+            bool emailExiste = await _context.Clientes.AnyAsync(c => c.Email == model.Email);
+            bool cpfExiste = await _context.Clientes.AnyAsync(c => c.CPF == model.CPF);
+
+            if (emailExiste) 
+                ModelState.AddModelError("Email", "Este e-mail já está em uso.");
+            
+            if (cpfExiste) 
+                ModelState.AddModelError("CPF", "Este CPF já está cadastrado.");
+
+            return View(model);
+        }
+
         var novo = new Cliente
         {
             Nome = model.Nome,
@@ -78,11 +97,12 @@ public class UsuariosController : Controller
             Role = model.Role,
             Ativo = model.Ativo,
             SenhaHash = BCrypt.Net.BCrypt.HashPassword(model.Senha),
-            PrimeiroAcessoRedefinir = model.PrimeiroAcessoRedefinir // Exemplo de Hash
+            PrimeiroAcessoRedefinir = model.PrimeiroAcessoRedefinir
         };
 
         _context.Add(novo);
         await _context.SaveChangesAsync();
+        
         TempData["Success"] = "Usuário criado com sucesso!";
         return RedirectToAction(nameof(Index));
     }
@@ -116,39 +136,53 @@ public class UsuariosController : Controller
     {
         if (id != model.Id) return NotFound();
 
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid) return View(model);
+
+        try
         {
-            try
+            var cliente = await _context.Clientes.FindAsync(id);
+            if (cliente == null) return NotFound();
+
+            // 1. Verificação de Duplicidade (Ignorando o ID atual)
+            var emailExiste = await _context.Clientes
+                .AnyAsync(c => c.Email == model.Email && c.Id != id);
+                
+            var cpfExiste = await _context.Clientes
+                .AnyAsync(c => c.CPF == model.CPF && c.Id != id);
+
+            if (emailExiste || cpfExiste)
             {
-                var cliente = await _context.Clientes.FindAsync(id);
-                if (cliente == null) return NotFound();
-
-                // Atualiza campos básicos
-                cliente.Nome = model.Nome;
-                cliente.Email = model.Email;
-                cliente.CPF = model.CPF;
-                cliente.Telefone = model.Telefone;
-                cliente.Role = model.Role;
-                cliente.Ativo = model.Ativo;
-
-                // Lógica de Senha: Só altera se o campo for preenchido
-                if (!string.IsNullOrWhiteSpace(model.Senha))
-                {
-                    cliente.SenhaHash = BCrypt.Net.BCrypt.HashPassword(model.Senha);
-                }
-
-                _context.Update(cliente);
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] = "Usuário atualizado com sucesso!";
-                return RedirectToAction(nameof(Index));
+                if (emailExiste) ModelState.AddModelError("Email", "Este e-mail já está em uso por outro usuário.");
+                if (cpfExiste) ModelState.AddModelError("CPF", "Este CPF já está cadastrado para outro usuário.");
+                
+                return View(model);
             }
-            catch (DbUpdateConcurrencyException)
+
+            // 2. Atualiza campos básicos
+            cliente.Nome = model.Nome;
+            cliente.Email = model.Email;
+            cliente.CPF = model.CPF;
+            cliente.Telefone = model.Telefone;
+            cliente.Role = model.Role;
+            cliente.Ativo = model.Ativo;
+
+            // Lógica de Senha: Só altera se o campo for preenchido
+            if (!string.IsNullOrWhiteSpace(model.Senha))
             {
-                TempData["Error"] = "Erro de concorrência ao salvar.";
+                cliente.SenhaHash = BCrypt.Net.BCrypt.HashPassword(model.Senha);
             }
+
+            _context.Update(cliente);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Usuário atualizado com sucesso!";
+            return RedirectToAction(nameof(Index));
         }
-        return View(model);
+        catch (DbUpdateConcurrencyException)
+        {
+            TempData["Error"] = "Erro de concorrência ao salvar.";
+            return View(model);
+        }
     }
 
     // POST: Admin/Usuarios/Delete/5
@@ -230,14 +264,14 @@ public class UsuariosController : Controller
         [Required(ErrorMessage = "O nome é obrigatório")]
         public string Nome { get; set; }
 
+        public string Telefone { get; set; }
+
         [Required(ErrorMessage = "O e-mail é obrigatório")]
         [EmailAddress(ErrorMessage = "E-mail inválido")]
         public string Email { get; set; }
 
         [Required(ErrorMessage = "O CPF é obrigatório")]
         public string CPF { get; set; }
-
-        public string Telefone { get; set; }
 
         [Required(ErrorMessage = "A Role é obrigatória")]
         public string Role { get; set; } = "Cliente";
