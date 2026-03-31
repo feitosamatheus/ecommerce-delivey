@@ -1,0 +1,533 @@
+﻿@using Ecommerce.MVC.Enums
+@using Ecommerce.MVC.Entities
+@using System.Globalization
+@model Ecommerce.MVC.Entities.Pedido
+
+@{
+    var pt = new CultureInfo("pt-BR");
+
+    string GetPedidoStatusClass(EPedidoStatus status)
+    {
+        return status switch
+        {
+            EPedidoStatus.Rascunho => "bg-secondary-subtle text-secondary border border-secondary-subtle",
+            EPedidoStatus.AguardandoPagamento => "bg-warning-subtle text-warning border border-warning-subtle",
+            EPedidoStatus.Confirmado => "bg-info-subtle text-info border border-info-subtle",
+            EPedidoStatus.EmPreparo => "bg-primary-subtle text-primary border border-primary-subtle",
+            EPedidoStatus.Pronto => "bg-success-subtle text-success border border-success-subtle",
+            EPedidoStatus.Concluido => "bg-success text-white border border-success",
+            EPedidoStatus.Cancelado => "bg-danger-subtle text-danger border border-danger-subtle",
+            _ => "bg-light text-dark border"
+        };
+    }
+
+    string GetPagamentoStatusClass(EStatusPagamento status)
+    {
+        return status switch
+        {
+            EStatusPagamento.Pending => "bg-warning-subtle text-warning border border-warning-subtle",
+            EStatusPagamento.AwaitingRiskAnalysis => "bg-warning-subtle text-warning border border-warning-subtle",
+            EStatusPagamento.Received => "bg-success-subtle text-success border border-success-subtle",
+            EStatusPagamento.Confirmed => "bg-success text-white border border-success",
+            EStatusPagamento.ReceivedInCash => "bg-success-subtle text-success border border-success-subtle",
+            EStatusPagamento.Overdue => "bg-danger-subtle text-danger border border-danger-subtle",
+            EStatusPagamento.Refunded => "bg-secondary-subtle text-secondary border border-secondary-subtle",
+            EStatusPagamento.RefundRequested => "bg-secondary-subtle text-secondary border border-secondary-subtle",
+            EStatusPagamento.RefundInProgress => "bg-secondary-subtle text-secondary border border-secondary-subtle",
+            EStatusPagamento.ChargebackRequested => "bg-danger-subtle text-danger border border-danger-subtle",
+            EStatusPagamento.ChargebackDispute => "bg-danger-subtle text-danger border border-danger-subtle",
+            EStatusPagamento.AwaitingChargebackReversal => "bg-warning-subtle text-warning border border-warning-subtle",
+            EStatusPagamento.DunningRequested => "bg-warning-subtle text-warning border border-warning-subtle",
+            EStatusPagamento.DunningReceived => "bg-warning-subtle text-warning border border-warning-subtle",
+            _ => "bg-light text-dark border"
+        };
+    }
+
+    string GetFinanceiroStatusTexto()
+    {
+        if (Model.PedidoQuitado)
+            return "Quitado";
+
+        if (Model.ValorPago > 0)
+            return "Pagamento parcial";
+
+        return "Em aberto";
+    }
+
+    string GetFinanceiroStatusClass()
+    {
+        if (Model.PedidoQuitado)
+            return "bg-success text-white border border-success";
+
+        if (Model.ValorPago > 0)
+            return "bg-warning-subtle text-warning border border-warning-subtle";
+
+        return "bg-danger-subtle text-danger border border-danger-subtle";
+    }
+}
+
+<style>
+    .modal-content-clean {
+        border: none !important;
+        border-radius: 1rem !important;
+        overflow: hidden;
+    }
+
+    .modal-header-clean {
+        background-color: #fff;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 1.25rem;
+    }
+
+    .modal-title-clean {
+        font-weight: 700;
+        color: #334155;
+        font-size: 1.1rem;
+    }
+
+    .modal-body-clean {
+        background-color: #f8fafc;
+        padding: 1.5rem;
+    }
+
+    .card-clean {
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
+        background: #fff;
+    }
+
+        .card-clean .card-header {
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 1rem 1.25rem;
+        }
+
+        .card-clean .card-body {
+            padding: 1.25rem;
+        }
+
+    .summary-box {
+        border: 1px solid #e2e8f0;
+        border-radius: .85rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        padding: 1rem;
+        height: 100%;
+    }
+
+        .summary-box .label {
+            display: block;
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #64748b;
+            margin-bottom: .35rem;
+            font-weight: 600;
+        }
+
+        .summary-box .value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+    .section-title {
+        font-size: 0.75rem !important;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 0;
+        font-weight: 700;
+    }
+
+    .table-clean th {
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        color: #64748b;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    .table-clean td {
+        vertical-align: middle;
+    }
+
+    .acompanhamento-tag {
+        display: inline-block;
+        margin: 0 .35rem .35rem 0;
+        padding: .28rem .55rem;
+        border-radius: 999px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        font-size: .75rem;
+        color: #475569;
+    }
+
+    .badge-status {
+        font-size: .75rem;
+        padding: .5rem .7rem;
+        border-radius: 999px;
+        font-weight: 600;
+    }
+
+    .dl-clean dt {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .dl-clean dd {
+        color: #0f172a;
+        font-weight: 500;
+    }
+
+    .finance-grid .summary-box .value.money {
+        font-size: 1.3rem;
+    }
+
+    /* AJUSTE DO BACKDROP */
+    .modal-backdrop.show {
+        opacity: 0.2 !important;
+    }
+</style>
+
+<div class="modal-content modal-content-clean">
+    <div class="modal-header modal-header-clean">
+        <div>
+            <h5 class="modal-title modal-title-clean mb-1">
+                <i class="fas fa-shopping-bag me-2 text-primary opacity-75"></i>
+                Pedido #@Model.Codigo
+            </h5>
+            <div class="small text-muted">
+                Criado em @Model.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+            </div>
+        </div>
+
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+    </div>
+
+    <div class="modal-body modal-body-clean">
+        <!-- RESUMO -->
+        <div class="row g-3 mb-4 finance-grid">
+            <div class="col-md-3">
+                <div class="summary-box">
+                    <span class="label">Status do pedido</span>
+                    <div class="value">
+                        <span class="badge badge-status @GetPedidoStatusClass(Model.Status)">
+                            @Model.Status
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="summary-box">
+                    <span class="label">Situação financeira</span>
+                    <div class="value">
+                        <span class="badge badge-status @GetFinanceiroStatusClass()">
+                            @GetFinanceiroStatusTexto()
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="summary-box">
+                    <span class="label">Total</span>
+                    <div class="value money">@Model.Total.ToString("C", pt)</div>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="summary-box">
+                    <span class="label">Pago</span>
+                    <div class="value money text-success">@Model.ValorPago.ToString("C", pt)</div>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="summary-box">
+                    <span class="label">Em aberto</span>
+                    <div class="value money text-danger">@Model.ValorEmAberto.ToString("C", pt)</div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <!-- CLIENTE / ENTREGA -->
+            <div class="col-lg-6">
+                <div class="card card-clean h-100">
+                    <div class="card-header">
+                        <h6 class="section-title">Cliente e Entrega</h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0 dl-clean">
+                            <dt class="col-sm-5">Cliente</dt>
+                            <dd class="col-sm-7">@Model.Cliente?.Nome</dd>
+
+                            <dt class="col-sm-5">Data do pedido</dt>
+                            <dd class="col-sm-7">@Model.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+
+                            <dt class="col-sm-5">Horário retirada</dt>
+                            <dd class="col-sm-7">@Model.HorarioRetirada.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+
+                            <dt class="col-sm-5">Método entrega</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge bg-light text-dark border">@Model.MetodoEntrega</span>
+                            </dd>
+
+                            <dt class="col-sm-5">Forma informada</dt>
+                            <dd class="col-sm-7">@Model.Pagamento</dd>
+
+                            <dt class="col-sm-5">Observação</dt>
+                            <dd class="col-sm-7 text-muted">@(string.IsNullOrWhiteSpace(Model.Observacao) ? "-" : Model.Observacao)</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESUMO FINANCEIRO -->
+            <div class="col-lg-6">
+                <div class="card card-clean h-100">
+                    <div class="card-header">
+                        <h6 class="section-title">Resumo Financeiro</h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0 dl-clean">
+                            <dt class="col-sm-6">Subtotal</dt>
+                            <dd class="col-sm-6 text-end">@Model.Subtotal.ToString("C", pt)</dd>
+
+                            <dt class="col-sm-6">Taxa de entrega</dt>
+                            <dd class="col-sm-6 text-end">@Model.TaxaEntrega.ToString("C", pt)</dd>
+
+                            <dt class="col-sm-6">Total do pedido</dt>
+                            <dd class="col-sm-6 text-end fw-bold">@Model.Total.ToString("C", pt)</dd>
+
+                            <dt class="col-sm-6">Valor de entrada (50%)</dt>
+                            <dd class="col-sm-6 text-end">@Model.ValorEntrada.ToString("C", pt)</dd>
+
+                            <dt class="col-sm-6">Valor pago</dt>
+                            <dd class="col-sm-6 text-end text-success fw-semibold">@Model.ValorPago.ToString("C", pt)</dd>
+
+                            <dt class="col-sm-6">Valor em aberto</dt>
+                            <dd class="col-sm-6 text-end text-danger fw-semibold">@Model.ValorEmAberto.ToString("C", pt)</dd>
+
+                            <dt class="col-sm-6">Sinal pago</dt>
+                            <dd class="col-sm-6 text-end">
+                                @if (Model.SinalPago)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">Sim</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Não</span>
+                                }
+                            </dd>
+
+                            @* <dt class="col-sm-6">Saldo pago</dt>
+                            <dd class="col-sm-6 text-end">
+                                @if (Model.SaldoPago)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">Sim</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Não</span>
+                                }
+                            </dd> *@
+
+                            <dt class="col-sm-6">Pedido quitado</dt>
+                            <dd class="col-sm-6 text-end">
+                                @if (Model.PedidoQuitado)
+                                {
+                                    <span class="badge bg-success text-white border border-success">Sim</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Não</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGAMENTOS -->
+        <div class="card card-clean mt-4 mb-4">
+            <div class="card-header">
+                <h6 class="section-title">Pagamentos do Pedido</h6>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Pagamentos == null || !Model.Pagamentos.Any())
+                {
+                    <div class="p-4 text-center">
+                        <p class="text-muted mb-0 small">Nenhum pagamento/cobrança registrado para este pedido.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-clean align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Tipo cobrança</th>
+                                    <th>Forma</th>
+                                    <th>Gateway</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Valor</th>
+                                    <th>Criado em</th>
+                                    <th>Pago em</th>
+                                    <th>Expiração PIX</th>
+                                    <th>Fatura</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var pagamento in Model.Pagamentos.OrderBy(p => p.Sequencia).ThenBy(p => p.CriadoEmUtc))
+                                {
+                                    <tr>
+                                        <td>@pagamento.Sequencia</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">@pagamento.TipoCobranca</span>
+                                        </td>
+                                        <td>@pagamento.TipoPagamento</td>
+                                        <td>@pagamento.Gateway</td>
+                                        <td>
+                                            <span class="badge badge-status @GetPagamentoStatusClass(pagamento.Status)">
+                                                @pagamento.Status
+                                            </span>
+                                        </td>
+                                        <td class="text-end fw-semibold">@pagamento.Valor.ToString("C", pt)</td>
+                                        <td>@pagamento.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            @(pagamento.PagoEmUtc.HasValue
+                                                ? pagamento.PagoEmUtc.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                                : "-")
+                                        </td>
+                                        <td>
+                                            @(pagamento.PixExpirationDate.HasValue
+                                                ? pagamento.PixExpirationDate.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                                : "-")
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrWhiteSpace(pagamento.InvoiceUrl))
+                                            {
+                                                <a href="@pagamento.InvoiceUrl" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    Abrir
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- ITENS -->
+        <div class="card card-clean">
+            <div class="card-header">
+                <h6 class="section-title">Itens do Pedido</h6>
+            </div>
+
+            <div class="card-body p-0">
+                @if (Model.Itens == null || !Model.Itens.Any())
+                {
+                    <div class="p-4 text-center">
+                        <p class="text-muted mb-0 small">Nenhum item encontrado.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-clean align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Acompanhamentos</th>
+                                    <th class="text-center">Qtd</th>
+                                    <th class="text-end">Preço base</th>
+                                    <th class="text-end">Adicionais</th>
+                                    <th class="text-end">Valor linha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Itens)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-dark">@item.ProdutoNomeSnapshot</div>
+                                        </td>
+                                        <td>
+                                            @if (item.Acompanhamentos != null && item.Acompanhamentos.Any())
+                                            {
+                                                @foreach (var acomp in item.Acompanhamentos)
+                                                {
+                                                    <span class="acompanhamento-tag">
+                                                        @acomp.NomeSnapshot
+                                                        @if (acomp.PrecoSnapshot > 0)
+                                                        {
+                                                            <text> (+@acomp.PrecoSnapshot.ToString("C", pt))</text>
+                                                        }
+                                                    </span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">Sem acompanhamentos</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-light text-secondary border">@item.Quantidade</span>
+                                        </td>
+                                        <td class="text-end">@item.PrecoBaseSnapshot.ToString("C", pt)</td>
+                                        <td class="text-end">@item.PrecoAcompanhamentosSnapshot.ToString("C", pt)</td>
+                                        <td class="text-end fw-bold">@item.TotalLinha.ToString("C", pt)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="p-4 bg-light border-top">
+                        <div class="row justify-content-end">
+                            <div class="col-md-5">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Subtotal</span>
+                                    <span class="fw-medium">@Model.Subtotal.ToString("C", pt)</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Taxa de entrega</span>
+                                    <span class="fw-medium">@Model.TaxaEntrega.ToString("C", pt)</span>
+                                </div>
+                                <div class="d-flex justify-content-between pt-2 border-top">
+                                    <span class="fw-bold text-dark">TOTAL</span>
+                                    <span class="fw-bold text-primary fs-5">@Model.Total.ToString("C", pt)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer bg-white border-top-0 pb-4">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Fechar
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        
+    </script>
+}

@@ -1,10 +1,34 @@
-﻿@using Ecommerce.MVC.Enums
-@model List<Ecommerce.MVC.Entities.Pedido>
+﻿@using static Ecommerce.MVC.Areas.Admin.Controllers.CozinhaController
+@model PedidosViewModel
 
-@{
-    ViewData["Title"] = "Em Preparo";
-    ViewData["Description"] = "Pedidos que estão atualmente em produção na cozinha.";
-}
+<div class="card shadow-sm border-0 mb-3">
+    <div class="card-header bg-white">
+        <strong>Filtros</strong>
+    </div>
+    <div class="card-body">
+        <form method="get" id="filtro-data-form">
+            <div class="row g-2">
+                <!-- Filtro de Nome do Cliente -->
+                <div class="col-md-6">
+                    <label for="nomeCliente" class="form-label">Nome do Cliente:</label>
+                    <input type="text" id="nomeCliente" name="nomeCliente" class="form-control" value="@Model.NomeCliente" />
+                </div>
+
+                <!-- Filtro de Número do Pedido -->
+                <div class="col-md-6">
+                    <label for="numeroPedido" class="form-label">Número do Pedido:</label>
+                    <input type="text" id="numeroPedido" name="numeroPedido" class="form-control" value="@Model.NumeroPedido" />
+                </div>
+
+                <div class="col-12 text-end mt-2">
+                    <button type="submit" class="btn btn-primary">
+                        Filtrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -14,15 +38,15 @@
         </div>
 
         <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
-            <span class="badge bg-secondary contador-pill">@Model.Count</span>
+            <span class="badge bg-secondary contador-pill">@Model.PedidosEmPreparo.Count</span>
         </div>
     </div>
 
     <div class="card-body">
-        @if (Model.Any())
+        @if (Model.PedidosEmPreparo.Any())
         {
             <div class="row g-3">
-                @foreach (var pedido in Model)
+                @foreach (var pedido in Model.PedidosEmPreparo)
                 {
                     <div class="col-md-6 col-xl-4">
                         <div class="border rounded-3 p-3 h-100 bg-white shadow-sm">

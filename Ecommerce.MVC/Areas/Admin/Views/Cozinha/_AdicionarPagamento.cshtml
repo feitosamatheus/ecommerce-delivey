@@ -1,0 +1,41 @@
+﻿@using Ecommerce.MVC.Enums
+@model Ecommerce.MVC.Entities.PedidoPagamento
+
+<form method="post" action="/Admin/Cozinha/SalvarPagamento" id="formAdicionarPagamento">
+    <input type="hidden" name="PedidoId" value="@Model.PedidoId" />
+    <div class="mb-3">
+        <label for="tipoCobranca" class="form-label">Tipo de Cobrança</label>
+        <select id="tipoCobranca" name="TipoCobranca" class="form-select">
+            <option value="1" selected="@(Model.TipoCobranca == ETipoCobrancaPedido.Sinal)">Sinal</option>
+            <option value="2" selected="@(Model.TipoCobranca == ETipoCobrancaPedido.Saldo)">Saldo</option>
+            <option value="3" selected="@(Model.TipoCobranca == ETipoCobrancaPedido.Complemento)">Complemento</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="valorPagamento" class="form-label">Valor</label>
+        <input type="number" id="valorPagamento" name="Valor" class="form-control" value="@Model.Valor" step="0.01" />
+    </div>
+
+    <div class="mb-3">
+        <label for="tipoPagamento" class="form-label">Tipo de Pagamento</label>
+        <select id="tipoPagamento" name="TipoPagamento" class="form-select">
+            <option value="PIX" selected="@(Model.TipoPagamento == "PIX")">PIX</option>
+            <option value="Cartao de Crédito" selected="@(Model.TipoPagamento == "Cartao de Crédito")">Cartão de Crédito</option>
+            <option value="Cartao de Débito" selected="@(Model.TipoPagamento == "Cartao de Débito")">Cartão de Débito</option>
+            <option value="Dinheiro" selected="@(Model.TipoPagamento == "Dinheiro")">Dinheiro</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="gateway" class="form-label">Gateway</label>
+        <select id="gateway" name="Gateway" class="form-select">
+            <option value="ASAAS" selected="@(Model.Gateway == "ASAAS")">ASAAS</option>
+            <option value="REDE" selected="@(Model.Gateway == "REDE")">REDE</option>
+            <option value="Outros" selected="@(Model.Gateway == "Outros")">Outros</option>
+        </select>
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-success">Adicionar Pagamento</button>
+    </div>
+</form>

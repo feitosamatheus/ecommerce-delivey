@@ -332,8 +332,8 @@
                                                 <div><strong>Retirada:</strong> @ObterTextoHorario(pedido.HorarioRetirada)</div>
                                                 <div><strong>Criado em:</strong> @ObterTextoHorario(pedido.CriadoEmUtc)</div>
                                                 <div><strong>Em preparo em:</strong> @ObterTextoDataNullable(pedido.EmpreparoEmUtc)</div>
+                                                <div><strong>Pronto em:</strong> @ObterTextoDataNullable(pedido.ProntoEmUtc)</div>
                                                 <div><strong>Concluído em:</strong> @ObterTextoDataNullable(pedido.ConcluidoEmUtc)</div>
-                                                <div><strong>Entregue em:</strong> @ObterTextoDataNullable(pedido.EntregueEmUtc)</div>
                                             </div>
 
                                             @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
@@ -457,8 +457,8 @@
                                                 <div><strong>Retirada:</strong> @ObterTextoHorario(pedido.HorarioRetirada)</div>
                                                 <div><strong>Criado em:</strong> @ObterTextoHorario(pedido.CriadoEmUtc)</div>
                                                 <div><strong>Em preparo em:</strong> @ObterTextoDataNullable(pedido.EmpreparoEmUtc)</div>
+                                                <div><strong>Pronto em:</strong> @ObterTextoDataNullable(pedido.ProntoEmUtc)</div>
                                                 <div><strong>Concluído em:</strong> @ObterTextoDataNullable(pedido.ConcluidoEmUtc)</div>
-                                                <div><strong>Entregue em:</strong> @ObterTextoDataNullable(pedido.EntregueEmUtc)</div>
                                             </div>
 
                                             @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
@@ -591,8 +591,8 @@
                                                 <div><strong>Retirada:</strong> @ObterTextoHorario(pedido.HorarioRetirada)</div>
                                                 <div><strong>Criado em:</strong> @ObterTextoHorario(pedido.CriadoEmUtc)</div>
                                                 <div><strong>Em preparo em:</strong> @ObterTextoDataNullable(pedido.EmpreparoEmUtc)</div>
+                                                <div><strong>Pronto em:</strong> @ObterTextoDataNullable(pedido.ProntoEmUtc)</div>
                                                 <div><strong>Concluído em:</strong> @ObterTextoDataNullable(pedido.ConcluidoEmUtc)</div>
-                                                <div><strong>Entregue em:</strong> @ObterTextoDataNullable(pedido.EntregueEmUtc)</div>
                                             </div>
 
                                             @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
@@ -678,7 +678,7 @@
             <div class="card-body d-none" id="card-concluidos">
                 @if (concluidos.Any())
                 {
-                    @foreach (var pedido in concluidos.OrderByDescending(p => p.EntregueEmUtc ?? p.ConcluidoEmUtc ?? p.CriadoEmUtc))
+                    @foreach (var pedido in concluidos.OrderByDescending(p => p.ProntoEmUtc ?? p.ConcluidoEmUtc ?? p.CriadoEmUtc))
                     {
                         <div class="pedido-item-card p-3 mb-2">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -694,8 +694,8 @@
                                 <div><strong>Retirada:</strong> @ObterTextoHorario(pedido.HorarioRetirada)</div>
                                 <div><strong>Criado em:</strong> @ObterTextoHorario(pedido.CriadoEmUtc)</div>
                                 <div><strong>Em preparo em:</strong> @ObterTextoDataNullable(pedido.EmpreparoEmUtc)</div>
+                                <div><strong>Pronto em:</strong> @ObterTextoDataNullable(pedido.ProntoEmUtc)</div>
                                 <div><strong>Concluído em:</strong> @ObterTextoDataNullable(pedido.ConcluidoEmUtc)</div>
-                                <div><strong>Entregue em:</strong> @ObterTextoDataNullable(pedido.EntregueEmUtc)</div>
                             </div>
 
                             @if (!string.IsNullOrWhiteSpace(pedido.Observacao))

@@ -30,6 +30,7 @@ public class Pedido
     public DateTime CriadoEmUtc { get; set; } = DateTime.UtcNow;
     public DateTime? EntregueEmUtc { get; set; }
     public DateTime? ConcluidoEmUtc { get; set; }
+    public DateTime? ProntoEmUtc { get; set; }
     public DateTime? EmpreparoEmUtc { get; set; }
 
     public List<PedidoItem> Itens { get; set; } = new();

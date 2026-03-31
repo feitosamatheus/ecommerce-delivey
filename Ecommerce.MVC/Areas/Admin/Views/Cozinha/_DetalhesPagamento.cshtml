@@ -1,0 +1,23 @@
+﻿@model Ecommerce.MVC.Entities.PedidoPagamento
+
+<div>
+    <h5><strong>Detalhes do Pagamento</strong></h5>
+    <div><strong>Gateway:</strong> @Model.Gateway</div>
+    <div><strong>Tipo de Pagamento:</strong> @Model.TipoPagamento</div>
+    <div><strong>Valor:</strong> @Model.Valor.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</div>
+    
+    @if (!string.IsNullOrEmpty(Model.PixPayload))
+    {
+        <div><strong>PIX Payload:</strong> @Model.PixPayload</div>
+    }
+    
+    @if (Model.PixExpirationDate.HasValue)
+    {
+        <div><strong>Expiração do PIX:</strong> @Model.PixExpirationDate.Value.ToString("dd/MM/yyyy HH:mm")</div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.InvoiceUrl))
+    {
+        <div><strong>Fatura:</strong> <a href="@Model.InvoiceUrl" target="_blank">Abrir Fatura</a></div>
+    }
+</div>

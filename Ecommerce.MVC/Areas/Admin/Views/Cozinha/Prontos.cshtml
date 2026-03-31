@@ -1,185 +1,274 @@
+@using Ecommerce.MVC.Enums
 @using static Ecommerce.MVC.Areas.Admin.Controllers.CozinhaController
 @model PedidosViewModel
+<style>
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5) !important; /* Cor preta com 50% de opacidade */
+        transition: background-color 0.3s ease; /* Efeito de transição suave */
+    }
+</style>
 
-@{
-    ViewData["Title"] = "Pedidos Prontos e Concluídos";
-    ViewData["Description"] = "Pedidos prontos para entrega ou retirada, e pedidos já finalizados.";
-}
+<!-- CARD FILTRO -->
+<div class="card shadow-sm border-0 mb-3">
+    <div class="card-header bg-white">
+        <strong>Filtros</strong>
+    </div>
+    <div class="card-body">
+        <form method="get" id="filtro-data-form">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label for="dataInicio" class="form-label">De:</label>
+                    <input type="date" id="dataInicio" name="dataInicio" class="form-control"
+                           value="@Model.DataInicio?.ToString("yyyy-MM-dd")" />
+                </div>
 
+                <div class="col-md-3">
+                    <label for="dataFim" class="form-label">Até:</label>
+                    <input type="date" id="dataFim" name="dataFim" class="form-control"
+                           value="@Model.DataFim?.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="col-md-3">
+                    <label for="nomeCliente" class="form-label">Nome do Cliente:</label>
+                    <input type="text" id="nomeCliente" name="nomeCliente"
+                           class="form-control" value="@Model.NomeCliente" />
+                </div>
+
+                <div class="col-md-3">
+                    <label for="numeroPedido" class="form-label">Número do Pedido:</label>
+                    <input type="text" id="numeroPedido" name="numeroPedido"
+                           class="form-control" value="@Model.NumeroPedido" />
+                </div>
+
+                <div class="col-12 text-end mt-2">
+                    <button type="submit" class="btn btn-primary">
+                        Filtrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CARD RESULTADO -->
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <div class="col-6">
-            <h5 class="mb-0">Pedidos Prontos e Concluídos</h5>
-            <small class="text-muted">Pedidos em processo ou finalizados</small>
+        <div class="col-6 d-flex justify-content-start">
+            <strong>Pedidos Prontos</strong>
         </div>
 
-        <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
-            <span class="badge bg-secondary contador-pill">
-                @Model.PedidosProntos.Count + @Model.PedidosConcluidos.Count
+        <div class="col-6 d-flex justify-content-end">
+            <span class="badge bg-secondary text-end contador-pill">
+                @Model.PedidosProntos.Count
             </span>
+
         </div>
     </div>
 
     <div class="card-body">
-        <!-- Aba de Pedidos Prontos -->
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="prontos-tab" data-toggle="tab" href="#prontos" role="tab" aria-controls="prontos" aria-selected="true">Pedidos Prontos</a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="concluidos-tab" data-toggle="tab" href="#concluidos" role="tab" aria-controls="concluidos" aria-selected="false">Pedidos Concluídos</a>
-            </li>
-        </ul>
-        <div class="tab-content mt-3" id="myTabContent">
-            <!-- Pedidos Prontos -->
-            <div class="tab-pane fade show active" id="prontos" role="tabpanel" aria-labelledby="prontos-tab">
-                @if (Model.PedidosProntos.Any())
+
+        @if (Model.PedidosProntos.Any())
+        {
+            <div class="row g-3">
+                @foreach (var pedido in Model.PedidosProntos)
                 {
-                    <div class="row g-3">
-                        @foreach (var pedido in Model.PedidosProntos)
-                        {
-                            <div class="col-md-6 col-xl-4">
-                                <div class="border rounded-3 p-3 h-100 bg-white shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <div class="fw-bold">Pedido @pedido.Codigo</div>
-                                            <div class="text-muted small">@pedido.Cliente?.Nome</div>
-                                        </div>
-
-                                        <span class="badge bg-success">Pronto</span>
-                                    </div>
-
-                                    <div class="small text-muted mb-2">
-                                        <div><strong>Entrega:</strong> @pedido.MetodoEntrega</div>
-                                        <div><strong>Retirada:</strong> @pedido.HorarioRetirada.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
-                                        <div><strong>Criado em:</strong> @pedido.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
-                                        <div><strong>Pronto em:</strong> @(pedido.ConcluidoEmUtc?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
-                                    </div>
-
-                                    @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
-                                    {
-                                        <div class="alert alert-light border small mb-3">
-                                            <strong>Obs.:</strong> @pedido.Observacao
-                                        </div>
-                                    }
-
-                                    <div class="mb-3">
-                                        <strong>Itens</strong>
-                                        <ul class="mb-0 ps-3">
-                                            @foreach (var item in pedido.Itens)
-                                            {
-                                                <li class="mb-1">
-                                                    <div>
-                                                        @item.Quantidade x @(item.ProdutoNomeSnapshot ?? "Item do pedido")
-                                                    </div>
-
-                                                    @if (item.Acompanhamentos != null && item.Acompanhamentos.Any())
-                                                    {
-                                                        <ul class="small text-muted ps-3 mb-0">
-                                                            @foreach (var acomp in item.Acompanhamentos)
-                                                            {
-                                                                <li>+ @(acomp.NomeSnapshot ?? "Acompanhamento")</li>
-                                                            }
-                                                        </ul>
-                                                    }
-                                                </li>
-                                            }
-                                        </ul>
-                                    </div>
-
-                                    <div class="d-flex gap-2">
-                                        <form asp-action="Concluir" method="post" class="w-100">
-                                            <input type="hidden" name="id" value="@pedido.Id" />
-                                            <button type="submit" class="btn btn-dark btn-sm w-100">
-                                                Concluir pedido
-                                            </button>
-                                        </form>
-                                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="border rounded-3 p-3 h-100 bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="fw-bold">Pedido @pedido.Codigo</div>
+                                    <div class="text-muted small">@pedido.Cliente?.Nome</div>
                                 </div>
+
+                                <span class="badge bg-success">Pronto</span>
                             </div>
-                        }
+
+                            <div class="small text-muted mb-2">
+                                <div><strong>Entrega:</strong> @pedido.MetodoEntrega</div>
+                                <div><strong>Retirada:</strong> @pedido.HorarioRetirada.ToUniversalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                                <div><strong>Criado em:</strong> @pedido.CriadoEmUtc.ToUniversalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                                <div><strong>Pronto em:</strong> @(pedido.ProntoEmUtc.HasValue? pedido.ProntoEmUtc.Value.ToUniversalTime().ToString("dd/MM/yyyy HH:mm") : "-")</div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="button"
+                                        class="btn btn-dark btn-sm w-100"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalDetalhes"
+                                        data-id="@pedido.Id">
+                                    Abrir pedido
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                }
-                else
-                {
-                    <div class="text-muted">Nenhum pedido pronto no momento.</div>
                 }
             </div>
+        }
+        else
+        {
+            <div class="text-muted">Nenhum pedido pronto no momento.</div>
+        }
 
-            <!-- Pedidos Concluídos -->
-            <div class="tab-pane fade" id="concluidos" role="tabpanel" aria-labelledby="concluidos-tab">
-                @if (Model.PedidosConcluidos.Any())
-                {
-                    <div class="row g-3">
-                        @foreach (var pedido in Model.PedidosConcluidos)
-                        {
-                            <div class="col-md-6 col-xl-4">
-                                <div class="border rounded-3 p-3 h-100 bg-white shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <div class="fw-bold">Pedido @pedido.Codigo</div>
-                                            <div class="text-muted small">@pedido.Cliente?.Nome</div>
-                                        </div>
+    </div>
+</div>
 
-                                        <span class="badge bg-dark">Concluído</span>
-                                    </div>
-
-                                    <div class="small text-muted mb-2">
-                                        <div><strong>Entrega:</strong> @pedido.MetodoEntrega</div>
-                                        <div><strong>Retirada:</strong> @pedido.HorarioRetirada.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
-                                        <div><strong>Criado em:</strong> @pedido.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
-                                        <div><strong>Concluído em:</strong> @(pedido.ConcluidoEmUtc?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
-                                    </div>
-
-                                    @if (!string.IsNullOrWhiteSpace(pedido.Observacao))
-                                    {
-                                        <div class="alert alert-light border small mb-3">
-                                            <strong>Obs.:</strong> @pedido.Observacao
-                                        </div>
-                                    }
-
-                                    <div class="mb-3">
-                                        <strong>Itens</strong>
-                                        <ul class="mb-0 ps-3">
-                                            @foreach (var item in pedido.Itens)
-                                            {
-                                                <li class="mb-1">
-                                                    <div>
-                                                        @item.Quantidade x @(item.ProdutoNomeSnapshot ?? "Item do pedido")
-                                                    </div>
-
-                                                    @if (item.Acompanhamentos != null && item.Acompanhamentos.Any())
-                                                    {
-                                                        <ul class="small text-muted ps-3 mb-0">
-                                                            @foreach (var acomp in item.Acompanhamentos)
-                                                            {
-                                                                <li>+ @(acomp.NomeSnapshot ?? "Acompanhamento")</li>
-                                                            }
-                                                        </ul>
-                                                    }
-                                                </li>
-                                            }
-                                        </ul>
-                                    </div>
-
-                                    <div class="d-flex gap-2">
-                                        <form asp-action="VoltarParaEmPreparo" method="post" class="w-100">
-                                            <input type="hidden" name="id" value="@pedido.Id" />
-                                            <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
-                                                <i class="bi bi-arrow-left"></i> Voltar
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <div class="text-muted">Nenhum pedido concluído no momento.</div>
-                }
+<!-- Modal de Detalhes -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content" id="conteudoModalPedido">
+            <div class="modal-body text-center py-5">
+                <i class="fas fa-spinner fa-spin me-2"></i> Carregando...
             </div>
         </div>
     </div>
 </div>
+<!-- Incluindo o jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Incluindo o Bootstrap 5 CDN -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Incluindo o Bootstrap 5 JavaScript CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+@section Scripts {
+    <script>
+        // Evento para carregar detalhes do pedido no modal
+        $('#modalDetalhes').on('show.bs.modal', function (event) {
+            debugger
+            var button = $(event.relatedTarget); // Botão que acionou o modal
+            var pedidoId = button.data('id'); // Obtém o ID do pedido
+
+            // Fazer a requisição AJAX para pegar os detalhes do pedido
+            $.ajax({
+                url: '/Admin/Cozinha/Detalhes', // URL da action para pegar os detalhes do pedido
+                method: 'GET',
+                data: { id: pedidoId },
+                success: function (data) {
+                    // Preencher o conteúdo do modal com os dados recebidos
+                    $('#conteudoModalPedido').html(data);
+
+                    // Agora que o conteúdo foi carregado, abrir o modal
+                    $('#modalDetalhes').modal('show');
+                },
+                error: function () {
+                    $('#modalDetalhesContent').html('<p>Erro ao carregar os detalhes.</p>');
+                }
+            });
+        });
+
+        // Evento para o botão "Concluir Pedido"
+        $(document).on('click', '#btnConcluirPedido', function () {
+            var pedidoId = $(this).data('id'); // Obtém o ID do pedido
+
+            // Fazer requisição AJAX para concluir o pedido
+            $.ajax({
+                url: '/Admin/Cozinha/ConcluirPedido', // URL da ação para concluir o pedido
+                method: 'POST',
+                data: { id: pedidoId },
+                success: function (response) {
+                    // Atualiza a interface com a resposta do servidor
+                    $('#statusPedidoFeedback').html('<div class="alert alert-success">Pedido concluído com sucesso!</div>');
+                    // Atualiza o status na interface ou qualquer outra coisa necessária
+                },
+                error: function () {
+                    $('#statusPedidoFeedback').html('<div class="alert alert-danger">Erro ao concluir o pedido.</div>');
+                }
+            });
+        });
+
+        let pedidoConcluidoComSucesso = false;
+
+        $(document).on('click', '#btnConcluirPedido', function () {
+            var pedidoId = $(this).data('id');
+
+            $.ajax({
+                url: '/Admin/Cozinha/ConcluirPedido',
+                method: 'POST',
+                data: { id: pedidoId },
+                success: function (response) {
+
+                    pedidoConcluidoComSucesso = true;
+
+                    $('#statusPedidoFeedback').html(
+                        '<div class="alert alert-success">Pedido concluído com sucesso!</div>'
+                    );
+                },
+                error: function () {
+                    $('#statusPedidoFeedback').html(
+                        '<div class="alert alert-danger">Erro ao concluir o pedido.</div>'
+                    );
+                }
+            });
+        });
+
+        // Evento para o botão "Cancelar Pedido"
+        $(document).on('click', '#btnCancelarPedido', function () {
+            var pedidoId = $(this).data('id'); // Obtém o ID do pedido
+
+            // Fazer requisição AJAX para cancelar o pedido
+            $.ajax({
+                url: '/Admin/Cozinha/CancelarPedido', // URL da ação para cancelar o pedido
+                method: 'POST',
+                data: { id: pedidoId },
+                success: function (response) {
+                    $('#statusPedidoFeedback').html('<div class="alert alert-danger">Pedido cancelado com sucesso!</div>');
+                },
+                error: function () {
+                    $('#statusPedidoFeedback').html('<div class="alert alert-danger">Erro ao cancelar o pedido.</div>');
+                }
+            });
+        });
+
+        $(document).on('submit', '#formAdicionarPagamento', function (e) {
+            e.preventDefault();
+
+            var form = $(this);
+            var url = form.attr('action');
+            var data = form.serialize();
+            var pedidoId = form.find('input[name="PedidoId"]').val();
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: data,
+                success: function (response) {
+
+                    // opcional: mensagem rápida
+                    $('#pagamentoContent').html(
+                        '<div class="alert alert-success">Pagamento adicionado com sucesso!</div>'
+                    );
+
+                    // recarregar os detalhes do pedido
+                    $.ajax({
+                        url: '/Admin/Cozinha/Detalhes',
+                        method: 'GET',
+                        data: { id: pedidoId },
+                        success: function (data) {
+                            $('#conteudoModalPedido').html(data);
+                        },
+                        error: function () {
+                            $('#conteudoModalPedido').html(
+                                '<div class="alert alert-danger">Erro ao recarregar pedido.</div>'
+                            );
+                        }
+                    });
+                },
+                error: function () {
+                    $('#pagamentoContent').html(
+                        '<div class="alert alert-danger">Erro ao salvar pagamento.</div>'
+                    );
+                }
+            });
+        });
+
+        $('#modalDetalhes').on('hidden.bs.modal', function () {
+
+            if (pedidoConcluidoComSucesso) {
+                pedidoConcluidoComSucesso = false;
+
+                // submete o filtro atual
+                $('#filtro-data-form').submit();
+            }
+
+        });
+    </script>
+}
