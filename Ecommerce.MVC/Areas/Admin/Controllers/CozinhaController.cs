@@ -56,6 +56,46 @@ namespace Ecommerce.MVC.Areas.Admin.Controllers
             return View(pedidos);
         }
 
+        public async Task<IActionResult> Prontos()
+        {
+            ViewData["Title"] = "Pedidos Prontos e Concluídos";
+            ViewData["Description"] = "Pedidos prontos para entrega ou retirada.";
+
+            var pedidosProntos = await _db.Pedidos
+                .AsNoTracking()
+                .Include(p => p.Cliente)
+                .Include(p => p.Itens)
+                    .ThenInclude(i => i.Acompanhamentos)
+                .Where(p => p.Status == EPedidoStatus.Pronto)
+                .OrderBy(p => p.HorarioRetirada)
+                .ThenByDescending(p => p.CriadoEmUtc)
+                .ToListAsync();
+
+            var pedidosConcluidos = await _db.Pedidos
+                .AsNoTracking()
+                .Include(p => p.Cliente)
+                .Include(p => p.Itens)
+                    .ThenInclude(i => i.Acompanhamentos)
+                .Where(p => p.Status == EPedidoStatus.Concluido)
+                .OrderBy(p => p.HorarioRetirada)
+                .ThenByDescending(p => p.CriadoEmUtc)
+                .ToListAsync();
+
+            var model = new PedidosViewModel
+            {
+                PedidosProntos = pedidosProntos,
+                PedidosConcluidos = pedidosConcluidos
+            };
+
+            return View(model);
+        }
+
+        public class PedidosViewModel
+        {
+            public List<Ecommerce.MVC.Entities.Pedido> PedidosProntos { get; set; }
+            public List<Ecommerce.MVC.Entities.Pedido> PedidosConcluidos { get; set; }
+        }
+
         [HttpPost]
         public async Task<IActionResult> IniciarPreparo(Guid id)
         {

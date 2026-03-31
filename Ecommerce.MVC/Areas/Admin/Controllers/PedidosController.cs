@@ -64,8 +64,11 @@ public class PedidosController : Controller
         else
             query = query.Where(p => p.CriadoEmUtc >= inicioUtc && p.CriadoEmUtc < fimUtc);
 
-        if (!string.IsNullOrWhiteSpace(status))
-            query = query.Where(p => p.Status.ToString() == status);
+        if (!string.IsNullOrWhiteSpace(status) &&
+    Enum.TryParse<EPedidoStatus>(status, out var statusEnum))
+{
+    query = query.Where(p => p.Status == statusEnum);
+}
 
         var pedidosFiltrados = await query.ToListAsync();
 
