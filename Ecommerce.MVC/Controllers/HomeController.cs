@@ -53,4 +53,9 @@ public class HomeController : Controller
 
         return View(new HomeViewModel { Categorias = categorias });
     }
+
+    public IActionResult EmConstrucao()
+    {
+        return View();
+    }
 }

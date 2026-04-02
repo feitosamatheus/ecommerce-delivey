@@ -1,6 +1,7 @@
 ﻿@using static UsuariosController
 @model UsuarioFormViewModel
 @{
+    ViewData["page"] = "Pessoas";
     ViewData["Title"] = "Novo Usuário";
     ViewData["Description"] = "Cadastre e gerencie as permissões de acesso ao sistema.";
 }
@@ -113,7 +114,15 @@
                 @* Senha Temporária *@
                 <div class="col-md-4">
                     <label asp-for="Senha" class="form-label">Senha Temporária</label>
-                    <input asp-for="Senha" type="password" class="form-control" placeholder="Defina uma senha" />
+
+                    <div class="input-group">
+                        <input asp-for="Senha" type="password" class="form-control" id="senha-input" placeholder="Defina uma senha" />
+                        
+                        <button type="button" class="btn btn-outline-secondary" id="toggle-senha">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
                     <span asp-validation-for="Senha" class="text-danger small"></span>
                 </div>
 
@@ -143,3 +152,47 @@
         </form>
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+@section Scripts {
+    <script>
+        // Máscara para CPF
+        $('#cpf-mask').on('input', function () {
+            let value = $(this).val().replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            $(this).val(value);
+        });
+
+        // Máscara para Telefone
+        $('#telefone-mask').on('input', function () {
+            let value = $(this).val().replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            if (value.length > 10) {
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            } else {
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+            $(this).val(value);
+        });
+
+        document.getElementById('toggle-senha').addEventListener('click', function () {
+            const input = document.getElementById('senha-input');
+            const icon = this.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    </script>
+}

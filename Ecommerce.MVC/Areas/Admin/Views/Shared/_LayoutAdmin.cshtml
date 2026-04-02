@@ -10,7 +10,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - Admin</title>
+    <title>@ViewData["Title"] - @ViewData["page"]</title>
 
     <link rel="stylesheet" href="~/adminlte4/css/adminlte.min.css" />
     <link rel="stylesheet" href="~/adminlte4/assets/css/overlayscrollbars.min.css" />
@@ -79,12 +79,26 @@
                     </li>
                 </ul>
 
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
                         <span class="nav-link">
                             <span class="status-online"></span>
                             Olá, @nomeUsuario
                         </span>
+                    </li>
+
+                    <li class="nav-item ms-2">
+                        <form asp-area="Admin"
+                            asp-controller="Usuarios"
+                            asp-action="Logout"
+                            method="post"
+                            class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-box-arrow-right me-1"></i>
+                                Sair
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -93,7 +107,7 @@
         <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
             <div class="sidebar-brand">
                 <a href="@Url.Action("Index", "Home", new { area = "Admin" })" class="brand-link text-decoration-none">
-                    <span class="brand-text fw-light">Admin</span>
+                    <span class="brand-text fw-light">Barriga Cheia</span>
                 </a>
             </div>
 
@@ -101,94 +115,114 @@
                 <nav class="mt-2">
                     <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu">
 
-                        <li class="nav-item">
-                            <a href="@Url.Action("Index", "Home", new { area = "Admin" })"
-                                   class="nav-link @(controller == "Home" ? "active" : "")">
-                                <i class="nav-icon bi bi-house-door"></i>
-                                <p>Dashboard</p>
-                            </a>
-                        </li>
+                        @if (User.IsInRole("administrador"))
+                        {
+                            <li class="nav-item">
+                                <a href="@Url.Action("EmConstrucao", "Dashboard", new { area = "Admin" })"
+                                    class="nav-link @(controller == "Home" ? "active" : "")">
+                                    <i class="nav-icon bi bi-house-door"></i>
+                                    <p>Dashboard</p>
+                                </a>
+                            </li>
+                        }
 
-                        <li class="nav-item">
-                            <a href="@Url.Action("Index", "Pedidos", new { area = "Admin" })"
-                                   class="nav-link @(controller == "Pedidos" ? "active" : "")">
-                                <i class="nav-icon bi bi-cart-check"></i>
-                                <p>Pedidos</p>
-                            </a>
-                        </li>
+                        @if (User.IsInRole("administrador"))
+                        {
+                            <hr class="text-light"/>
+                            <li class="nav-item">
+                                <a href="@Url.Action("Index", "Pedidos", new { area = "Admin" })"
+                                    class="nav-link @(controller == "Pedidos" ? "active" : "")">
+                                    <i class="nav-icon bi bi-cart-check"></i>
+                                    <p>Gerenciar Pedidos</p>
+                                </a>
+                            </li>
+                        }
 
-                        <li class="nav-item @(controller == "Produtos" || controller == "Categorias" ? "menu-open" : "")">
-                            <a href="#" class="nav-link @(controller == "Produtos" || controller == "Categorias" ? "active" : "")">
-                                <i class="nav-icon bi bi-box-seam"></i>
-                                <p>
-                                    Produtos
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview menu-open">
-                                <li class="nav-item">
-                                    <a href="@Url.Action("Index", "Produtos", new { area = "Admin" })"
-                                           class="nav-link @(controller == "Produtos" ? "active" : "")">
-                                        <i class="nav-icon bi bi-list-ul"></i>
-                                        <p>Todos os Produtos</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="@Url.Action("Index", "Categorias", new { area = "Admin" })"
-                                           class="nav-link @(controller == "Categorias" ? "active" : "")">
-                                        <i class="nav-icon bi bi-tags"></i>
-                                        <p>Categorias</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                        @if (User.IsInRole("administrador"))
+                        {
+                            <hr class="text-light"/>
+                            <li class="nav-item @(controller == "Produtos" || controller == "Categorias" ? "menu-open" : "")">
+                                <a href="#" class="nav-link @(controller == "Produtos" || controller == "Categorias" ? "active" : "")">
+                                    <i class="nav-icon bi bi-box-seam"></i>
+                                    <p>
+                                        Produtos
+                                        <i class="nav-arrow bi bi-chevron-right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview menu-open">
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Index", "Produtos", new { area = "Admin" })"
+                                            class="nav-link @(controller == "Produtos" ? "active" : "")">
+                                            <i class="nav-icon bi bi-list-ul"></i>
+                                            <p>Todos os Produtos</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Index", "Categorias", new { area = "Admin" })"
+                                            class="nav-link @(controller == "Categorias" ? "active" : "")">
+                                            <i class="nav-icon bi bi-tags"></i>
+                                            <p>Categorias</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
 
-                        <li class="nav-item @(controller == "Acompanhamentos" || controller == "AcompanhamentoCategorias" ? "menu-open" : "")">
-                            <a href="#" class="nav-link @(controller == "Acompanhamentos" || controller == "AcompanhamentoCategorias" ? "active" : "")">
-                                <i class="nav-icon bi bi-ui-checks-grid"></i>
-                                <p>
-                                    Acompanhamentos
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="@Url.Action("Index", "Acompanhamentos", new { area = "Admin" })"
-                                           class="nav-link @(controller == "Acompanhamentos" ? "active" : "")">
-                                        <i class="nav-icon bi bi-list-check"></i>
-                                        <p>Itens</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="@Url.Action("Index", "AcompanhamentoCategorias", new { area = "Admin" })"
-                                           class="nav-link @(controller == "AcompanhamentoCategorias" ? "active" : "")">
-                                        <i class="nav-icon bi bi-tags"></i>
-                                        <p>Categorias</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                        @if (User.IsInRole("administrador"))
+                        {
+                            <li class="nav-item @(controller == "Acompanhamentos" || controller == "AcompanhamentoCategorias" ? "menu-open" : "")">
+                                <a href="#" class="nav-link @(controller == "Acompanhamentos" || controller == "AcompanhamentoCategorias" ? "active" : "")">
+                                    <i class="nav-icon bi bi-ui-checks-grid"></i>
+                                    <p>
+                                        Acompanhamentos
+                                        <i class="nav-arrow bi bi-chevron-right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Index", "Acompanhamentos", new { area = "Admin" })"
+                                            class="nav-link @(controller == "Acompanhamentos" ? "active" : "")">
+                                            <i class="nav-icon bi bi-list-check"></i>
+                                            <p>Itens</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Index", "AcompanhamentoCategorias", new { area = "Admin" })"
+                                            class="nav-link @(controller == "AcompanhamentoCategorias" ? "active" : "")">
+                                            <i class="nav-icon bi bi-tags"></i>
+                                            <p>Categorias</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
 
                         @* SEÇÃO DE USUÁRIOS *@
-                        <li class="nav-item @(controller == "Usuarios" ? "menu-open" : "")">
-                            <a href="#" class="nav-link @(controller == "Usuarios" ? "active" : "")">
-                                <i class="nav-icon bi bi-people"></i>
-                                <p>
-                                    Pessoas
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="@Url.Action("Index", "Usuarios", new { area = "Admin" })"
-                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && controller == "Usuarios" ? "active" : "")">
-                                        <i class="nav-icon bi bi-person-lines-fill"></i>
-                                        <p>Listar Usuários</p>
-                                    </a>
-                                </li>
-                               
-                            </ul>
-                        </li>
+                        @if (User.IsInRole("administrador"))
+                        {
+                            <hr class="text-light"/>
+                            <li class="nav-item @(controller == "Usuarios" ? "menu-open" : "")">
+                                <a href="#" class="nav-link @(controller == "Usuarios" ? "active" : "")">
+                                    <i class="nav-icon bi bi-people"></i>
+                                    <p>
+                                        Pessoas
+                                        <i class="nav-arrow bi bi-chevron-right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Index", "Usuarios", new { area = "Admin" })"
+                                            class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && controller == "Usuarios" ? "active" : "")">
+                                            <i class="nav-icon bi bi-person-lines-fill"></i>
+                                            <p>Listar Usuários</p>
+                                        </a>
+                                    </li>
+                                
+                                </ul>
+                            </li>
+                            <hr class="text-light"/>
+                        }
+
                         <li class="nav-item @(controller == "Cozinha" ? "menu-open" : "")">
                             <a href="#" class="nav-link @(controller == "Cozinha" ? "active" : "")">
                                 <i class="nav-icon bi bi-fire"></i>
@@ -200,37 +234,81 @@
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
                                     <a href="@Url.Action("Index", "Cozinha", new { area = "Admin" })"
-                                           class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                        class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
                                         <i class="nav-icon bi bi-receipt-cutoff"></i>
                                         <p>Painel da Cozinha</p>
                                     </a>
                                 </li>
+                                @if (User.IsInRole("administrador") 
+                                    || User.IsInRole("cozinhaN1")
+                                    || User.IsInRole("cozinhaN2"))
+                                {
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("EmPreparo", "Cozinha", new { area = "Admin" })"
+                                            class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "EmPreparo" ? "active" : "")">
+                                            <i class="nav-icon bi bi-clock-history"></i>
+                                            <p>Em Preparo</p>
+                                        </a>
+                                    </li>
 
-                                <li class="nav-item">
-                                    <a href="@Url.Action("EmPreparo", "Cozinha", new { area = "Admin" })"
-                                           class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "EmPreparo" ? "active" : "")">
-                                        <i class="nav-icon bi bi-clock-history"></i>
-                                        <p>Em Preparo</p>
-                                    </a>
-                                </li>
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Prontos", "Cozinha", new { area = "Admin" })"
+                                            class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Prontos" ? "active" : "")">
+                                            <i class="nav-icon bi bi-bag-check"></i>
+                                            <p>Pedidos Prontos</p>
+                                        </a>
+                                    </li>
 
-                                <li class="nav-item">
-                                    <a href="@Url.Action("Prontos", "Cozinha", new { area = "Admin" })"
-                                           class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Prontos" ? "active" : "")">
-                                        <i class="nav-icon bi bi-bag-check"></i>
-                                        <p>Pedidos Prontos</p>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a href="@Url.Action("Concluidos", "Cozinha", new { area = "Admin" })"
-                                           class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Concluidos" ? "active" : "")">
-                                        <i class="nav-icon bi bi-check2-all"></i>
-                                        <p>Pedidos Concluídos</p>
-                                    </a>
-                                </li>
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Concluidos", "Cozinha", new { area = "Admin" })"
+                                            class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Concluidos" ? "active" : "")">
+                                            <i class="nav-icon bi bi-check2-all"></i>
+                                            <p>Pedidos Concluídos</p>
+                                        </a>
+                                    </li>
+                                }
                             </ul>
                         </li>
+
+                        @if (User.IsInRole("administrador") 
+                        || User.IsInRole("balcaoN1")
+                        || User.IsInRole("balcaoN2"))
+                        {
+                            <li class="nav-item @(controller == "Balcao" ? "menu-open" : "")">
+                                <a href="#" class="nav-link @(controller == "Balcao" ? "active" : "")">
+                                    <i class="nav-icon bi bi-shop"></i>
+                                    <p>
+                                        Balcão
+                                        <i class="nav-arrow bi bi-chevron-right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("EmPreparo", "Balcao", new { area = "Admin" })"
+                                            class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "EmPreparo" ? "active" : "")">
+                                            <i class="nav-icon bi bi-clock-history"></i>
+                                            <p>Em Preparo</p>
+                                        </a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Prontos", "Balcao", new { area = "Admin" })"
+                                            class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Prontos" ? "active" : "")">
+                                            <i class="nav-icon bi bi-bag-check"></i>
+                                            <p>Pedidos Prontos</p>
+                                        </a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Concluidos", "Balcao", new { area = "Admin" })"
+                                            class="nav-link @(controller == "Cozinha" && ViewContext.RouteData.Values["action"]?.ToString() == "Concluidos" ? "active" : "")">
+                                            <i class="nav-icon bi bi-check2-all"></i>
+                                            <p>Pedidos Concluídos</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
                     </ul>
                 </nav>
             </div>
@@ -254,7 +332,7 @@
                     @* Caminho de navegação opcional *@
                     <nav aria-label="breadcrumb" class="breadcrumb-clean">
                         <ol class="breadcrumb mb-1">
-                            <li class="breadcrumb-item"><a href="/Admin/Dashboard">Admin</a></li>
+                            <li class="breadcrumb-item"><a href="/Admin/Dashboard">@ViewData["page"]</a></li>
                             <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
                         </ol>
                     </nav>

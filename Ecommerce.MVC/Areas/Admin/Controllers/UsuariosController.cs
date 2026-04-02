@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ public class UsuariosController : Controller
 
     public async Task<IActionResult> Index(string busca, string role, int pagina = 1)
     {
+        ViewData["page"] = "Pessoas";
         // 1. Configurações básicas
         const int itensPorPagina = 10;
         var query = _context.Clientes.AsQueryable();
@@ -88,6 +90,8 @@ public class UsuariosController : Controller
             return View(model);
         }
 
+        // model.CPF = model.CPF?.Replace(".", "").Replace("-", "").Trim();
+
         var novo = new Cliente
         {
             Nome = model.Nome,
@@ -122,7 +126,8 @@ public class UsuariosController : Controller
             CPF = cliente.CPF,
             Telefone = cliente.Telefone,
             Role = cliente.Role,
-            Ativo = cliente.Ativo
+            Ativo = cliente.Ativo,
+            PrimeiroAcessoRedefinir = cliente.PrimeiroAcessoRedefinir
             // Senha fica vazia por segurança
         };
 
@@ -289,5 +294,13 @@ public class UsuariosController : Controller
         public Guid Id { get; set; }
         public string NovaSenha { get; set; }
         public bool ForcarTroca { get; set; }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync();
+        return Redirect("/");
     }
 }

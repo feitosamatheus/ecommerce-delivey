@@ -132,15 +132,27 @@ public class ClienteController : Controller
         return Ok();
     }
 
-    private async Task SignInClienteAsync(Guid id, string nome, string email, string role)
+    private async Task SignInClienteAsync(Guid id, string nome, string email, string roles)
     {
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, id.ToString()),
             new Claim(ClaimTypes.Name, nome),
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Role, role)
+            new Claim(ClaimTypes.Email, email)
         };
+
+        if (!string.IsNullOrWhiteSpace(roles))
+        {
+            var listaRoles = roles
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var role in listaRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+        }
+
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);

@@ -19,6 +19,8 @@ public class AcompanhamentoCategoriasController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(string? busca)
     {
+        ViewData["page"] = "Acompanhamento";
+
         var query = _db.AcompanhamentoCategorias
             .AsNoTracking()
             .Include(x => x.Acompanhamentos)
@@ -54,6 +56,7 @@ public class AcompanhamentoCategoriasController : Controller
     [HttpGet]
     public IActionResult Create()
     {
+        ViewData["page"] = "Acompanhamento";
         ViewData["Title"] = "Nova Categoria de Acompanhamento";
         ViewData["Description"] = "Cadastre e organize grupos de acompanhamentos.";
         return View(new AcompanhamentoCategoriaFormViewModel());
@@ -87,6 +90,8 @@ public class AcompanhamentoCategoriasController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
+        ViewData["page"] = "Acompanhamento";
+        
         var entity = await _db.AcompanhamentoCategorias.FirstOrDefaultAsync(x => x.Id == id);
 
         if (entity == null)

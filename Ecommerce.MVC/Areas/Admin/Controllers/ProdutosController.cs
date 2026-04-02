@@ -96,6 +96,8 @@ public class ProdutosController : Controller
         int pagina = 1,
         int tamanhoPagina = 5)
     {
+        ViewData["page"] = "Produto";
+
         var query = _db.Produtos
             .AsNoTracking()
             .Include(p => p.Categoria)
@@ -180,6 +182,8 @@ public class ProdutosController : Controller
     [HttpGet]
     public async Task<IActionResult> Create()
     {
+        ViewData["page"] = "Produto";
+
         var model = new ProdutoCreateViewModel();
 
         await PopularCategoriasAsync(model);
@@ -602,6 +606,7 @@ public class ProdutoAcompanhamentoJsonPostViewModel
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
+        ViewData["page"] = "Produto";
         var produto = await _db.Produtos
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);

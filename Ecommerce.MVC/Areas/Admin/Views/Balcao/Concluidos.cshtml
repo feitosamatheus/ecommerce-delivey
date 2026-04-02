@@ -1,5 +1,5 @@
 ﻿@using Ecommerce.MVC.Enums
-@using static Ecommerce.MVC.Areas.Admin.Controllers.CozinhaController
+@using static Ecommerce.MVC.Areas.Admin.Controllers.BalcaoController
 @model PedidosViewModel
 
 @{
@@ -77,6 +77,7 @@
             <span class="badge bg-secondary text-end contador-pill">
                 @Model.PedidosConcluidos.Count
             </span>
+
         </div>
     </div>
 
@@ -105,37 +106,13 @@
                                 <div><strong>Concluído em:</strong> @(pedido.ConcluidoEmUtc?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
                             </div>
 
-                            <div class="mb-3">
-                                <strong>Itens</strong>
-                                <ul class="mb-0 ps-3">
-                                    @foreach (var item in pedido.Itens)
-                                    {
-                                        <li class="mb-1">
-                                            <div>
-                                                @item.Quantidade x @(item.ProdutoNomeSnapshot ?? "Item do pedido")
-                                            </div>
-
-                                            @if (item.Acompanhamentos != null && item.Acompanhamentos.Any())
-                                            {
-                                                <ul class="small text-muted ps-3 mb-0">
-                                                    @foreach (var acomp in item.Acompanhamentos)
-                                                    {
-                                                        <li>+ @(acomp.NomeSnapshot ?? "Acompanhamento")</li>
-                                                    }
-                                                </ul>
-                                            }
-                                        </li>
-                                    }
-                                </ul>
-                            </div>
-
-                            @* <button type="button"
+                            <button type="button"
                                     class="btn btn-info btn-sm w-100"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalDetalhes"
                                     data-id="@pedido.Id">
                                 Ver Detalhes
-                            </button> *@
+                            </button>
                         </div>
                     </div>
                 }
@@ -182,7 +159,7 @@
             `);
 
             $.ajax({
-                url: '/Admin/Cozinha/DetalhesConcluido',
+                url: '/Admin/Balcao/DetalhesConcluido',
                 method: 'GET',
                 data: { id: pedidoId },
                 success: function (data) {

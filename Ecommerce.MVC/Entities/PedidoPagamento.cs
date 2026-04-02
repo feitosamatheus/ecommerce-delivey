@@ -27,4 +27,12 @@ public class PedidoPagamento
 
     public DateTime CriadoEmUtc { get; set; } = DateTime.UtcNow;
     public DateTime? PagoEmUtc { get; set; } = null;
+
+    public bool Excluido { get; set; } = false;
+    public DateTime? ExcluidoEmUtc { get; set; }
+    public string? ExcluidoPor { get; set; }
+    public Guid ExcluidoPorId { get; set; }
+
+    public string? ValidadoPor { get; set; }
+    public Guid ValidadoPorId { get; set; }
 }

@@ -53,5 +53,6 @@ public class DatabaseContext : DbContext
             .HasConversion<int>();
 
         modelBuilder.Entity<Produto>().HasQueryFilter(p => p.Ativo);
+        modelBuilder.Entity<PedidoPagamento>().HasQueryFilter(p => !p.Excluido);
     }
 }

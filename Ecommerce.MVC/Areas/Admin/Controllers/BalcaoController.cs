@@ -1,4 +1,5 @@
-﻿using Ecommerce.MVC.Config;
+﻿using System.Security.Claims;
+using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -7,41 +8,18 @@ using Microsoft.EntityFrameworkCore;
 namespace Ecommerce.MVC.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    public class CozinhaController : Controller
+    public class BalcaoController : Controller
     {
         private readonly DatabaseContext _db;
 
-        public CozinhaController(DatabaseContext db)
+        public BalcaoController(DatabaseContext db)
         {
             _db = db;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            ViewData["page"] = "Cozinha";
-            ViewData["Title"] = "Painel da Cozinha";
-            ViewData["Description"] = "Acompanhe os pedidos em produção e prontos para entrega/retirada.";
-
-            var pedidos = await _db.Pedidos
-                .AsNoTracking()
-                .Include(p => p.Cliente)
-                .Include(p => p.Itens)
-                    .ThenInclude(i => i.Acompanhamentos)
-                .Where(p =>
-                    p.Status == EPedidoStatus.Confirmado ||
-                    p.Status == EPedidoStatus.EmPreparo ||
-                    p.Status == EPedidoStatus.Pronto ||
-                    p.Status == EPedidoStatus.Concluido)
-                .OrderBy(p => p.HorarioRetirada)
-                .ThenByDescending(p => p.CriadoEmUtc)
-                .ToListAsync();
-
-            return View(pedidos);
-        }
-
         public async Task<IActionResult> EmPreparo(string nomeCliente, string numeroPedido)
         {
-            ViewData["page"] = "Cozinha";
+            ViewData["page"] = "Balcão";
             ViewData["Title"] = "Em Preparo";
             ViewData["Description"] = "Pedidos que estão atualmente em produção na cozinha.";
 
@@ -81,7 +59,7 @@ namespace Ecommerce.MVC.Areas.Admin.Controllers
 
         public async Task<IActionResult> Prontos(DateTime? dataInicio, DateTime? dataFim, string nomeCliente, string numeroPedido)
         {
-            ViewData["page"] = "Cozinha";
+            ViewData["page"] = "Balcão";
             ViewData["Title"] = "Pedidos Prontos";
             ViewData["Description"] = "Pedidos prontos para entrega ou retirada.";
 
@@ -131,7 +109,7 @@ namespace Ecommerce.MVC.Areas.Admin.Controllers
 
         public async Task<IActionResult> Concluidos(DateTime? dataInicio, DateTime? dataFim, string numeroPedido, string nomeCliente)
         {
-            ViewData["page"] = "Cozinha";
+            ViewData["page"] = "Balcão";
             ViewData["Title"] = "Pedidos Concluídos";
             ViewData["Description"] = "Pedidos já finalizados e entregues.";
 
@@ -186,7 +164,6 @@ namespace Ecommerce.MVC.Areas.Admin.Controllers
             return View(model);
         }
 
-
         public class PedidosViewModel
         {
             public List<Ecommerce.MVC.Entities.Pedido> PedidosProntos { get; set; }
@@ -218,9 +195,29 @@ namespace Ecommerce.MVC.Areas.Admin.Controllers
             }
 
             // Retornar o conteúdo parcial (parcial da view com detalhes do pedido)
-            return PartialView("_DetalhesPedidoCozinha", pedido);
+            return PartialView("_DetalhesPedidoBalcao", pedido);
         }
         
+        public async Task<IActionResult> DetalhesConcluido(Guid id)
+        {
+            // Buscar o pedido pelos detalhes
+            var pedido = await _db.Pedidos
+                .AsNoTracking()
+                .Include(p => p.Cliente)
+                .Include(p => p.Itens)
+                    .ThenInclude(i => i.Acompanhamentos)
+                .Include(p => p.Pagamentos)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (pedido == null)
+            {
+                return NotFound();
+            }
+
+            // Retornar o conteúdo parcial (parcial da view com detalhes do pedido)
+            return PartialView("_DetalhesPedidoConcluido", pedido);
+        }
+
         public async Task<IActionResult> ConcluirPedido(Guid id)
         {
             var pedido = await _db.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
@@ -232,6 +229,254 @@ namespace Ecommerce.MVC.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
 
             return Json(new { success = true });
+        }
+
+        public async Task<IActionResult> AdicionarPagamento(Guid id)
+        {
+            var pedido = await _db.Pedidos
+                .AsNoTracking()
+                .Include(p => p.Cliente)
+                .Include(p => p.Itens)
+                    .ThenInclude(i => i.Acompanhamentos)
+                .Include(p => p.Pagamentos)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (pedido == null)
+            {
+                return NotFound();
+            }
+
+            // Criar um novo PedidoPagamento para preencher o formulário
+            var pagamento = new PedidoPagamento
+            {
+                PedidoId = pedido.Id,
+                Valor = pedido.ValorEmAberto, // Valor inicial (você pode ajustar isso conforme necessário)
+                TipoPagamento = "PIX", // Default, pode ser alterado
+                Gateway = "ASAAS" // Default, pode ser alterado
+            };
+
+            // Retornar a partial view com o formulário para adicionar pagamento
+            return PartialView("_AdicionarPagamento", pagamento);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SalvarPagamento(PedidoPagamento pagamento)
+        {
+            var valorTexto = Request.Form["Valor"].ToString();
+
+            if (!string.IsNullOrWhiteSpace(valorTexto))
+            {
+                valorTexto = valorTexto
+                    .Replace("R$", "")
+                    .Replace(" ", "")
+                    .Replace(".", "")
+                    .Replace(",", ".");
+
+                if (decimal.TryParse(valorTexto, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var valorConvertido))
+                {
+                    pagamento.Valor = valorConvertido;
+                }
+                else
+                {
+                    ModelState.AddModelError("Valor", "Valor inválido.");
+                }
+            }
+
+            ModelState.Remove("Valor");
+
+            if (pagamento.Valor <= 0)
+            {
+                ModelState.AddModelError("Valor", "Informe um valor maior que zero.");
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var pedido = await _db.Pedidos
+                .Include(p => p.Pagamentos)
+                .FirstOrDefaultAsync(p => p.Id == pagamento.PedidoId);
+
+            if (pedido == null)
+                return NotFound();
+
+            var proximaSequencia = pedido.Pagamentos.Where(p => !p.Excluido).Any()
+            ? pedido.Pagamentos.Where(p => !p.Excluido).Max(p => p.Sequencia) + 1
+            : 1;
+
+            pagamento.Sequencia = proximaSequencia;
+            // status recebido
+            pagamento.Status = EStatusPagamento.Received;
+            pagamento.PagoEmUtc = DateTime.UtcNow;
+
+            _db.PedidoPagamentos.Add(pagamento);
+
+            var totalPago = pedido.Pagamentos.Sum(p => p.Valor) + pagamento.Valor;
+
+            // NÃO altera status se já estiver em preparo ou pronto
+            if (pedido.Status != EPedidoStatus.EmPreparo &&
+                pedido.Status != EPedidoStatus.Pronto)
+            {
+                if (totalPago >= pedido.ValorEntrada)
+                {
+                    pedido.Status = EPedidoStatus.Confirmado;
+                }
+                else
+                {
+                    pedido.Status = EPedidoStatus.AguardandoPagamento;
+                }
+            }
+
+            await _db.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        // [HttpPost]
+        // public async Task<IActionResult> ExcluirPagamento(Guid id)
+        // {
+        //     var pagamento = await _db.PedidoPagamentos
+        //         .Include(p => p.Pedido)
+        //         .ThenInclude(p => p.Pagamentos)
+        //         .FirstOrDefaultAsync(p => p.Id == id);
+
+        //     if (pagamento == null)
+        //         return NotFound();
+
+        //     if (pagamento.Excluido)
+        //         return BadRequest(new { message = "Pagamento já foi excluído." });
+
+        //     var usuarioLogado = User.Identity?.Name ?? "Sistema";
+
+        //     pagamento.Excluido = true;
+        //     pagamento.ExcluidoEmUtc = DateTime.UtcNow;
+        //     pagamento.ExcluidoPor = string.IsNullOrWhiteSpace(usuarioLogado) ? "Sistema" : usuarioLogado;
+
+        //     var pedido = pagamento.Pedido;
+
+        //     var totalPago = pedido.Pagamentos
+        //         .Where(p => !p.Excluido)
+        //         .Sum(p => p.Valor);
+
+        //     if (pedido.Status != EPedidoStatus.EmPreparo &&
+        //         pedido.Status != EPedidoStatus.Pronto &&
+        //         pedido.Status != EPedidoStatus.Concluido)
+        //     {
+        //         if (totalPago >= pedido.ValorEntrada)
+        //             pedido.Status = EPedidoStatus.Confirmado;
+        //         else if (totalPago > 0)
+        //             pedido.Status = EPedidoStatus.AguardandoPagamento;
+        //         else
+        //             pedido.Status = EPedidoStatus.AguardandoPagamento;
+        //     }
+
+        //     await _db.SaveChangesAsync();
+
+        //     return Json(new
+        //     {
+        //         success = true,
+        //         pedidoId = pagamento.PedidoId
+        //     });
+        // }
+
+        [HttpPost]
+        public async Task<IActionResult> ExcluirPagamento(Guid id, Guid adminId, string senha)
+        {
+            if (adminId == Guid.Empty)
+                return BadRequest(new { success = false, message = "Selecione um administrador." });
+
+            if (string.IsNullOrWhiteSpace(senha))
+                return BadRequest(new { success = false, message = "A senha do administrador é obrigatória." });
+
+            var admin = await _db.Clientes
+                .FirstOrDefaultAsync(u => u.Id == adminId && u.Role == "administrador" && u.Ativo);
+
+            if (admin == null)
+                return BadRequest(new { success = false, message = "Administrador não encontrado." });
+
+            bool senhaValida = BCrypt.Net.BCrypt.Verify(senha, admin.SenhaHash);
+
+            if (!senhaValida)
+                return BadRequest(new { success = false, message = "Senha do administrador inválida." });
+
+            var pagamento = await _db.PedidoPagamentos
+                .Include(p => p.Pedido)
+                .ThenInclude(p => p.Pagamentos)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (pagamento == null)
+                return NotFound(new { success = false, message = "Pagamento não encontrado." });
+
+            if (pagamento.Excluido)
+                return BadRequest(new { success = false, message = "Pagamento já foi excluído." });
+
+            if (User?.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                return Unauthorized(); // ou NotFound(), mas o correto semanticamente é Unauthorized
+            }
+
+            var usuarioLogado = User.Identity.Name;
+
+            if (string.IsNullOrWhiteSpace(usuarioLogado))
+            {
+                return NotFound(new { success = false, message = "Usuário não identificado." });
+            }
+
+            var usuarioLogadoIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Guid? usuarioLogadoId = null;
+
+            if (!string.IsNullOrWhiteSpace(usuarioLogadoIdClaim) && Guid.TryParse(usuarioLogadoIdClaim, out var idUsuario))
+            {
+                usuarioLogadoId = idUsuario;
+            }
+
+            pagamento.Excluido = true;
+            pagamento.ValidadoPor = admin.Nome;
+            pagamento.ValidadoPorId = admin.Id;
+            pagamento.ExcluidoEmUtc = DateTime.UtcNow;
+            pagamento.ExcluidoPor = string.IsNullOrWhiteSpace(usuarioLogado) ? admin.Nome : usuarioLogado;
+            pagamento.ExcluidoPorId = usuarioLogadoId ?? admin.Id;
+
+            var pedido = pagamento.Pedido;
+
+            var totalPago = pedido.Pagamentos
+                .Where(p => !p.Excluido && p.Id != pagamento.Id)
+                .Sum(p => p.Valor);
+
+            if (pedido.Status != EPedidoStatus.EmPreparo &&
+                pedido.Status != EPedidoStatus.Pronto &&
+                pedido.Status != EPedidoStatus.Concluido)
+            {
+                if (totalPago >= pedido.ValorEntrada)
+                    pedido.Status = EPedidoStatus.Confirmado;
+                else
+                    pedido.Status = EPedidoStatus.AguardandoPagamento;
+            }
+
+            await _db.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                pedidoId = pagamento.PedidoId,
+                message = "Pagamento excluído com sucesso."
+            });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ListarAdministradores()
+        {
+            var admins = await _db.Clientes
+                .Where(u => u.Role == "administrador" && u.Ativo)
+                .OrderBy(u => u.Nome)
+                .Select(u => new
+                {
+                    id = u.Id,
+                    nome = u.Nome
+                })
+                .ToListAsync();
+
+            return Json(admins);
         }
 
         public async Task<IActionResult> CancelarPedido(Guid id)

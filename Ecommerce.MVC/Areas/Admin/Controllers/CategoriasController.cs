@@ -23,6 +23,8 @@ public class CategoriasController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(string? busca)
     {
+        ViewData["page"] = "Produto";
+
         var query = _db.Categorias
             .AsNoTracking()
             .Include(x => x.Produtos)
@@ -49,6 +51,7 @@ public class CategoriasController : Controller
     [HttpGet]
     public IActionResult Create()
     {
+        ViewData["page"] = "Produto";
         var model = new CategoriaFormViewModel();
         PopularTiposExibicao(model);
 
@@ -83,6 +86,8 @@ public class CategoriasController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
+        ViewData["page"] = "Produto";
+        
         var categoria = await _db.Categorias
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);

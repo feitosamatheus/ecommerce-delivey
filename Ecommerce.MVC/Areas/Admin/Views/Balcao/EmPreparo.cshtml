@@ -1,4 +1,4 @@
-﻿@using static Ecommerce.MVC.Areas.Admin.Controllers.CozinhaController
+﻿@using static Ecommerce.MVC.Areas.Admin.Controllers.BalcaoController
 @model PedidosViewModel
 
 <div class="card shadow-sm border-0 mb-3">
@@ -101,7 +101,8 @@
                                     }
                                 </ul>
                             </div>
-                            @if (User.IsInRole("administrador") || User.IsInRole("cozinhaN2"))
+
+                            @if (User.IsInRole("administrador") || User.IsInRole("balcaoN2"))
                             {
                                 <div class="d-flex gap-2">
                                     <form asp-action="VoltarParaConfirmado" method="post" class="w-50">

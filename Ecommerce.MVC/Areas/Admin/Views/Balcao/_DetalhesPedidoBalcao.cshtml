@@ -259,7 +259,7 @@
                 <h6 class="section-title">Ações do Pedido</h6>
             </div>
             <div class="card-body">
-                <div class="row g-3 align-items-end">
+                <div class="row g-3 align-items-end justify-content-end">
                     <!-- Botões Horizontais -->
                     <div class="col-lg-4">
                         <button type="button"
@@ -406,7 +406,15 @@
                 <h6 class="section-title">Pagamentos do Pedido</h6>
             </div>
             <div class="card-body p-0">
-                @if (Model.Pagamentos == null || !Model.Pagamentos.Any())
+                @{
+                    var pagamentosAtivos = Model.Pagamentos?
+                        .Where(p => !p.Excluido)
+                        .OrderBy(p => p.Sequencia)
+                        .ThenBy(p => p.CriadoEmUtc)
+                        .ToList();
+                }
+
+                @if (pagamentosAtivos == null || !pagamentosAtivos.Any())
                 {
                     <div class="p-4 text-center">
                         <p class="text-muted mb-0 small">Nenhum pagamento/cobrança registrado para este pedido.</p>
@@ -428,10 +436,11 @@
                                     <th>Pago em</th>
                                     <th>Expiração PIX</th>
                                     <th>Fatura</th>
+                                    <th class="text-center">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var pagamento in Model.Pagamentos.OrderBy(p => p.Sequencia).ThenBy(p => p.CriadoEmUtc))
+                                @foreach (var pagamento in pagamentosAtivos)
                                 {
                                     <tr>
                                         <td>@pagamento.Sequencia</td>
@@ -468,6 +477,15 @@
                                             {
                                                 <span class="text-muted">-</span>
                                             }
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger btnExcluirPagamento"
+                                                    data-id="@pagamento.Id"
+                                                    data-pedido-id="@Model.Id"
+                                                    title="Excluir pagamento">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 }

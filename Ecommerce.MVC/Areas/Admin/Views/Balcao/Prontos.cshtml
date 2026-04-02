@@ -1,11 +1,12 @@
 @using Ecommerce.MVC.Enums
-@using static Ecommerce.MVC.Areas.Admin.Controllers.CozinhaController
+@using static Ecommerce.MVC.Areas.Admin.Controllers.BalcaoController
 @model PedidosViewModel
 <style>
     .modal-backdrop {
         background-color: rgba(0, 0, 0, 0.5) !important; /* Cor preta com 50% de opacidade */
         transition: background-color 0.3s ease; /* Efeito de transição suave */
     }
+
 </style>
 
 <!-- CARD FILTRO -->
@@ -97,7 +98,7 @@
                                 <div><strong>Pronto em:</strong> @(pedido.ProntoEmUtc.HasValue? pedido.ProntoEmUtc.Value.ToUniversalTime().ToString("dd/MM/yyyy HH:mm") : "-")</div>
                             </div>
 
-                            @if (User.IsInRole("administrador") || User.IsInRole("cozinhaN2"))
+                            @if (User.IsInRole("administrador") || User.IsInRole("balcaoN2"))
                             {
                                 <div class="d-flex gap-2">
                                     <div class="col-6">
@@ -175,7 +176,7 @@
 
             // Fazer a requisição AJAX para pegar os detalhes do pedido
             $.ajax({
-                url: '/Admin/Cozinha/Detalhes', // URL da action para pegar os detalhes do pedido
+                url: '/Admin/Balcao/Detalhes', // URL da action para pegar os detalhes do pedido
                 method: 'GET',
                 data: { id: pedidoId },
                 success: function (data) {
@@ -197,7 +198,7 @@
             var pedidoId = $(this).data('id');
 
             $.ajax({
-                url: '/Admin/Cozinha/ConcluirPedido',
+                url: '/Admin/Balcao/ConcluirPedido',
                 method: 'POST',
                 data: { id: pedidoId },
                 success: function (response) {
@@ -222,7 +223,7 @@
 
             // Fazer a requisição AJAX para pegar os detalhes do pagamento
             $.ajax({
-                url: '/Admin/Cozinha/AdicionarPagamento', // URL da action para pegar os detalhes do pagamento
+                url: '/Admin/Balcao/AdicionarPagamento', // URL da action para pegar os detalhes do pagamento
                 method: 'GET',
                 data: { id: pedidoId },
                 success: function (data) {
@@ -242,7 +243,7 @@
 
             // Fazer requisição AJAX para cancelar o pedido
             $.ajax({
-                url: '/Admin/Cozinha/CancelarPedido', // URL da ação para cancelar o pedido
+                url: '/Admin/Balcao/CancelarPedido', // URL da ação para cancelar o pedido
                 method: 'POST',
                 data: { id: pedidoId },
                 success: function (response) {
@@ -275,7 +276,7 @@
 
                     // recarregar os detalhes do pedido
                     $.ajax({
-                        url: '/Admin/Cozinha/Detalhes',
+                        url: '/Admin/Balcao/Detalhes',
                         method: 'GET',
                         data: { id: pedidoId },
                         success: function (data) {
@@ -341,68 +342,151 @@
             }
         }
     
-        $(document).on('click', '.btnExcluirPagamento', function () {
+        $(document).on('click', '.btnExcluirPagamento, .btnExcluirPagamentoComSenha', function () {
             var pagamentoId = $(this).data('id');
             var pedidoId = $(this).data('pedido-id');
+            var modalElement = document.querySelector('.modal.show');
 
-            Swal.fire({
-                title: 'Excluir pagamento?',
-                text: 'Essa ação fará a exclusão do pagamento.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sim, excluir',
-                cancelButtonText: 'Cancelar',
-                reverseButtons: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d'
-            }).then((result) => {
-                if (!result.isConfirmed) return;
+            function reativarModal() {
+                if (!modalElement) return;
 
-                $.ajax({
-                    url: '/Admin/Cozinha/ExcluirPagamento',
-                    method: 'POST',
-                    data: { id: pagamentoId },
-                    success: function () {
-                        Swal.fire({
-                            title: 'Excluído!',
-                            text: 'O pagamento foi excluído com sucesso.',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
+                modalElement.removeAttribute('inert');
+
+                setTimeout(() => {
+                    modalElement.focus();
+
+                    const primeiroElemento =
+                        modalElement.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+
+                    if (primeiroElemento) {
+                        primeiroElemento.focus();
+                    }
+                }, 150);
+            }
+
+            if (modalElement) {
+                modalElement.setAttribute('inert', '');
+            }
+
+            $.ajax({
+                url: '/Admin/Balcao/ListarAdministradores',
+                method: 'GET'
+            }).done(function (admins) {
+                let options = '<option value="">Selecione um administrador</option>';
+
+                admins.forEach(function (admin) {
+                    options += `<option value="${admin.id}">${admin.nome}</option>`;
+                });
+
+                Swal.fire({
+                    title: 'Excluir pagamento?',
+                    text: 'Selecione o administrador e digite a senha para confirmar a exclusão.',
+                    icon: 'warning',
+                    html: `
+                        <div class="mb-3 text-start">
+                            <label for="swalAdminId" class="form-label fw-bold">Administrador</label>
+                            <select id="swalAdminId" class="swal2-select" style="display:flex; width:100%; margin:0;">
+                                ${options}
+                            </select>
+                        </div>
+                        <div class="text-start">
+                            <label for="swalAdminSenha" class="form-label fw-bold">Senha</label>
+                            <input id="swalAdminSenha"
+                                type="password"
+                                class="swal2-input"
+                                placeholder="Senha do administrador"
+                                style="display:flex; width:100%; margin:0;" />
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Sim, excluir',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    heightAuto: false,
+                    focusConfirm: false,
+                    didOpen: () => {
+                        setTimeout(() => {
+                            const select = document.getElementById('swalAdminId');
+                            if (select) select.focus();
+                        }, 100);
+                    },
+                    didClose: () => {
+                        reativarModal();
+                    },
+                    preConfirm: () => {
+                        const adminId = document.getElementById('swalAdminId')?.value;
+                        const senha = document.getElementById('swalAdminSenha')?.value;
+
+                        if (!adminId) {
+                            Swal.showValidationMessage('Selecione um administrador.');
+                            return false;
+                        }
+
+                        if (!senha || !senha.trim()) {
+                            Swal.showValidationMessage('Digite a senha do administrador.');
+                            return false;
+                        }
+
+                        return $.ajax({
+                            url: '/Admin/Balcao/ExcluirPagamento',
+                            method: 'POST',
+                            data: {
+                                id: pagamentoId,
+                                adminId: adminId,
+                                senha: senha
+                            }
+                        }).catch(function (xhr) {
+                            let mensagem = 'Não foi possível excluir o pagamento.';
+
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                mensagem = xhr.responseJSON.message;
+                            }
+
+                            Swal.showValidationMessage(mensagem);
                         });
+                    }
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
 
+                    Swal.fire({
+                        title: 'Excluído!',
+                        text: 'O pagamento foi excluído com sucesso.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
                         $('#statusPedidoFeedback').html(
                             '<div class="alert alert-success">Pagamento excluído com sucesso!</div>'
                         );
 
                         $.ajax({
-                            url: '/Admin/Cozinha/Detalhes',
+                            url: '/Admin/Balcao/Detalhes',
                             method: 'GET',
                             data: { id: pedidoId },
                             success: function (data) {
                                 $('#conteudoModalPedido').html(data);
+                                reativarModal();
                             },
                             error: function () {
                                 $('#conteudoModalPedido').html(
                                     '<div class="alert alert-danger">Erro ao recarregar pedido.</div>'
                                 );
+                                reativarModal();
                             }
                         });
-                    },
-                    error: function () {
-                        Swal.fire({
-                            title: 'Erro!',
-                            text: 'Não foi possível excluir o pagamento.',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
+                    });
+                });
+            }).fail(function () {
+                reativarModal();
 
-                        $('#statusPedidoFeedback').html(
-                            '<div class="alert alert-danger">Erro ao excluir pagamento.</div>'
-                        );
-                    }
+                Swal.fire({
+                    title: 'Erro!',
+                    text: 'Não foi possível carregar a lista de administradores.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
                 });
             });
         });
-    
     </script>
 }
