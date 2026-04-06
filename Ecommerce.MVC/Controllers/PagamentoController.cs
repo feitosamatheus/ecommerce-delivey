@@ -109,17 +109,17 @@ public class PagamentoController : Controller
             }
 
             var pagamentoExistente = pedido.Pagamentos
-    .OrderBy(p => p.Sequencia)
-    .FirstOrDefault(p =>
-        p.TipoCobranca == tipoCobranca &&
-        !string.IsNullOrWhiteSpace(p.GatewayPaymentId) &&
-        (p.Status == EStatusPagamento.Pending
-         || p.Status == EStatusPagamento.AwaitingRiskAnalysis
-         || p.Status == EStatusPagamento.DunningRequested
-         || p.Status == EStatusPagamento.Overdue
-         || p.Status == EStatusPagamento.Received
-         || p.Status == EStatusPagamento.Confirmed
-         || p.Status == EStatusPagamento.ReceivedInCash));
+                .OrderBy(p => p.Sequencia)
+                .FirstOrDefault(p =>
+                    p.TipoCobranca == tipoCobranca &&
+                    !string.IsNullOrWhiteSpace(p.GatewayPaymentId) &&
+                    (p.Status == EStatusPagamento.Pending
+                    || p.Status == EStatusPagamento.AwaitingRiskAnalysis
+                    || p.Status == EStatusPagamento.DunningRequested
+                    || p.Status == EStatusPagamento.Overdue
+                    || p.Status == EStatusPagamento.Received
+                    || p.Status == EStatusPagamento.Confirmed
+                    || p.Status == EStatusPagamento.ReceivedInCash));
 
             if (pagamentoExistente != null)
             {

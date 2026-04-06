@@ -8,7 +8,21 @@
 
 <link rel="stylesheet" href="~/css/pedido/finalizar-pedido-wizard.css" asp-append-version="true" />
 <style>
-    
+    .modal {
+        z-index: 1055;
+    }
+
+    .modal-backdrop {
+        z-index: 1050;
+    }
+
+    .swal2-popup {
+        z-index: 20001 !important;
+    }
+
+    .swal2-container {
+        z-index: 20000 !important;
+}
 </style>
 <div class="modal fade" id="modalFinalizarPedido" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -211,6 +225,7 @@
                         </div>
                     </div>
                     <hr />
+                    <div id="statusMensagemStep2" class="d-none mb-4"></div>
 
                     <div class="mb-4">
                         <label class="fw-bold mb-2 small" style="color: var(--bh-primary)">Forma de Pagamento do Sinal</label>

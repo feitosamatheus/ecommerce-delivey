@@ -8,5 +8,8 @@ public class CarrinhoItemViewModel
     public decimal PrecoUnitario { get; set; }
     public decimal Total { get; set; }
 
+    public string Observacao {get; set;}
+
+
     public List<CarrinhoItemAcompanhamentoViewModel> Acompanhamentos { get; set; } = new();
 }

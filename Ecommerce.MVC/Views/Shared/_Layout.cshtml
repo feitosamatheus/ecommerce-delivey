@@ -55,7 +55,9 @@
     <div id="conteudo-dinamico"></div>
 
     @await Html.PartialAsync("Partials/_ModalVerMais.cshtml")
-    @await Component.InvokeAsync("Footer")
+    <div id="footer-container">
+        @await Component.InvokeAsync("Footer")
+    </div>
 
     <style>
         /* Estilo Personalizado "Barriga Cheia" */
@@ -138,6 +140,33 @@
             display: flex;
             justify-content: flex-end;
             padding: 0.5rem 0.5rem 0 0;
+        }
+
+        .btn-toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            padding: 0;
+            color: #6c757d;
+            cursor: pointer;
+            z-index: 5;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }   
+
+        .btn-toggle-password:hover {
+            color: #4A321F;
+        }
+
+        .btn-toggle-password:focus {
+            outline: none;
+            box-shadow: none;
         }
     </style>
 
@@ -232,7 +261,7 @@
                 </div>
             </div>
         </div>
-        </div>
+    </div>
     <div class="modal fade modal-barriga-cheia" id="modalSucessoLogin" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered px-4">
             <div class="modal-content shadow-lg">
@@ -292,19 +321,43 @@
                     <form id="formAlterarSenhaUnificado">
                         @Html.AntiForgeryToken()
 
-                        <div class="mb-3">
+                        @* <div class="mb-3">
                             <label for="senhaAtual" class="form-label fw-semibold" style="color: #4A321F;">Senha atual</label>
-                            <input type="password" class="form-control" id="senhaAtual" name="senhaAtual" placeholder="Digite sua senha atual" required />
-                        </div>
+                            <div class="position-relative">
+                                <input type="password" class="form-control pe-5" id="senhaAtual" name="senhaAtual" placeholder="Digite sua senha atual" required />
+                                <button type="button"
+                                        class="btn-toggle-password"
+                                        data-target="senhaAtual"
+                                        aria-label="Exibir ou ocultar senha">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div> *@
 
                         <div class="mb-3">
                             <label for="novaSenha" class="form-label fw-semibold" style="color: #4A321F;">Nova senha</label>
-                            <input type="password" class="form-control" id="novaSenha" name="novaSenha" placeholder="Digite a nova senha" required />
+                            <div class="position-relative">
+                                <input type="password" class="form-control pe-5" id="novaSenha" name="novaSenha" placeholder="Digite a nova senha" required />
+                                <button type="button"
+                                        class="btn-toggle-password"
+                                        data-target="novaSenha"
+                                        aria-label="Exibir ou ocultar senha">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="confirmarNovaSenha" class="form-label fw-semibold" style="color: #4A321F;">Confirmar nova senha</label>
-                            <input type="password" class="form-control" id="confirmarNovaSenha" name="confirmarNovaSenha" placeholder="Confirme a nova senha" required />
+                            <div class="position-relative">
+                                <input type="password" class="form-control pe-5" id="confirmarNovaSenha" name="confirmarNovaSenha" placeholder="Confirme a nova senha" required />
+                                <button type="button"
+                                        class="btn-toggle-password"
+                                        data-target="confirmarNovaSenha"
+                                        aria-label="Exibir ou ocultar senha">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="info-box p-3 my-4 d-flex align-items-center text-start">
@@ -325,12 +378,79 @@
         </div>
     </div>
 
+     <div class="modal fade" id="modalCarrinhoMobile" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered p-2">
+            <div class="modal-content" id="modalCarrinhoMobileContent" style="border-radius: 20px;">
+                    @await Component.InvokeAsync("CarrinhoMobile")
+            </div>
+        </div>
+    </div>
+
     @await RenderSectionAsync("Scripts", required: false)
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
+        $(document).on('click', '.js-acompanhar-pedidos', function () {
+            addLoading("Carregando...");
+
+            setTimeout(() => {
+                window.location.href = '/Pedido/EmAndamento';
+            }, 800);
+        });
+
+        $(document).on('click', '.js-acompanhar-pedidos-login', function () {
+            $.ajax({
+                url: '/Cliente/BuscarModalAutenticacaoCliente',
+                method: 'GET',
+                cache: false,
+                beforeSend: function () {
+                    addLoading("Carregando...");
+                },
+                success: function (html) {
+                    $('#conteudo-dinamico').empty();
+                    $('#conteudo-dinamico').html(html);
+
+                    const modalLoginEl    = document.getElementById('modal-cliente-auth');
+                    const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
+                    modalLogin.show();
+                },
+                error: function () {
+                    $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+                },
+                complete: function () {
+                    removeLoading();
+                }
+            });
+        });
+
+        $(document).on('click', '.js-abrir-carrinho-mobile', function () {
+
+            const modal = bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('modalCarrinhoMobile')
+            );
+
+            modal.show();
+        });
+
+        $(document).on('click', '.btn-toggle-password', function () {
+            const targetId = $(this).data('target');
+            const input = document.getElementById(targetId);
+
+            if (!input) return;
+
+            const icon = $(this).find('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
+
         window.appUser = {
             primeiroNome: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(primeiroNome))
         };
@@ -417,7 +537,7 @@
                 const $alert = $('#alterarSenhaAlert');
 
                 const data = {
-                    SenhaAtual: $('#senhaAtual').val(), 
+                    //SenhaAtual: $('#senhaAtual').val(), 
                     NovaSenha: $('#novaSenha').val()
                 };
 
@@ -499,6 +619,81 @@
                     modal.show();
                 }
             }
+    
+        async function recarregarCarrinhoEFooter() {
+            await Promise.all([
+                recarregarCarrinhoAjax(),
+                recarregarFooterAjax(),
+                recarregarCarrinhoMobileAjax()
+            ]);
+        }
+
+        async function recarregarCarrinhoAjax() {
+            try {
+                const response = await fetch('/Carrinho/Renderizar', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Não foi possível recarregar o carrinho.');
+                }
+
+                const html = await response.text();
+                const container = document.getElementById('carrinho-container');
+
+                if (container) {
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar carrinho:', error);
+            }
+        }
+
+        async function recarregarFooterAjax() {
+            try {
+                const response = await fetch('/Home/RenderizarFooter', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Não foi possível recarregar o footer.');
+                }
+
+                const html = await response.text();
+                const container = document.getElementById('footer-container');
+
+                if (container) {
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar footer:', error);
+            }
+        }
+
+         async function recarregarCarrinhoMobileAjax() {
+            const modalContent = document.getElementById('modalCarrinhoMobileContent');
+            if (!modalContent) return;
+
+            const response = await fetch('/Carrinho/RenderizarCarrinhoMobile', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Não foi possível recarregar o carrinho mobile.');
+            }
+
+            const html = await response.text();
+            modalContent.innerHTML = html;
+        }
     </script>
 </body>
 </html>

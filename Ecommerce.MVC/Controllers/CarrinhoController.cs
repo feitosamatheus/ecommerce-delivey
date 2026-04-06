@@ -21,6 +21,18 @@ public class CarrinhoController : Controller
         _context = db;
     }
 
+    [HttpGet]
+    public IActionResult RenderizarCarrinhoMobile()
+    {
+        return ViewComponent("CarrinhoMobile");
+    }
+
+    [HttpGet]
+    public IActionResult Renderizar()
+    {
+        return ViewComponent("Carrinho");
+    }
+
     [HttpPost]
     public async Task<IActionResult> Adicionar([FromBody] AdicionarProdutoCarrinhoViewModel req, CancellationToken ct)
     {

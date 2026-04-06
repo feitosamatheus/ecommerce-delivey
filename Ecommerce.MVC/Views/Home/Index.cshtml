@@ -29,6 +29,56 @@
     .bc-panel-none:empty {
         display: none;
     }
+
+    .modal-backdrop.fade {
+        transition: opacity 0.2s linear;
+    }
+
+    .modal.fade .modal-dialog {
+        transition: transform 0.2s ease-out;
+    }
+
+    .carrinho-loading-wrapper {
+    position: relative;
+    min-height: 180px;
+}
+
+.carrinho-loading-wrapper.is-loading > *:not(.carrinho-loading-overlay) {
+    filter: blur(3px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.carrinho-loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    z-index: 20;
+}
+
+.carrinho-loading-overlay.d-none {
+    display: none;
+}
+
+.carrinho-loading-spinner {
+    width: 42px;
+    height: 42px;
+    border: 4px solid rgba(217, 140, 26, 0.18);
+    border-top-color: #D98C1A;
+    border-radius: 50%;
+    animation: carrinho-spin .8s linear infinite;
+}
+
+@@keyframes carrinho-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 </style>
 
 <div class="my-3 bc-container-home-desktop">
@@ -84,7 +134,6 @@
                 </div>
             </div>
 
-
             @if (Model.Categorias.Count() <= 0)
             {
                 <div class="bc-panel p-3 mb-3 text-center">
@@ -98,7 +147,6 @@
             }
             else
             {
-                <!-- CATEGORIAS TIPO CARROSSEL -->
                 @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Carrossel))
                 {
                     var carouselId = $"carrossel_{categoria.Id:N}";
@@ -112,7 +160,6 @@
 
                         <div id="@carouselId" class="carousel slide mb-2" data-bs-ride="false">
 
-                            <!-- INDICADORES -->
                             @if (slides.Count > 1)
                             {
                                 <div class="carousel-indicators bc-carousel__indicators">
@@ -153,7 +200,6 @@
                                                                 @p.Preco.ToString("C", new CultureInfo("pt-BR"))
                                                             </div>
                                                         </div>
-                                                        <!-- BOTÃO + -->
                                                         <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
                                                             <i class="fa-solid fa-plus"></i>
                                                         </button>
@@ -165,7 +211,6 @@
                                 }
                             </div>
 
-                            <!-- CONTROLES -->
                             @if (slides.Count > 1)
                             {
                                 <button class="carousel-control-prev bc-carousel__btn"
@@ -186,71 +231,74 @@
                     </div>
                 }
 
-                <!-- CATEGORIAS TIPO LISTA/BLOCO -->
                 @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Bloco))
-            {
-                var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
+                {
+                    var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
 
-                <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id">
-                    <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
+                    <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id">
+                        <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
 
-                    <div class="row g-3 row-cols-1 row-cols-md-2">
-                        @foreach (var p in produtos)
-                        {
-                            <div class="col bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
-                                <div class="bc-product p-3">
-                                    <div class="d-flex gap-3">
-                                        <div class="flex-grow-1 bc-product__info d-flex flex-column justify-content-between">
-                                            <div>
-                                                <div class="bc-product__title fw-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.2;">
-                                                    @p.Nome
+                        <div class="row g-3 row-cols-1 row-cols-md-2">
+                            @foreach (var p in produtos)
+                            {
+                                <div class="col bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
+                                    <div class="bc-product p-3">
+                                        <div class="d-flex gap-3">
+                                            <div class="flex-grow-1 bc-product__info d-flex flex-column justify-content-between">
+                                                <div>
+                                                    <div class="bc-product__title fw-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.2;">
+                                                        @p.Nome
+                                                    </div>
+
+                                                    @if (!string.IsNullOrWhiteSpace(p.Descricao))
+                                                    {
+                                                        <div class="text-muted small lh-sm" style="font-size: 0.85rem; color: #6c757d !important;">
+                                                            @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
+                                                        </div>
+                                                    }
                                                 </div>
 
-                                                @if (!string.IsNullOrWhiteSpace(p.Descricao))
-                                                {
-                                                    <div class="text-muted small lh-sm" style="font-size: 0.85rem; color: #6c757d !important;">
-                                                        @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
-                                                    </div>
-                                                }
+                                                <div class="mt-2 fw-bold bc-product__price" style="font-size: 1.1rem; color: #D98C1A;">
+                                                    @p.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                                </div>
                                             </div>
 
-                                            <div class="mt-2 fw-bold bc-product__price" style="font-size: 1.1rem; color: #D98C1A;">
-                                                @p.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                            <div class="bc-product__thumb"
+                                                    style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
                                             </div>
                                         </div>
-
-                                        <div class="bc-product__thumb"
-                                                style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
-                                        </div>
+                                        <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
                                     </div>
-                                    <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
-                                        <i class="fa-solid fa-plus"></i>
-                                    </button>
                                 </div>
-                                <!-- BOTÃO + -->
-                            </div>
-                        }
+                            }
+                        </div>
+                    </div>
+                }
+                
+                <div id="emptySearchStateDesktop" class="d-none flex-column align-items-center justify-content-center py-1 px-0 w-100">
+                    <div class="text-center p-5 bg-white shadow-sm" style="margin: 0 auto; border-radius:5px;">
+                        <div class="mb-4 opacity-25">
+                            <i class="fa-solid fa-magnifying-glass-chart fa-4x text-secondary"></i>
+                        </div>
+                        <h4 class="fw-bold" style="color: #3c1e0a;">Ops! Não encontramos nada</h4>
+                        <p class="text-muted mb-4">
+                            Não existem produtos que correspondam à sua busca ou filtro no momento. Tente usar termos diferentes ou limpar os filtros.
+                        </p>
+                        <button type="button" class="btn btn-outline-dark rounded-pill px-4 fw-bold" onclick="limparFiltroTexto('Mobile')">
+                            <i class="fa-solid fa-rotate-left me-2"></i>Limpar Filtros
+                        </button>
                     </div>
                 </div>
-            }
-            <div id="emptySearchStateDesktop" class="d-none flex-column align-items-center justify-content-center py-1 px-0 w-100">
-                <div class="text-center p-5 bg-white shadow-sm" style="margin: 0 auto; border-radius:5px;">
-                    <div class="mb-4 opacity-25">
-                        <i class="fa-solid fa-magnifying-glass-chart fa-4x text-secondary"></i>
-                    </div>
-                    <h4 class="fw-bold" style="color: #3c1e0a;">Ops! Não encontramos nada</h4>
-                    <p class="text-muted mb-4">
-                        Não existem produtos que correspondam à sua busca ou filtro no momento. Tente usar termos diferentes ou limpar os filtros.
-                    </p>
-                    <button type="button" class="btn btn-outline-dark rounded-pill px-4 fw-bold" onclick="limparFiltroTexto('Mobile')">
-                        <i class="fa-solid fa-rotate-left me-2"></i>Limpar Filtros
-                    </button>
-                </div>
+            }  
+        </div>
+        <div class="col-12 col-lg-4 col-xl-4">
+            <div id="carrinho-container">
+                @await Component.InvokeAsync("Carrinho")
             </div>
-        }  
+        </div>
     </div>
-    @await Component.InvokeAsync("Carrinho")
-</div>
 </div>
 
 <div class="mb-2 mt-0 bc-container-home-mb p-2 p-lg-0 pt-0">
@@ -304,7 +352,6 @@
     }
     else
     {
-        <!-- CATEGORIAS TIPO CARROSSEL -->
         @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Carrossel))
         {
             var carouselId = $"carrossel_{categoria.Id:N}";
@@ -318,7 +365,6 @@
 
                 <div id="@carouselId" class="carousel slide mb-2" data-bs-ride="false">
 
-                    <!-- INDICADORES -->
                     @if (slides.Count > 1)
                     {
                         <div class="carousel-indicators bc-carousel__indicators">
@@ -359,7 +405,6 @@
                                                         @p.Preco.ToString("C", new CultureInfo("pt-BR"))
                                                     </div>
                                                 </div>
-                                                <!-- BOTÃO + -->
                                                 <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
                                                     <i class="fa-solid fa-plus"></i>
                                                 </button>
@@ -371,7 +416,6 @@
                         }
                     </div>
 
-                    <!-- CONTROLES -->
                     @if (slides.Count > 1)
                     {
                         <button class="carousel-control-prev bc-carousel__btn"
@@ -392,15 +436,14 @@
             </div>
         }
 
-        <!-- CATEGORIAS TIPO LISTA/BLOCO -->
         @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Bloco))
         {
             var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
 
-        <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id" style="border-radius: 5px;">
+            <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id" style="border-radius: 5px;">
                 <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
 
-            <div class="row g-3 row-cols-1 row-cols-md-2">
+                <div class="row g-3 row-cols-1 row-cols-md-2">
                     @foreach (var p in produtos)
                     {
                     <div class="col bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
@@ -433,7 +476,6 @@
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
-                            <!-- BOTÃO + -->
                         </div>
                     }
                 </div>
@@ -917,22 +959,42 @@
 
             const result = await response.json();
             const type = result.success ? 'success' : 'danger';
-            showToast(type, result.message);
+            @* showToast(type, result.message); *@
             updateFeedbackAlert(type, result.message);
 
-            if (result.success) {
-                // Aguarda alguns segundos para o usuário ler o toast
-                setTimeout(() => {
-                    // Exibe novo loading enquanto a página recarrega
-                    if (typeof window.addLoading === 'function') {
-                        window.addLoading('Atualizando página...');
+            /*if (result.success) {
+                setTimeout(async () => {
+                    try {
+                        if (typeof window.addLoading === 'function') {
+                            window.addLoading('Atualizando carrinho...');
+                        }
+
+                        await recarregarCarrinhoEFooter();
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        if (typeof window.removeLoading === 'function') {
+                            window.removeLoading();
+                        }
                     }
 
-                    // Atualiza a URL com o parâmetro itemAdicionado=true e recarrega
-                    const currentUrl = new URL(window.location.href);
-                    currentUrl.searchParams.set('itemAdicionado', 'true');
-                    window.location.href = currentUrl.toString();
-                }, 1000); // 3 segundos (ajuste conforme necessário)
+                    //fecharModalEAbrirOutro('modalAddProduto', 'modalSucessoProduto');
+                }, 800);
+            }*/
+            if (result.success) {
+                setTimeout(async () => {
+                    try {
+                        debugger
+                        mostrarLoadingCarrinho();
+                        await recarregarCarrinhoEFooter();
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        ocultarLoadingCarrinho();
+                    }
+
+                    // fecharModalEAbrirOutro('modalAddProduto', 'modalSucessoProduto');
+                }, 800);
             }
         } catch (error) {
             console.error(error);
@@ -945,6 +1007,8 @@
             }
         }
     }
+
+    
 
     // Delegação de eventos: captura cliques em todo o documento e verifica se foi no botão
     document.addEventListener('click', (e) => {
@@ -1013,6 +1077,71 @@
         }
     }
 
+    function fecharModalEAbrirOutro(modalAtualId, proximoModalId) {
+        const modalAtualEl = document.getElementById(modalAtualId);
+        const proximoModalEl = document.getElementById(proximoModalId);
+
+        if (!modalAtualEl || !proximoModalEl) return;
+
+        const modalAtual = bootstrap.Modal.getInstance(modalAtualEl) || bootstrap.Modal.getOrCreateInstance(modalAtualEl);
+        const proximoModal = bootstrap.Modal.getOrCreateInstance(proximoModalEl);
+
+        const onHidden = () => {
+            modalAtualEl.removeEventListener('hidden.bs.modal', onHidden);
+
+            limparBackdropOrfao();
+
+            requestAnimationFrame(() => {
+                proximoModal.show();
+            });
+        };
+
+        modalAtualEl.addEventListener('hidden.bs.modal', onHidden, { once: true });
+        modalAtual.hide();
+    }
+
+    function limparBackdropOrfao() {
+        document.querySelectorAll('.modal-backdrop').forEach((el, index, arr) => {
+            if (index < arr.length - 1) {
+                el.remove();
+            }
+        });
+
+        if (!document.querySelector('.modal.show')) {
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+            document.body.style.removeProperty('overflow');
+        }
+    }
+
+    function mostrarLoadingCarrinho() {
+        const container = document.getElementById('carrinho-container');
+        if (!container) return;
+
+        container.classList.add('is-loading');
+
+        let overlay = container.querySelector('.carrinho-loading-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'carrinho-loading-overlay';
+            overlay.innerHTML = '<div class="carrinho-loading-spinner"></div>';
+            container.appendChild(overlay);
+        } else {
+            overlay.classList.remove('d-none');
+        }
+    }
+
+    function ocultarLoadingCarrinho() {
+        const container = document.getElementById('carrinho-container');
+        if (!container) return;
+
+        container.classList.remove('is-loading');
+
+        const overlay = container.querySelector('.carrinho-loading-overlay');
+        if (overlay) {
+            overlay.classList.add('d-none');
+        }
+    }
 </script>
 
 

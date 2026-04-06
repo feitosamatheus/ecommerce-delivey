@@ -297,6 +297,123 @@ public class PedidoService : IPedidoService
     #endregion
 
     #region Confirmar criação do pedido
+    // public async Task<ConfirmarPedidoResponse> ConfirmarAsync(HttpContext http, Guid clienteId, ConfirmarPedidoRequest req, CancellationToken ct)
+    // {
+    //     if (req == null)
+    //         throw new ArgumentException("Requisição inválida.");
+
+    //     var token = CartTokenHelper.GetOrCreateToken(http);
+
+    //     var carrinho = await _db.Carrinhos
+    //         .Include(c => c.Itens)
+    //             .ThenInclude(i => i.Acompanhamentos)
+    //         .FirstOrDefaultAsync(c => c.UserId == clienteId, ct);
+
+    //     if (carrinho == null || carrinho.Itens.Count == 0)
+    //         throw new InvalidOperationException("Carrinho vazio.");
+
+    //     decimal subtotal = 0m;
+
+    //     foreach (var item in carrinho.Itens)
+    //     {
+    //         var somaAcomp = item.Acompanhamentos?.Sum(a => a.PrecoSnapshot) ?? 0m;
+    //         subtotal += (item.PrecoBaseSnapshot + somaAcomp) * item.Quantidade;
+    //     }
+
+    //     var total = subtotal;
+
+    //     var horarioUtc = DateTime.SpecifyKind(req.HorarioRetirada, DateTimeKind.Utc);
+
+    //     var pedido = new Pedido
+    //     {
+    //         ClienteId = clienteId,
+    //         Codigo = await GerarCodigoPedidoAsync(ct),
+    //         MetodoEntrega = "Retirada",
+    //         Pagamento = "Pix",
+    //         Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim(),
+    //         Subtotal = subtotal,
+    //         TaxaEntrega = 0m,
+    //         Total = total,
+    //         CriadoEmUtc = DateTime.UtcNow,
+    //         Status = Enums.EPedidoStatus.AguardandoPagamento,
+    //         HorarioRetirada = horarioUtc
+    //     };
+
+    //     foreach (var ci in carrinho.Itens)
+    //     {
+    //         var somaAcomp = ci.Acompanhamentos?.Sum(a => a.PrecoSnapshot) ?? 0m;
+    //         var totalLinha = (ci.PrecoBaseSnapshot + somaAcomp) * ci.Quantidade;
+
+    //         var pedidoItem = new PedidoItem
+    //         {
+    //             ProdutoId = ci.ProdutoId,
+    //             ProdutoNomeSnapshot = ci.ProdutoNomeSnapshot,
+    //             PrecoBaseSnapshot = ci.PrecoBaseSnapshot,
+    //             Quantidade = ci.Quantidade,
+    //             PrecoAcompanhamentosSnapshot = somaAcomp,
+    //             TotalLinha = totalLinha
+    //         };
+
+    //         if (ci.Acompanhamentos?.Any() == true)
+    //         {
+    //             foreach (var a in ci.Acompanhamentos)
+    //             {
+    //                 pedidoItem.Acompanhamentos.Add(new PedidoItemAcompanhamento
+    //                 {
+    //                     AcompanhamentoId = a.AcompanhamentoId,
+    //                     CategoriaId = a.CategoriaId,
+    //                     NomeSnapshot = a.NomeSnapshot,
+    //                     PrecoSnapshot = a.PrecoSnapshot
+    //                 });
+    //             }
+    //         }
+
+    //         pedido.Itens.Add(pedidoItem);
+    //     }
+
+    //     await using var tx = await _db.Database.BeginTransactionAsync(ct);
+
+    //     _db.Pedidos.Add(pedido);
+
+    //     var itensIds = carrinho.Itens.Select(i => i.Id).ToList();
+
+    //     if (itensIds.Count > 0)
+    //     {
+    //         var acomps = await _db.Set<CarrinhoItemAcompanhamento>()
+    //             .Where(a => itensIds.Contains(a.CarrinhoItemId))
+    //             .ToListAsync(ct);
+
+    //         _db.Set<CarrinhoItemAcompanhamento>().RemoveRange(acomps);
+    //     }
+
+    //     _db.Set<CarrinhoItem>().RemoveRange(carrinho.Itens);
+    //     _db.Carrinhos.Remove(carrinho);
+
+    //     await _db.SaveChangesAsync(ct);
+    //     await tx.CommitAsync(ct);
+
+    //     CartTokenHelper.ClearToken(http);
+    //     var valorSinal = Math.Round(pedido.Total * 0.50m, 2, MidpointRounding.AwayFromZero);
+
+    //     // PIX fake
+    //     var expiraEmUtc = DateTime.UtcNow.AddMinutes(1440);
+    //     var pixChave = "pix-demo@browniehouse.com";
+    //     var pixCopiaCola = BuildPixCopiaColaFake(pedido.Id, valorSinal);
+    //     var qrBase64 = GenerateQrPngBase64(pixCopiaCola);
+
+    //     return new ConfirmarPedidoResponse
+    //     {
+    //         Ok = true,
+    //         PedidoId = pedido.Id,
+    //         Valor = valorSinal,
+    //         PixChave = pixChave,
+    //         PixCopiaCola = pixCopiaCola,
+    //         QrCodeBase64 = qrBase64,
+    //         ExpiraEmUtc = expiraEmUtc,
+    //         Codigo = pedido.Codigo
+    //     };
+    // }
+
     public async Task<ConfirmarPedidoResponse> ConfirmarAsync(HttpContext http, Guid clienteId, ConfirmarPedidoRequest req, CancellationToken ct)
     {
         if (req == null)
@@ -322,14 +439,41 @@ public class PedidoService : IPedidoService
 
         var total = subtotal;
 
+        if (!Enum.IsDefined(typeof(ETipoCobrancaPedido), req.TipoCobranca))
+            throw new ArgumentException("Tipo de cobrança inválido.");
+
+        var tipoCobranca = (ETipoCobrancaPedido)req.TipoCobranca;
+
+        decimal valorCobranca = tipoCobranca switch
+        {
+            ETipoCobrancaPedido.Sinal => Math.Round(total * 0.50m, 2, MidpointRounding.AwayFromZero),
+            ETipoCobrancaPedido.Saldo => Math.Round(total, 2, MidpointRounding.AwayFromZero),
+            ETipoCobrancaPedido.Complemento => Math.Round(total, 2, MidpointRounding.AwayFromZero),
+            ETipoCobrancaPedido.Ajuste => Math.Round(total, 2, MidpointRounding.AwayFromZero),
+            _ => throw new ArgumentException("Tipo de cobrança inválido.")
+        };
+
+        if (valorCobranca <= 5m)
+            throw new InvalidOperationException("O valor mínimo da cobrança deve ser maior que R$ 5,00.");
+
         var horarioUtc = DateTime.SpecifyKind(req.HorarioRetirada, DateTimeKind.Utc);
+
+        if (!Enum.IsDefined(typeof(ETipoCobrancaPedido), req.TipoCobranca))
+            throw new ArgumentException("Tipo de cobrança inválido.");
+
+        var tipoPagamento = (req.TipoPagamento ?? string.Empty).Trim().ToLower();
+
+        if (tipoPagamento != "pix" && tipoPagamento != "cartao")
+            throw new ArgumentException("Tipo de pagamento inválido. Informe 'pix' ou 'cartao'.");
+
+        var descricaoPagamento = tipoPagamento == "cartao" ? "Cartão" : "Pix";
 
         var pedido = new Pedido
         {
             ClienteId = clienteId,
             Codigo = await GerarCodigoPedidoAsync(ct),
             MetodoEntrega = "Retirada",
-            Pagamento = "Pix",
+            Pagamento = descricaoPagamento,
             Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim(),
             Subtotal = subtotal,
             TaxaEntrega = 0m,
@@ -393,25 +537,32 @@ public class PedidoService : IPedidoService
         await tx.CommitAsync(ct);
 
         CartTokenHelper.ClearToken(http);
-        var valorSinal = Math.Round(pedido.Total * 0.50m, 2, MidpointRounding.AwayFromZero);
 
-        // PIX fake
-        var expiraEmUtc = DateTime.UtcNow.AddMinutes(1440);
-        var pixChave = "pix-demo@browniehouse.com";
-        var pixCopiaCola = BuildPixCopiaColaFake(pedido.Id, valorSinal);
-        var qrBase64 = GenerateQrPngBase64(pixCopiaCola);
-
-        return new ConfirmarPedidoResponse
+        var response = new ConfirmarPedidoResponse
         {
             Ok = true,
             PedidoId = pedido.Id,
-            Valor = valorSinal,
-            PixChave = pixChave,
-            PixCopiaCola = pixCopiaCola,
-            QrCodeBase64 = qrBase64,
-            ExpiraEmUtc = expiraEmUtc,
+            Valor = valorCobranca,
             Codigo = pedido.Codigo
         };
+
+        // Se for PIX, já devolve os dados do QR Code fake
+        if (tipoPagamento == "pix")
+        {
+            var expiraEmUtc = DateTime.UtcNow.AddMinutes(1440);
+            var pixChave = "pix-demo@browniehouse.com";
+            var pixCopiaCola = BuildPixCopiaColaFake(pedido.Id, valorCobranca);
+            var qrBase64 = GenerateQrPngBase64(pixCopiaCola);
+
+            response.PixChave = pixChave;
+            response.PixCopiaCola = pixCopiaCola;
+            response.QrCodeBase64 = qrBase64;
+            response.ExpiraEmUtc = expiraEmUtc;
+        }
+
+        // Se for cartão, apenas retorna os dados básicos do pedido
+        // A geração do checkout/cartão pode ocorrer depois em outro endpoint
+        return response;
     }
 
     private static string BuildPixCopiaColaFake(Guid pedidoId, decimal valorSinal)

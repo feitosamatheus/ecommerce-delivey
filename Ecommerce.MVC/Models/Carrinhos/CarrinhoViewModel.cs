@@ -9,6 +9,7 @@ public class CarrinhoViewModel
 
     public decimal Subtotal => Itens.Sum(i => i.Total);
     public decimal Entrega { get; set; }
+
     public decimal Total => Subtotal + Entrega;
 
     public bool EstaVazio => !Itens.Any();

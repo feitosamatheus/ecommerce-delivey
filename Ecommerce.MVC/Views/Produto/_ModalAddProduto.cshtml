@@ -151,9 +151,15 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius:18px; overflow:hidden;">
             
-            <div class="modal-header border-0 pb-0">
+            <div class="modal-header border-0 pb-0 d-flex justify-content-between">
                 <h5 class="modal-title fw-bold" style="color:#3c1e0a;">Adicionar ao pedido</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                @* <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button> *@
+                <button type="button" 
+                            class="btn-close-custom d-flex align-items-end justify-content-center" 
+                            data-bs-dismiss="modal" 
+                            aria-label="Fechar">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
             </div>
 
             <div class="modal-body pt-2">
@@ -162,8 +168,6 @@
                     <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;"></div>
 
                     <!-- Contêiner para mensagens de feedback (substitui TempData dinamicamente) -->
-                    <div id="feedback-alerts"></div>
-
                     <div class="col-lg-12 product-info-column">
                         <div class="d-flex justify-content-center">
                             <div class="img-container-premium shadow-sm mb-4 d-flex justify-content-center">
@@ -192,6 +196,8 @@
                     </div>
 
                     <div class="col-lg-12">
+                        <div id="feedback-alerts"></div>
+
                         <form id="formAdicionarProdutoCarrinho">
                             <input type="hidden" id="modalPrecoBase" value="@Model.Preco.ToString(CultureInfo.InvariantCulture)" />
                             <input type="hidden" name="ProdutoId" value="@Model.Id" />

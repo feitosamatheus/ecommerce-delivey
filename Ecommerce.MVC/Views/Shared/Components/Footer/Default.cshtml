@@ -181,75 +181,9 @@
     </a>
 </footer>
 
-<div id="carrinho-modal-source">
-    @await Component.InvokeAsync("CarrinhoMobile")
-</div>
+
 
 <script>
-    // $(document).on('click', '.js-acompanhar-pedidos', function () {
 
-    //     addLoading("Carregando...");
-
-    //     setTimeout(() => {
-    //         $.ajax({
-    //               url: '/Pedido/BuscarModalPedidosEmAndamento',
-    //             method: 'GET',
-    //             success: function (html) {
-    //                 $('#conteudo-dinamico').empty();
-    //                 $('#conteudo-dinamico').html(html);
-
-    //                 const el = document.getElementById('modalPedidosEmAndamento');
-    //                 bootstrap.Modal.getOrCreateInstance(el).show();
-
-    //                 removeLoading();
-    //             },
-    //             error: function (xhr) {
-    //                 alert(xhr.responseText || 'Erro ao carregar pedidos.');
-    //                 removeLoading();
-    //             }
-    //         });
-    //     }, 800);
-    // });
-
-    $(document).on('click', '.js-acompanhar-pedidos', function () {
-        addLoading("Carregando...");
-
-        setTimeout(() => {
-            window.location.href = '/Pedido/EmAndamento';
-        }, 800);
-    });
-
-    $(document).on('click', '.js-acompanhar-pedidos-login', function () {
-        $.ajax({
-            url: '/Cliente/BuscarModalAutenticacaoCliente',
-            method: 'GET',
-            cache: false,
-            beforeSend: function () {
-                addLoading("Carregando...");
-            },
-            success: function (html) {
-                $('#conteudo-dinamico').empty();
-                $('#conteudo-dinamico').html(html);
-
-                const modalLoginEl    = document.getElementById('modal-cliente-auth');
-                const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
-                modalLogin.show();
-            },
-            error: function () {
-                $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
-            },
-            complete: function () {
-                removeLoading();
-            }
-        });
-    });
-
-    $(document).on('click', '.js-abrir-carrinho-mobile', function () {
-
-        const modal = bootstrap.Modal.getOrCreateInstance(
-            document.getElementById('modalCarrinhoMobile')
-        );
-
-        modal.show();
-    });
+    
 </script>

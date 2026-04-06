@@ -33,7 +33,7 @@ public class CarrinhoViewComponent : ViewComponent
                 ItemId = item.Id,
                 Nome = item.ProdutoNomeSnapshot,
                 Quantidade = item.Quantidade,
-
+                Observacao = item.Observacao,
                 PrecoUnitario = item.PrecoBaseSnapshot + precoAcompanhamentos,
                 Total = (item.PrecoBaseSnapshot + precoAcompanhamentos) * item.Quantidade,
 

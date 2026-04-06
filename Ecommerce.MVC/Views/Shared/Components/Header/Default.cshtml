@@ -10,11 +10,15 @@
                 </div>
 
                 <div class="text-center text-md-start">
-                    <img class="bc-hero__logo mb-2 mb-md-0" src="~/img/logo.jpg" alt="Logo Barriga Cheia" />
+                    <a asp-controller="Home" asp-action="Index" class="d-inline-block">
+                        <img class="bc-hero__logo mb-2 mb-md-0" src="~/img/logo.jpg" alt="Logo Barriga Cheia" />
+                    </a>
                 </div>
 
                 <div class="text-center text-md-start">
-                    <h1 class="bc-hero__title mb-1">Barriga Cheia</h1>
+                    <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                        <h1 class="bc-hero__title mb-1">Barriga Cheia</h1>
+                    </a>
                     <p class="bc-hero__subtitle mb-0" style="color: #e0c9a6;"><span>Sopas & Caldos</span> · <span>Lanchonete</span></p>
                     <small class="bc-hero__meta" style="color: #e0c9a6;">
                         Olinda-PE · Rua Nilson Sabino Pinho, 222
@@ -162,12 +166,16 @@
         <div class="container-fluid px-3">
             <div class="d-flex align-items-center gap-3"> 
                 <div class="bc-mb-logo-wrapper">
-                    <img class="bc-mb-logo" src="~/img/logo.jpg" alt="Logo Barriga Cheia" />
+                    <a asp-controller="Home" asp-action="Index" class="d-inline-block">
+                        <img class="bc-mb-logo" src="~/img/logo.jpg" alt="Logo Barriga Cheia" />
+                    </a>
                 </div>
 
                 <div class="bc-mb-info-group">
                     <div class="d-flex align-items-baseline flex-wrap gap-2">
-                        <h1 class="bc-mb-title mb-0">Barriga Cheia</h1>
+                        <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                            <h1 class="bc-mb-title text-light mb-0">Barriga Cheia</h1>
+                        </a>
                         
                         <a href="javascript:void(0)" 
                         class="text-decoration-none fw-bold ms-2" 
@@ -251,7 +259,7 @@
                                 </button>
                             </li> *@
                             <li>
-                                <a href="@Url.Action("Index", "Pedido")"
+                                <a href="@Url.Action("EmAndamento", "Pedido")"
                                    class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-hover-sidebar text-decoration-none"
                                    style="color: inherit;">
 
@@ -326,29 +334,29 @@
 <script>
   (function () {
         function abrirModalConta() {
-        $.ajax({
-            url: '/Cliente/BuscarModalAutenticacaoCliente',
-            method: 'GET',
-            cache: false,
-            beforeSend: function () {
-                addLoading("Carregando...");
-            },
-            success: function (html) {
-                $('#conteudo-dinamico').empty();
-                $('#conteudo-dinamico').html(html);
+            $.ajax({
+                url: '/Cliente/BuscarModalAutenticacaoCliente',
+                method: 'GET',
+                cache: false,
+                beforeSend: function () {
+                    addLoading("Carregando...");
+                },
+                success: function (html) {
+                    $('#conteudo-dinamico').empty();
+                    $('#conteudo-dinamico').html(html);
 
-                const modalLoginEl    = document.getElementById('modal-cliente-auth');
-                const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
-                modalLogin.show();
-            },
-            error: function () {
-                $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
-            },
-            complete: function () {
-                removeLoading();
-            }
-        });
-    }
+                    const modalLoginEl    = document.getElementById('modal-cliente-auth');
+                    const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
+                    modalLogin.show();
+                },
+                error: function () {
+                    $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
+                },
+                complete: function () {
+                    removeLoading();
+                }
+            });
+        }
 
         window.irParaLogin = function() {
             const modalAcompanhamentoEl = document.getElementById('modalAcompanhamentoCliente');
@@ -491,5 +499,81 @@
             btn.setAttribute('aria-expanded', 'false');
         }
     });
+  
+        $(document).on('submit', '#forgotPasswordForm', function (e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const $btn = $form.find('button[type="submit"]');
+            const token = $form.find('input[name="__RequestVerificationToken"]').val();
+            const $email = $('#forgotEmail');
+
+            function clearForgotMessages() {
+                $('#forgotPasswordSuccessBox').addClass('d-none').text('');
+                $('#forgotPasswordErrorBox').addClass('d-none').text('');
+                $('#forgotEmail').removeClass('is-invalid');
+                $('#forgotEmailFeedback').text('');
+            }
+
+            function showForgotError(message) {
+                $('#forgotPasswordErrorBox').removeClass('d-none').text(message || 'Não foi possível processar a solicitação.');
+            }
+
+            function showForgotSuccess(message) {
+                $('#forgotPasswordSuccessBox').removeClass('d-none').text(message || 'Solicitação processada com sucesso.');
+            }
+
+            clearForgotMessages();
+
+            const email = ($email.val() || '').trim();
+
+            if (!email) {
+                $email.addClass('is-invalid');
+                $('#forgotEmailFeedback').text('Informe o e-mail.');
+                return;
+            }
+
+            $.ajax({
+                url: '/Cliente/EsqueciMinhaSenha',
+                method: 'POST',
+                data: {
+                    Email: email
+                },
+                headers: token ? { 'RequestVerificationToken': token } : {},
+                beforeSend: function () {
+                    $btn.prop('disabled', true);
+                    addLoading('Enviando...');
+                },
+                success: function (result) {
+                    if (result?.success) {
+                        showForgotSuccess(result.message || 'Se o e-mail estiver cadastrado, uma nova senha foi enviada.');
+                        uiNotify.toast.success(result.message || 'Solicitação processada com sucesso.');
+
+                        $form[0].reset();
+
+                        setTimeout(function () {
+                            //showLogin(); 
+                        }, 2500);
+
+                        return;
+                    }
+
+                    const msg = result?.message || 'Não foi possível processar a solicitação.';
+                    showForgotError(msg);
+                    uiNotify.toast.warn(msg);
+                },
+                error: function () {
+                    const msg = 'Erro ao comunicar com o servidor. Tente novamente.';
+                    showForgotError(msg);
+                    uiNotify.alert.error(msg);
+                },
+                complete: function () {
+                    $btn.prop('disabled', false);
+                    removeLoading();
+                }
+            });
+        });
+
+        
   })();
 </script>

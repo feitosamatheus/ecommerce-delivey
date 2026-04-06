@@ -40,13 +40,13 @@ public class HomeController : Controller
 
                     ViewBag.ExibirModalTrocaSenha = precisaTrocar;
 
-                    if (cliente.PrimeiroAcessoRedefinir)
-                    {
-                        cliente.PrimeiroAcessoRedefinir = false;
+                    // if (cliente.PrimeiroAcessoRedefinir)
+                    // {
+                    //     cliente.PrimeiroAcessoRedefinir = false;
 
-                        _context.Clientes.Update(cliente);
-                        await _context.SaveChangesAsync();
-                    }
+                    //     _context.Clientes.Update(cliente);
+                    //     await _context.SaveChangesAsync();
+                    // }
                 }
             }
         }
@@ -57,5 +57,11 @@ public class HomeController : Controller
     public IActionResult EmConstrucao()
     {
         return View();
+    }
+
+    [HttpGet]
+    public IActionResult RenderizarFooter()
+    {
+        return ViewComponent("Footer");
     }
 }

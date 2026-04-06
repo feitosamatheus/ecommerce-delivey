@@ -193,9 +193,10 @@
             border-color: #e7b8b8;
             color: #a5281b;
         }
+        
 </style>
 
-<div class="col-12 col-lg-4 col-xl-4">
+<div class="col-12">
     <div class="bc-panel p-4 bc-cart-container bc-cart--sticky">
         <div class="bc-cart__header d-flex align-items-center justify-content-between mb-3">
             <h5 class="mb-0">
@@ -258,6 +259,14 @@
                                     </li>
                                 }
                             </ul>
+                        }
+                        
+                        @if (!string.IsNullOrWhiteSpace(item.Observacao))
+                        {
+                            <div class="small text-muted mt-1">
+                                <i class="fa-regular fa-comment-dots me-1 opacity-75"></i>
+                                <span>@item.Observacao</span>
+                            </div>
                         }
                     </div>
                 }
@@ -347,7 +356,7 @@
             return;
         }
 
-        addLoading("Atualizando carrinho...");
+        //addLoading("Atualizando carrinho...");
 
         $.ajax({
             url: '/Carrinho/AtualizarQuantidade',
@@ -358,7 +367,8 @@
             },
             success: function (response) {
                 if (response.sucesso) {
-                    location.reload();
+                    recarregarCarrinhoEFooter();
+                    removeLoading();
                 } else {
                     alert(response.mensagem || 'Não foi possível atualizar a quantidade.');
                     removeLoading();
@@ -372,40 +382,43 @@
     });
 
     $(document).on('click', '.js-remover-item-carrinho', function () {
-    const botao = $(this);
-    const itemId = botao.data('item-id');
+        const botao = $(this);
+        const itemId = botao.data('item-id');
 
-    Swal.fire({
-        title: 'Remover item?',
-        text: 'Este item será removido do carrinho.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sim, remover',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (!result.isConfirmed) return;
+        Swal.fire({
+            title: 'Remover item?',
+            text: 'Este item será removido do carrinho.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, remover',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
 
-        addLoading("Removendo item...");
+            addLoading("Removendo item...");
 
-        $.ajax({
-            url: '/Carrinho/RemoverItem',
-            type: 'POST',
-            data: {
-                itemId: itemId
-            },
-            success: function (response) {
-                if (response.sucesso) {
-                    location.reload();
-                } else {
-                    Swal.fire('Erro', response.mensagem || 'Não foi possível remover o item.', 'error');
+            $.ajax({
+                url: '/Carrinho/RemoverItem',
+                type: 'POST',
+                data: {
+                    itemId: itemId
+                },
+                success: function (response) {
+                    if (response.sucesso) {
+                        //location.reload();
+                        recarregarCarrinhoEFooter();
+                        removeLoading();
+                    } else {
+                        Swal.fire('Erro', response.mensagem || 'Não foi possível remover o item.', 'error');
+                        removeLoading();
+                    }
+                },
+                error: function (xhr) {
+                    Swal.fire('Erro', xhr.responseText || 'Erro ao remover item.', 'error');
                     removeLoading();
                 }
-            },
-            error: function (xhr) {
-                Swal.fire('Erro', xhr.responseText || 'Erro ao remover item.', 'error');
-                removeLoading();
-            }
+            });
         });
     });
-});
+
 </script>

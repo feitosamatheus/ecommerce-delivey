@@ -258,134 +258,6 @@
     // -----------------------------
     // Step 2: Confirmar pedido (AJAX)
     // -----------------------------
-    $(document).on("click", "#btnWizardNext[data-action=\"confirmar\"]", function (e) {
-        if (step !== 2) return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        addLoading?.("Processando...");
-
-        const horario = ($("#inputHorarioFinal").val() || "").trim();
-        const observacao = ($("#obsPedido").val() || "").trim();
-
-        if (!horario) {
-            alert("Por favor, selecione um horário para retirada.");
-            removeLoading?.();
-            return;
-        }
-
-        const payload = { horarioRetirada: horario, observacao: observacao };
-
-        const $btn = $(this);
-        $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Processando...');
-
-        $.ajax({
-            url: "/Pedido/Confirmar",
-            method: "POST",
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(payload),
-            success: async function (res) {
-                stopPixTimer();
-                showStep(3);
-                atualizarVisibilidadePagamento();
-                window._pedidoConfirmado = true;
-
-                const pedidoId = res.pedidoId;
-                const valor = res.valor;
-                const tipoPagamento = ($("#selectPagamento").val() || "pix").toLowerCase();
-
-                if (!pedidoId) {
-                    uiNotify.alert.error("Pedido confirmado, mas o identificador do pedido não foi retornado.");
-                    $btn.prop("disabled", false).text("Confirmar pedido");
-                    removeLoading?.();
-                    return;
-                }
-
-                $("#pixPedidoId").val(pedidoId);
-                $("#cartaoPedidoId").val(pedidoId);
-
-                if (tipoPagamento === "pix") {
-                    $("#pixCopiaCola").val("");
-                    $("#pixTxid").text("Gerando...");
-                    $("#pixQrImg").attr("src", "");
-                    $("#pixValorFinal").text(formatBRL(valor || 0));
-
-                    $("#pixStatusBox").removeClass("d-none").html(`
-                        <div class="alert alert-warning border-0 rounded-4 mb-0">
-                            <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
-                            Gerando cobrança PIX...
-                        </div>
-                    `);
-
-                    try {
-                        await carregarPixPedido(pedidoId);
-                        await iniciarConexaoPagamento(pedidoId);
-
-                        uiNotify.toast.success("Pedido confirmado com sucesso! Agora finalize o pagamento via PIX.");
-                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
-                    } catch (err) {
-                        uiNotify.alert.error(err.message || "Erro ao gerar cobrança PIX.");
-                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
-                    }
-
-                    removeLoading?.();
-                    return;
-                }
-
-                if (tipoPagamento === "cartao") {
-                    $("#cartaoValorSinal").text(formatBRL(valor || 0));
-                    $("#btnAbrirCheckoutCartao").data("invoice-url", "");
-                    $("#cartaoStatusBox").removeClass("d-none").html(`
-                        <div class="alert alert-warning border-0 rounded-4 mb-0">
-                            <i class="fa-regular fa-credit-card me-1 fa-spin"></i>
-                            Gerando cobrança no cartão...
-                        </div>
-                    `);
-
-                    try {
-                        const resCartao = await carregarCartaoPedido(pedidoId);
-
-                        if (!resCartao?.payment?.invoiceUrl) {
-                            throw new Error("A URL de pagamento não foi retornada.");
-                        }
-
-                        $("#btnAbrirCheckoutCartao").data("invoice-url", resCartao.payment.invoiceUrl);
-
-                        $("#cartaoStatusBox").html(`
-                            <div class="alert alert-success border-0 rounded-4 mb-0">
-                                <i class="fa-solid fa-circle-check me-1"></i>
-                                Cobrança gerada com sucesso. Clique no botão abaixo para abrir o checkout seguro.
-                            </div>
-                        `);
-
-                        uiNotify.toast.success("Pedido confirmado com sucesso! Agora finalize o pagamento com cartão.");
-                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
-                    } catch (err) {
-                        uiNotify.alert.error(err.message || "Erro ao gerar cobrança no cartão.");
-                        $("#cartaoStatusBox").html(`
-                            <div class="alert alert-danger border-0 rounded-4 mb-0">
-                                <i class="fa-solid fa-circle-xmark me-1"></i>
-                                ${err.message || "Erro ao gerar cobrança no cartão."}
-                            </div>
-                        `);
-                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
-                    }
-
-                    removeLoading?.();
-                    return;
-                }
-
-                uiNotify.alert.error("Forma de pagamento inválida.");
-                $btn.prop("disabled", false).text("Confirmar pedido");
-                removeLoading?.();
-            },
-            error: function (xhr) {
-                $btn.prop("disabled", false).text("Confirmar pedido");
-                uiNotify.alert.error(xhr.responseText || "Erro ao processar pedido.");
-                removeLoading?.();
-            }
-        });
-    });
 
     // -----------------------------
     // Step 3: ações (copiar/ja paguei)
@@ -953,5 +825,165 @@
         document.getElementById('calendarioBlocos').scrollBy({ left: 200, behavior: 'smooth' });
     });
 
+    function setStatusMensagemStep2(type, message, icon = "") {
+        $("#statusMensagemStep2")
+            .removeClass("d-none")
+            .html(`
+                <div class="alert alert-${type} border-0 rounded-4 mb-0 shadow-sm">
+                    ${icon ? `<i class="${icon} me-2"></i>` : ""}
+                    ${message}
+                </div>
+            `);
+    }
 
+    function limparStatusMensagemStep2() {
+        $("#statusMensagemStep2").addClass("d-none").html("");
+    }
+
+    $(document).on("click", "#btnWizardNext[data-action=\"confirmar\"]", function (e) {
+        if (step !== 2) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        limparStatusMensagemStep2();
+        addLoading?.("Processando...");
+
+        const horario = ($("#inputHorarioFinal").val() || "").trim();
+        const observacao = ($("#obsPedido").val() || "").trim();
+
+        const tipoCobranca = Number($("#selectTipoCobranca").val() || 1);
+        const tipoPagamento = ($("#selectPagamento").val() || "pix").toLowerCase();
+
+        if (!horario) {
+            setStatusMensagemStep2(
+                "danger",
+                "Por favor, selecione um horário para retirada.",
+                "fa-solid fa-triangle-exclamation"
+            );
+            removeLoading?.();
+            return;
+        }
+
+        const payload = {
+            horarioRetirada: horario,
+            observacao: observacao,
+            tipoCobranca: tipoCobranca,
+            tipoPagamento: tipoPagamento
+        };
+
+        const $btn = $(this);
+        $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Processando...');
+
+        $.ajax({
+            url: "/Pedido/Confirmar",
+            method: "POST",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(payload),
+            success: async function (res) {
+                stopPixTimer();
+                showStep(3);
+                atualizarVisibilidadePagamento();
+                window._pedidoConfirmado = true;
+
+                const pedidoId = res.pedidoId;
+                const valor = res.valor;
+
+                if (!pedidoId) {
+                    setStatusMensagemStep2(
+                        "danger",
+                        "Pedido confirmado, mas o identificador do pedido não foi retornado.",
+                        "fa-solid fa-circle-xmark"
+                    );
+                    $btn.prop("disabled", false).text("Confirmar pedido");
+                    removeLoading?.();
+                    return;
+                }
+
+                $("#pixPedidoId").val(pedidoId);
+                $("#cartaoPedidoId").val(pedidoId);
+
+                if (tipoPagamento === "pix") {
+                    $("#pixCopiaCola").val("");
+                    $("#pixTxid").text("Gerando...");
+                    $("#pixQrImg").attr("src", "");
+                    $("#pixValorFinal").text(formatBRL(valor || 0));
+
+                    $("#pixStatusBox").removeClass("d-none").html(`
+                        <div class="alert alert-warning border-0 rounded-4 mb-0">
+                            <i class="fa-regular fa-hourglass-half me-1 fa-spin"></i>
+                            Gerando cobrança PIX...
+                        </div>
+                    `);
+
+                    try {
+                        await carregarPixPedido(pedidoId);
+                        await iniciarConexaoPagamento(pedidoId);
+
+                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                    } catch (err) {
+                        setStatusMensagemStep2(
+                            "danger",
+                            err.message || "Erro ao gerar cobrança PIX.",
+                            "fa-solid fa-circle-xmark"
+                        );
+                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                    }
+
+                    removeLoading?.();
+                    return;
+                }
+
+                if (tipoPagamento === "cartao") {
+                    $("#cartaoValorSinal").text(formatBRL(valor || 0));
+                    $("#btnAbrirCheckoutCartao").data("invoice-url", "");
+                    $("#cartaoStatusBox").removeClass("d-none").html(`
+                        <div class="alert alert-warning border-0 rounded-4 mb-0">
+                            <i class="fa-regular fa-credit-card me-1 fa-spin"></i>
+                            Gerando cobrança no cartão...
+                        </div>
+                    `);
+
+                    try {
+                        const resCartao = await carregarCartaoPedido(pedidoId);
+
+                        if (!resCartao?.payment?.invoiceUrl) {
+                            throw new Error("A URL de pagamento não foi retornada.");
+                        }
+
+                        $("#btnAbrirCheckoutCartao").data("invoice-url", resCartao.payment.invoiceUrl);
+                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                    } catch (err) {
+                        setStatusMensagemStep2(
+                            "danger",
+                            err.message || "Erro ao gerar cobrança no cartão.",
+                            "fa-solid fa-circle-xmark"
+                        );
+                        $btn.prop("disabled", false).text("Fechar").removeAttr("data-action");
+                    }
+
+                    removeLoading?.();
+                    return;
+                }
+
+                setStatusMensagemStep2(
+                    "danger",
+                    "Forma de pagamento inválida.",
+                    "fa-solid fa-triangle-exclamation"
+                );
+
+                $btn.prop("disabled", false).text("Confirmar pedido");
+                removeLoading?.();
+            },
+            error: function (xhr) {
+                setStatusMensagemStep2(
+                    "danger",
+                    xhr.responseText || "Erro ao processar pedido.",
+                    "fa-solid fa-circle-xmark"
+                );
+
+                $btn.prop("disabled", false).text("Confirmar pedido");
+                removeLoading?.();
+            }
+        });
+    });
 })();
