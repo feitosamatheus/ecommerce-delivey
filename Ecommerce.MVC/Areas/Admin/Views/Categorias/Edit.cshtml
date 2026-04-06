@@ -67,14 +67,20 @@
 
                 <div class="row g-4">
                     @* Nome da Categoria *@
-                    <div class="col-md-7">
+                    <div class="col-md-6">
                         <label asp-for="Nome" class="form-label">Nome da Categoria</label>
                         <input asp-for="Nome" class="form-control" placeholder="Ex: Pizzas, Bebidas, Combos..." />
                         <span asp-validation-for="Nome" class="text-danger small"></span>
                     </div>
 
+                    <div class="col-md-3">
+                        <label asp-for="Ordem" class="form-label">Ordem</label>
+                        <input asp-for="Ordem" class="form-control" type="number" min="0" placeholder="Ex: 1" />
+                        <span asp-validation-for="Ordem" class="text-danger small"></span>
+                    </div>
+
                     @* Tipo de Exibição *@
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <label asp-for="TipoExibicao" class="form-label">Tipo de Exibição no App</label>
                         <select asp-for="TipoExibicao" asp-items="Model.TiposExibicao" class="form-select">
                             <option value="">Selecione o modo de exibição...</option>

@@ -29,6 +29,16 @@ public class AdminProdutoFormViewModel
     [Range(0, 600)]
     public int TempoPreparoMinutos { get; set; }
 
+    [Range(0, 999, ErrorMessage = "Informe uma hora válida.")]
+    public int TempoPreparoHoras { get; set; }
+
+    [Range(0, 59, ErrorMessage = "Informe minutos válidos.")]
+    public int TempoPreparoMinutosRestantes { get; set; }
+
+    public int Ordem { get; set; }
+
+
+
     [Required(ErrorMessage = "Selecione uma categoria")]
     [Display(Name = "Categoria")]
     public Guid CategoriaId { get; set; }

@@ -1,6 +1,7 @@
 using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Models.Admin.Acompanhamentos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Ecommerce.MVC.Areas.Admin.Controllers;
 
 [Area("Admin")]
+[Authorize(Roles = "administrador,gerente")]
+
 public class AcompanhamentosController : Controller
 {
     private readonly DatabaseContext _db;

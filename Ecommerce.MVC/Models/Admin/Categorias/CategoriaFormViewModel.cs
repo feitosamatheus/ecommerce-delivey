@@ -16,5 +16,9 @@ public class CategoriaFormViewModel
     [Required(ErrorMessage = "Selecione o tipo de exibição.")]
     public ETipoExibicao TipoExibicao { get; set; }
 
+    [Required(ErrorMessage = "Informe a ordem de exibição.")]
+    [Range(0, int.MaxValue, ErrorMessage = "Informe uma ordem válida.")]
+    public int Ordem { get; set; }
+
     public List<SelectListItem> TiposExibicao { get; set; } = new();
 }

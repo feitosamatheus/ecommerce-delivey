@@ -23,6 +23,15 @@ namespace Ecommerce.MVC.Models.Admin
 
         public bool Ativo { get; set; } = true;
 
+        public int Ordem { get; set; }
+
+        [Range(0, 999, ErrorMessage = "Informe uma hora válida.")]
+        public int TempoPreparoHoras { get; set; }
+
+        [Range(0, 59, ErrorMessage = "Informe minutos válidos.")]
+        public int TempoPreparoMinutosRestantes { get; set; }
+
+
         public List<SelectListItem> Categorias { get; set; } = new();
 
         public List<SelectListItem> CategoriasAcompanhamentoDisponiveis { get; set; } = new();

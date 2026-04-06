@@ -21,8 +21,10 @@ public class CategoriaService : ICategoriaService
 
     public async Task<IEnumerable<Categoria>> BuscarCategoriasAsync()
     {
-        return await _context.Categorias.AsNoTracking().Where(c => c.Produtos.Any())
-            .Include(c => c.Produtos)
+        return await _context.Categorias
+            .AsNoTracking()
+            .Where(c => c.Produtos.Any(p => p.Ativo))
+            .Include(c => c.Produtos.Where(p => p.Ativo))
             .OrderBy(c => c.Nome)
             .ToListAsync();
     }

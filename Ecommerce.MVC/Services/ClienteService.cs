@@ -45,7 +45,8 @@ public class ClienteService : IClienteService
             CPF = cpf,
             Telefone = model.WhatsApp,
             SenhaHash = BCrypt.Net.BCrypt.HashPassword(model.Senha),
-            DataCadastro = DateTime.Now
+            DataCadastro = DateTime.Now,
+            PrimeiroAcessoRedefinir = false
         };
 
         _context.Clientes.Add(novoCliente);

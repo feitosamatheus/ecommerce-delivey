@@ -161,7 +161,18 @@
                                 </td>
                                 <td class="text-end fw-bold text-dark">@p.Preco.ToString("C", pt)</td>
                                 <td class="text-center">
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle badge-status">Ativo</span>
+                                    @if (p.Ativo)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle badge-status">
+                                            Ativo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle badge-status">
+                                            Inativo
+                                        </span>
+                                    }
                                 </td>
                                 <td>
                                     @p.DataCriacaoUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")

@@ -35,7 +35,10 @@ public class Produto
 
     public bool Ativo { get; set; } = true;
 
+    public int Ordem { get; set; }
+
     public DateTime DataCriacaoUtc { get; set; } = DateTime.UtcNow;
 
     public ICollection<ProdutoAcompanhamentoCategoria> AcompanhamentoCategorias { get; set; } = new List<ProdutoAcompanhamentoCategoria>();
+    public ICollection<CarrinhoItem> CarrinhoItems { get; set; } = new List<CarrinhoItem>();
 }

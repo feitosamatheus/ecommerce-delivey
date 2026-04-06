@@ -160,11 +160,13 @@
                         <label class="form-label">Nível de Acesso (Role)</label>
                         <select name="role" class="form-select">
                             <option value="">Todos os níveis</option>
-                            <option value="Cliente" selected="@(Model.Role == "Cliente")">Cliente</option>
+                            <option value="cliente" selected="@(Model.Role == "cliente")">Cliente</option>
                             <option value="administrador" selected="@(Model.Role == "administrador")">Administrador</option>
                             <option value="gerente" selected="@(Model.Role == "gerente")">Gerente</option>
-                            <option value="atendente" selected="@(Model.Role == "atendente")">Atendente</option>
-                            <option value="cozinha" selected="@(Model.Role == "cozinha")">Cozinha</option>
+                            <option value="cozinhaN1" selected="@(Model.Role == "cozinhaN1")">Cozinha N1</option>
+                            <option value="cozinhaN2" selected="@(Model.Role == "cozinhaN2")">Cozinha N2</option>
+                            <option value="balcaoN1" selected="@(Model.Role == "balcaoN1")">Balcão N1</option>
+                            <option value="balcaoN2" selected="@(Model.Role == "balcaoN2")">Balcão N2</option>
                         </select>
                     </div>
                     <div class="col-xl-3 d-flex align-items-end gap-2">

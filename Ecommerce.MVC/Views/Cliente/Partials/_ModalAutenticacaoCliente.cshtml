@@ -193,19 +193,6 @@
                                                     Esqueci minha senha
                                                 </a>
                                             </small>
-
-                 @*                            <small class="d-flex gap-2 flex-wrap justify-content-end">
-                                                <a href="javascript:void(0)"
-                                                       onclick="showTerms('login')"
-                                                       style="color: #d4a017; font-size: 0.75rem;">
-                                                    Termos de Serviço
-                                                </a>
-                                                <a href="javascript:void(0)"
-                                                       onclick="showPrivacy('login')"
-                                                       style="color: #d4a017; font-size: 0.75rem;">
-                                                    Política de Privacidade
-                                                </a>
-                                            </small> *@
                                         </div>
                                     </div>
 
@@ -417,7 +404,7 @@
                                     </form>
                                 </div>
 
-                            <div class="col-lg-12 px-2 px-lg-5 py-3" id="terms-form" style="display: none;">
+                                <div class="col-lg-12 px-2 px-lg-5 py-3" id="terms-form" style="display: none;">
                                     <div class="text-center mb-2 mt-4">
                                         <img src="~/img/logo4.png" alt="Logo" style="width: 80px;">
                                         </div>
@@ -438,7 +425,7 @@
                                         </div>
                                     </div>
 
-                            <div class="col-lg-12 px-2 px-lg-5 py-3" id="privacy-form" style="display: none;">
+                                    <div class="col-lg-12 px-2 px-lg-5 py-3" id="privacy-form" style="display: none;">
                                         <div class="text-center mb-2 mt-4">
                                             <img src="~/img/logo4.png" alt="Logo" style="width: 80px;">
                                             </div>
@@ -668,4 +655,244 @@
                                 icon.classList.add('fa-eye');
                             }
                         }
+
+                        $(document).on('submit', '#loginForm', function (e) {
+                            e.preventDefault();
+
+                            const $form = $(this);
+                            const $btn = $form.find('button[type="submit"]');
+                            const token = $form.find('input[name="__RequestVerificationToken"]').val();
+
+                            const $email = $('#loginEmail');
+                            const $senha = $('#loginSenha');
+
+                            function clearLoginErrors() {
+                                $('#loginErrorBox').addClass('d-none').text('');
+                                $email.removeClass('is-invalid');
+                                $senha.removeClass('is-invalid');
+                                $('#loginEmailFeedback').text('');
+                                $('#loginSenhaFeedback').text('');
+                            }
+
+                            function showLoginError(message) {
+                                $('#loginErrorBox').removeClass('d-none').text(message || 'Não foi possível realizar o login.');
+                            }
+
+                            function setFieldError($field, feedbackSelector, message) {
+                                $field.addClass('is-invalid');
+                                $(feedbackSelector).text(message || '');
+                            }
+
+                            const payload = {
+                                email: ($email.val() || '').trim(),
+                                senha: $senha.val() || ''
+                            };
+
+                            clearLoginErrors();
+
+                            if (!payload.email) {
+                                setFieldError($email, '#loginEmailFeedback', 'Informe o e-mail.');
+                                return;
+                            }
+
+                            if (!payload.senha) {
+                                setFieldError($senha, '#loginSenhaFeedback', 'Informe a senha.');
+                                return;
+                            }
+
+                            $.ajax({
+                                url: '/Cliente/Login',
+                                method: 'POST',
+                                dataType: 'json',
+                                contentType: 'application/json; charset=utf-8',
+                                data: JSON.stringify(payload),
+                                headers: token ? { 'RequestVerificationToken': token } : {},
+                                beforeSend: function () {
+                                    $btn.prop('disabled', true);
+                                    if (typeof addLoading === 'function') {
+                                        addLoading('Processando...');
+                                    }
+                                },
+                                success: function (result) {
+                                    if (result && result.success) {
+                                        if (typeof uiNotify !== 'undefined' && uiNotify.toast) {
+                                            uiNotify.toast.success(result.message || 'Login realizado com sucesso!');
+                                        }
+                                        window.location.href = '/Home/Index';
+                                        return;
+                                    }
+
+                                    const msg = (result && result.message) || 'E-mail ou senha inválidos.';
+                                    showLoginError(msg);
+                                    $email.addClass('is-invalid');
+                                    $senha.addClass('is-invalid');
+                                    $('#loginEmailFeedback').text('Verifique o e-mail informado.');
+                                    $('#loginSenhaFeedback').text('Verifique a senha informada.');
+                                    $btn.prop('disabled', false);
+
+                                    if (typeof uiNotify !== 'undefined' && uiNotify.toast) {
+                                        uiNotify.toast.warn(msg);
+                                    }
+                                },
+                                statusCode: {
+                                    429: function () {
+                                        const msg = 'Muitas tentativas. Aguarde um momento e tente novamente.';
+                                        showLoginError(msg);
+                                        $btn.prop('disabled', false);
+
+                                        if (typeof uiNotify !== 'undefined' && uiNotify.toast) {
+                                            uiNotify.toast.warn(msg);
+                                        }
+                                    }
+                                },
+                                error: function () {
+                                    const msg = 'Falha ao comunicar com o servidor. Tente novamente.';
+                                    showLoginError(msg);
+                                    $btn.prop('disabled', false);
+
+                                    if (typeof uiNotify !== 'undefined' && uiNotify.alert) {
+                                        uiNotify.alert.error(msg);
+                                    }
+                                },
+                                complete: function () {
+                                    if (typeof removeLoading === 'function') {
+                                        removeLoading();
+                                    }
+                                }
+                            });
+                        });
+
+                        $(document).on('submit', '#registerForm', function (e) {
+                            e.preventDefault();
+
+                            const $form = $(this);
+                            const $btn = $form.find('button[type="submit"]');
+                            const token = $form.find('input[name="__RequestVerificationToken"]').val();
+
+                            const formData = new FormData(this);
+                            const data = Object.fromEntries(formData.entries());
+
+                            data.AceitaTermos = document.getElementById('checkTerms')?.checked ?? false;
+                            data.AceitaMarketing = document.getElementById('checkMarketing')?.checked ?? false;
+
+                            function clearRegisterErrors() {
+                                $('#registerErrorBox').addClass('d-none').text('');
+                                $form.find('.is-invalid').removeClass('is-invalid');
+                                $form.find('.invalid-feedback').text('');
+                            }
+
+                            function showRegisterError(message) {
+                                $('#registerErrorBox').removeClass('d-none').text(message || 'Não foi possível concluir o cadastro.');
+                            }
+
+                            function setFieldErrorById(fieldId, message) {
+                                const $field = $('#' + fieldId);
+                                if ($field.length) {
+                                    $field.addClass('is-invalid');
+                                    const $fb = $('#' + fieldId + 'Feedback');
+                                    if ($fb.length) $fb.text(message || '');
+                                }
+                            }
+
+                            function applyServerErrors(errors) {
+                                if (!errors) return;
+
+                                if (Array.isArray(errors)) {
+                                    showRegisterError('Verifique os campos e tente novamente.');
+                                    return;
+                                }
+
+                                if (typeof errors === 'object') {
+                                    showRegisterError('Verifique os campos e tente novamente.');
+
+                                    Object.keys(errors).forEach((key) => {
+                                        const msgs = errors[key];
+                                        const msg = Array.isArray(msgs) ? (msgs[0] || '') : (msgs || '');
+                                        setFieldErrorById(key, msg);
+                                    });
+                                }
+                            }
+
+                            clearRegisterErrors();
+
+                            const senha = (data.Senha || '').trim();
+                            const confirmar = (data.ConfirmarSenha || '').trim();
+
+                            if (senha.length < 6) {
+                                showRegisterError('Corrija os campos destacados para continuar.');
+                                setFieldErrorById('registerSenha', 'A senha deve ter no mínimo 6 caracteres.');
+                                return;
+                            }
+
+                            if (senha !== confirmar) {
+                                showRegisterError('Corrija os campos destacados para continuar.');
+                                setFieldErrorById('registerSenha', 'As senhas não conferem.');
+                                setFieldErrorById('registerConfirmarSenha', 'As senhas não conferem.');
+                                return;
+                            }
+
+                            if (!data.AceitaTermos) {
+                                showRegisterError('Você precisa aceitar os termos para continuar.');
+                                return;
+                            }
+
+                            $.ajax({
+                                url: '/Cliente/Registrar',
+                                method: 'POST',
+                                dataType: 'json',
+                                contentType: 'application/json; charset=utf-8',
+                                data: JSON.stringify(data),
+                                headers: token ? { 'RequestVerificationToken': token } : {},
+                                beforeSend: function () {
+                                    $btn.prop('disabled', true);
+                                    if (typeof addLoading === 'function') {
+                                        addLoading('Processando...');
+                                    }
+                                },
+                                success: function (result) {
+                                    if (result?.success) {
+                                        if (typeof uiNotify !== 'undefined' && uiNotify.toast) {
+                                            uiNotify.toast.success(result.message || 'Cadastro realizado com sucesso!');
+                                        }
+
+                                        window.location.href = `/Home/Index?loginSucesso=true&primeiroAcesso=true`;
+                                        return;
+                                    }
+
+                                    const msg = result?.message || 'Não foi possível concluir o cadastro.';
+                                    showRegisterError(msg);
+                                    applyServerErrors(result?.errors);
+                                    $btn.prop('disabled', false);
+
+                                    if (typeof uiNotify !== 'undefined' && uiNotify.toast) {
+                                        uiNotify.toast.warn(msg);
+                                    }
+                                },
+                                statusCode: {
+                                    429: function () {
+                                        const msg = 'Muitas tentativas. Aguarde um momento e tente novamente.';
+                                        showRegisterError(msg);
+                                        $btn.prop('disabled', false);
+
+                                        if (typeof uiNotify !== 'undefined' && uiNotify.toast) {
+                                            uiNotify.toast.warn(msg);
+                                        }
+                                    }
+                                },
+                                error: function () {
+                                    const msg = 'Erro inesperado ao comunicar com o servidor. Tente novamente.';
+                                    showRegisterError(msg);
+                                    $btn.prop('disabled', false);
+
+                                    if (typeof uiNotify !== 'undefined' && uiNotify.alert) {
+                                        uiNotify.alert.error(msg);
+                                    }
+                                },
+                                complete: function () {
+                                    if (typeof removeLoading === 'function') {
+                                        removeLoading();
+                                    }
+                                }
+                            });
+                        });
                     </script>

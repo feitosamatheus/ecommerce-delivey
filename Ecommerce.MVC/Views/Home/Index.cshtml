@@ -231,15 +231,22 @@
                     </div>
                 }
 
-                @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Bloco))
-                {
+                    @foreach (var categoria in Model.Categorias
+                        .Where(c => c.TipoExibicao == ETipoExibicao.Bloco)
+                        .OrderBy(c => c.Ordem == 0 ? 1 : 0)
+                        .ThenBy(c => c.Ordem == 0 ? int.MaxValue : c.Ordem)
+                        .ThenBy(c => c.Nome))
+                    {
                     var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
 
                     <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id">
                         <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
 
                         <div class="row g-3 row-cols-1 row-cols-md-2">
-                            @foreach (var p in produtos)
+                            @foreach (var p in produtos
+                                .OrderBy(x => x.Ordem == 0 ? 1 : 0)
+                                .ThenBy(x => x.Ordem == 0 ? int.MaxValue : x.Ordem)
+                                .ThenBy(x => x.Nome))
                             {
                                 <div class="col bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
                                     <div class="bc-product p-3">
@@ -741,6 +748,181 @@
     // =========================
     // Inicialização do modal de produto
     // =========================
+    // window.iniciarModalAdicionarProduto = function () {
+    //     const modalEl = document.getElementById('modalAddProduto');
+    //     if (!modalEl) return;
+
+    //     const form = modalEl.querySelector('#formAdicionarProdutoCarrinho');
+    //     if (!form) return;
+
+    //     const inputPrecoBase = modalEl.querySelector('#modalPrecoBase');
+    //     const inputQtd = modalEl.querySelector('#quantidadeProduto');
+    //     const btnMenos = modalEl.querySelector('#btnDiminuirQtd');
+    //     const btnMais = modalEl.querySelector('#btnAumentarQtd');
+    //     const totalEl = modalEl.querySelector('#valorTotalProduto');
+
+    //     if (!inputPrecoBase || !inputQtd || !btnMenos || !btnMais || !totalEl) return;
+
+    //     const precoBase = Number(inputPrecoBase.value || 0);
+
+    //     function moedaBR(valor) {
+    //         return valor.toLocaleString('pt-BR', {
+    //             style: 'currency',
+    //             currency: 'BRL'
+    //         });
+    //     }
+
+    //     function obterAdicionalSelecionado() {
+    //         let adicional = 0;
+
+    //         const selecionados = form.querySelectorAll('.acomp-input:checked');
+    //         selecionados.forEach(input => {
+    //             adicional += Number(input.dataset.preco || 0);
+    //         });
+
+    //         return adicional;
+    //     }
+
+    //     function calcularTotal() {
+    //         let qtd = parseInt(inputQtd.value, 10) || 1;
+
+    //         if (qtd < 1) {
+    //             qtd = 1;
+    //             inputQtd.value = 1;
+    //         }
+
+    //         const adicional = obterAdicionalSelecionado();
+    //         const total = (precoBase + adicional) * qtd;
+
+    //         totalEl.textContent = moedaBR(total);
+    //     }
+
+    //     btnMenos.onclick = function () {
+    //         let qtdAtual = parseInt(inputQtd.value, 10) || 1;
+    //         qtdAtual = Math.max(qtdAtual - 1, 1);
+    //         inputQtd.value = qtdAtual;
+    //         calcularTotal();
+    //     };
+
+    //     btnMais.onclick = function () {
+    //         let qtdAtual = parseInt(inputQtd.value, 10) || 1;
+    //         qtdAtual = qtdAtual + 1;
+    //         inputQtd.value = qtdAtual;
+    //         calcularTotal();
+    //     };
+
+    //     inputQtd.oninput = calcularTotal;
+    //     inputQtd.onchange = calcularTotal;
+    //     inputQtd.onblur = calcularTotal;
+
+    //     form.querySelectorAll('.acomp-input').forEach(input => {
+    //         input.onchange = calcularTotal;
+    //     });
+
+    //     calcularTotal();
+    // };
+
+    //     window.iniciarModalAdicionarProduto = function () {
+    //     const modalEl = document.getElementById('modalAddProduto');
+    //     if (!modalEl) return;
+
+    //     const form = modalEl.querySelector('#formAdicionarProdutoCarrinho');
+    //     if (!form) return;
+
+    //     const inputPrecoBase = modalEl.querySelector('#modalPrecoBase');
+    //     const inputQtd = modalEl.querySelector('#quantidadeProduto');
+    //     const btnMenos = modalEl.querySelector('#btnDiminuirQtd');
+    //     const btnMais = modalEl.querySelector('#btnAumentarQtd');
+    //     const totalEl = modalEl.querySelector('#valorTotalProduto');
+
+    //     if (!inputPrecoBase || !inputQtd || !btnMenos || !btnMais || !totalEl) return;
+
+    //     const precoBase = Number(inputPrecoBase.value || 0);
+
+    //     function moedaBR(valor) {
+    //         return valor.toLocaleString('pt-BR', {
+    //             style: 'currency',
+    //             currency: 'BRL'
+    //         });
+    //     }
+
+    //     function obterQuantidade() {
+    //         let qtd = parseInt(inputQtd.value, 10) || 1;
+
+    //         if (qtd < 1) {
+    //             qtd = 1;
+    //             inputQtd.value = 1;
+    //         }
+
+    //         return qtd;
+    //     }
+
+    //     function obterAdicionalSelecionado() {
+    //         let adicional = 0;
+
+    //         form.querySelectorAll('.acomp-input:checked').forEach(function (input) {
+    //             adicional += Number(input.dataset.preco || 0);
+    //         });
+
+    //         return adicional;
+    //     }
+
+    //     function calcularTotal() {
+    //         const qtd = obterQuantidade();
+    //         const adicional = obterAdicionalSelecionado();
+    //         const total = (precoBase + adicional) * qtd;
+
+    //         totalEl.textContent = moedaBR(total);
+    //     }
+
+    //     function controlarSelecaoUnicaPorCategoria(checkboxAtual) {
+    //         if (!checkboxAtual) return;
+
+    //         const categoriaId = checkboxAtual.dataset.categoriaId;
+    //         if (!categoriaId) return;
+
+    //         const containerCategoria = checkboxAtual.closest('[data-acomp-categoria]');
+    //         if (!containerCategoria) return;
+
+    //         const max = parseInt(containerCategoria.dataset.max || '0', 10);
+
+    //         if (max === 1 && checkboxAtual.checked) {
+    //             form.querySelectorAll('.acomp-input[data-categoria-id="' + categoriaId + '"]').forEach(function (item) {
+    //                 if (item !== checkboxAtual) {
+    //                     item.checked = false;
+    //                 }
+    //             });
+    //         }
+    //     }
+
+    //     btnMenos.onclick = function () {
+    //         let qtdAtual = obterQuantidade();
+    //         qtdAtual = Math.max(qtdAtual - 1, 1);
+    //         inputQtd.value = qtdAtual;
+    //         calcularTotal();
+    //     };
+
+    //     btnMais.onclick = function () {
+    //         let qtdAtual = obterQuantidade();
+    //         qtdAtual = qtdAtual + 1;
+    //         inputQtd.value = qtdAtual;
+    //         calcularTotal();
+    //     };
+
+    //     inputQtd.oninput = calcularTotal;
+    //     inputQtd.onchange = calcularTotal;
+    //     inputQtd.onblur = calcularTotal;
+
+    //     form.querySelectorAll('.acomp-input').forEach(function (input) {
+    //         input.onchange = function () {
+    //             controlarSelecaoUnicaPorCategoria(this);
+    //             calcularTotal();
+    //         };
+    //     });
+
+    //     calcularTotal();
+    // };
+
     window.iniciarModalAdicionarProduto = function () {
         const modalEl = document.getElementById('modalAddProduto');
         if (!modalEl) return;
@@ -754,6 +936,9 @@
         const btnMais = modalEl.querySelector('#btnAumentarQtd');
         const totalEl = modalEl.querySelector('#valorTotalProduto');
 
+        const precoPrincipalEl = modalEl.querySelector('#modalPrecoPrincipal');
+        const precoCentavosEl = modalEl.querySelector('#modalPrecoCentavos');
+
         if (!inputPrecoBase || !inputQtd || !btnMenos || !btnMais || !totalEl) return;
 
         const precoBase = Number(inputPrecoBase.value || 0);
@@ -765,18 +950,21 @@
             });
         }
 
-        function obterAdicionalSelecionado() {
-            let adicional = 0;
-
-            const selecionados = form.querySelectorAll('.acomp-input:checked');
-            selecionados.forEach(input => {
-                adicional += Number(input.dataset.preco || 0);
+        function formatarPrecoVisual(valor) {
+            const formatado = valor.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
             });
 
-            return adicional;
+            const partes = formatado.split(',');
+
+            return {
+                inteiro: partes[0],
+                centavos: ',' + (partes[1] || '00')
+            };
         }
 
-        function calcularTotal() {
+        function obterQuantidade() {
             let qtd = parseInt(inputQtd.value, 10) || 1;
 
             if (qtd < 1) {
@@ -784,21 +972,72 @@
                 inputQtd.value = 1;
             }
 
-            const adicional = obterAdicionalSelecionado();
-            const total = (precoBase + adicional) * qtd;
+            return qtd;
+        }
 
+        function obterAdicionalSelecionado() {
+            let adicional = 0;
+
+            form.querySelectorAll('.acomp-input:checked').forEach(function (input) {
+                adicional += Number(input.dataset.preco || 0);
+            });
+
+            return adicional;
+        }
+
+        function atualizarPrecoUnitario(adicional) {
+            const precoUnitario = precoBase + adicional;
+            const partes = formatarPrecoVisual(precoUnitario);
+
+            if (precoPrincipalEl) {
+                precoPrincipalEl.textContent = partes.inteiro;
+            }
+
+            if (precoCentavosEl) {
+                precoCentavosEl.textContent = partes.centavos;
+            }
+        }
+
+        function calcularTotal() {
+            const qtd = obterQuantidade();
+            const adicional = obterAdicionalSelecionado();
+
+            const precoUnitario = precoBase + adicional;
+            const total = precoUnitario * qtd;
+
+            atualizarPrecoUnitario(adicional);
             totalEl.textContent = moedaBR(total);
         }
 
+        function controlarSelecaoUnicaPorCategoria(checkboxAtual) {
+            if (!checkboxAtual) return;
+
+            const categoriaId = checkboxAtual.dataset.categoriaId;
+            if (!categoriaId) return;
+
+            const containerCategoria = checkboxAtual.closest('[data-acomp-categoria]');
+            if (!containerCategoria) return;
+
+            const max = parseInt(containerCategoria.dataset.max || '0', 10);
+
+            if (max === 1 && checkboxAtual.checked) {
+                form.querySelectorAll('.acomp-input[data-categoria-id="' + categoriaId + '"]').forEach(function (item) {
+                    if (item !== checkboxAtual) {
+                        item.checked = false;
+                    }
+                });
+            }
+        }
+
         btnMenos.onclick = function () {
-            let qtdAtual = parseInt(inputQtd.value, 10) || 1;
+            let qtdAtual = obterQuantidade();
             qtdAtual = Math.max(qtdAtual - 1, 1);
             inputQtd.value = qtdAtual;
             calcularTotal();
         };
 
         btnMais.onclick = function () {
-            let qtdAtual = parseInt(inputQtd.value, 10) || 1;
+            let qtdAtual = obterQuantidade();
             qtdAtual = qtdAtual + 1;
             inputQtd.value = qtdAtual;
             calcularTotal();
@@ -808,8 +1047,11 @@
         inputQtd.onchange = calcularTotal;
         inputQtd.onblur = calcularTotal;
 
-        form.querySelectorAll('.acomp-input').forEach(input => {
-            input.onchange = calcularTotal;
+        form.querySelectorAll('.acomp-input').forEach(function (input) {
+            input.onchange = function () {
+                controlarSelecaoUnicaPorCategoria(this);
+                calcularTotal();
+            };
         });
 
         calcularTotal();
@@ -1141,6 +1383,60 @@
         if (overlay) {
             overlay.classList.add('d-none');
         }
+    }
+
+    // document.addEventListener('change', function (e) {
+    //     if (!e.target.classList.contains('acomp-input')) return;
+
+    //     const checkboxAtual = e.target;
+    //     const form = checkboxAtual.closest('#formAdicionarProdutoCarrinho');
+    //     if (!form) return;
+
+    //     const categoriaId = checkboxAtual.dataset.categoriaId;
+
+    //     if (checkboxAtual.checked) {
+    //         form.querySelectorAll('.acomp-input[data-categoria-id="' + categoriaId + '"]').forEach(function (item) {
+    //             if (item !== checkboxAtual) {
+    //                 item.checked = false;
+    //             }
+    //         });
+    //     }
+
+    //     recalcularTotalModal(form);
+    // });
+
+    function recalcularTotalModal(form) {
+        if (!form) return;
+
+        const modal = form.closest('#modalAddProduto');
+        if (!modal) return;
+
+        const inputPrecoBase = modal.querySelector('#modalPrecoBase');
+        const inputQtd = modal.querySelector('#quantidadeProduto');
+        const totalEl = modal.querySelector('#valorTotalProduto');
+
+        if (!inputPrecoBase || !inputQtd || !totalEl) return;
+
+        const precoBase = Number(inputPrecoBase.value || 0);
+        let qtd = parseInt(inputQtd.value, 10) || 1;
+
+        if (qtd < 1) {
+            qtd = 1;
+            inputQtd.value = 1;
+        }
+
+        let adicional = 0;
+
+        form.querySelectorAll('.acomp-input:checked').forEach(function (input) {
+            adicional += Number(input.dataset.preco || 0);
+        });
+
+        const total = (precoBase + adicional) * qtd;
+
+        totalEl.textContent = total.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
     }
 </script>
 

@@ -1,13 +1,15 @@
-﻿using System.Security.Claims;
-using Ecommerce.MVC.Config;
+﻿using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Ecommerce.MVC.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "administrador, balcaoN1,balcaoN2,gerente")]
     public class BalcaoController : Controller
     {
         private readonly DatabaseContext _db;

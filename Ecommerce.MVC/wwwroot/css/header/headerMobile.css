@@ -1,4 +1,14 @@
 @media (max-width: 1199px) {
+    .seta-menu-mb {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Quando o dropdown estiver ativo, a seta gira */
+    /* O Bootstrap aplica 'show' no botão ou no menu via JS */
+    .btn-lift-mb[aria-expanded="true"] .seta-menu-mb {
+        transform: rotate(180deg);
+    }
+
     .bc-hero {
         display: none;
     }

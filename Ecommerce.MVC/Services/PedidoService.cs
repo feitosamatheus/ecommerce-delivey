@@ -136,7 +136,7 @@ public class PedidoService : IPedidoService
             throw new InvalidOperationException("Cliente não encontrado.");
 
         var token = CartTokenHelper.GetOrCreateToken(http);
-        var carrinho = await _db.Carrinhos.AsNoTracking().Include(c => c.Itens).ThenInclude(i => i.Acompanhamentos).FirstOrDefaultAsync(c => c.UserId == cliente.Id, ct);
+        var carrinho = await _db.Carrinhos.AsNoTracking().Include(c => c.Itens).ThenInclude(i => i.Acompanhamentos).Include(c => c.Itens).ThenInclude(i => i.Produto).FirstOrDefaultAsync(c => c.UserId == cliente.Id, ct);
 
         if (carrinho == null)
             throw new InvalidOperationException("Carrinho não encontrado.");
@@ -169,7 +169,7 @@ public class PedidoService : IPedidoService
             });
         }
 
-        var tempoMaximoMinutos = carrinho.Itens.Any() ? carrinho.Itens.Max(i => i.TempoPreparoMinutosSnapshot) : 0;
+        var tempoMaximoMinutos = carrinho.Itens.Any() ? carrinho.Itens.Max(i => i.Produto.TempoPreparoMinutos) : 0;
 
         var horariosRetirada = GerarHorariosRetirada(tempoMaximoMinutos);
 
@@ -203,29 +203,48 @@ public class PedidoService : IPedidoService
         };
     }
 
+
     private static List<DateTime> GerarHorariosRetirada(int tempoPreparoMinutos, int diasDisponiveis = 30)
     {
         var resultado = new List<DateTime>();
-        var agora = DateTime.Today.AddHours(22);
+        var agora = DateTime.Now;
 
         var horarioMinimo = CalcularHorarioDisponivel(agora, tempoPreparoMinutos);
         horarioMinimo = ArredondarParaProximoMultiploDe5(horarioMinimo);
 
         var horarioInicial = AjustarParaHorarioFuncionamento(horarioMinimo);
 
-        for (int dia = 0; dia < diasDisponiveis; dia++)
+        int diasGerados = 0;
+        int deslocamento = 0;
+
+        while (diasGerados < diasDisponiveis)
         {
-            var data = horarioInicial.Date.AddDays(dia);
+            var data = horarioInicial.Date.AddDays(deslocamento);
+            deslocamento++;
+
+            if (EhFinalDeSemana(data))
+                continue;
 
             var abertura = data.AddHours(8);
             var fechamento = data.AddHours(22);
 
-            var inicio = dia == 0 ? horarioInicial : abertura;
+            var inicio = diasGerados == 0 ? horarioInicial : abertura;
+
+            if (inicio < abertura)
+                inicio = abertura;
+
+            if (inicio > fechamento)
+                continue;
 
             for (var h = inicio; h <= fechamento; h = h.AddMinutes(60))
             {
-                resultado.Add(h);
+                if (!EhFinalDeSemana(h))
+                {
+                    resultado.Add(h);
+                }
             }
+
+            diasGerados++;
         }
 
         return resultado;
@@ -233,37 +252,16 @@ public class PedidoService : IPedidoService
 
     private static DateTime CalcularHorarioDisponivel(DateTime dataPedido, int tempoPreparoMinutos)
     {
-        var abertura = new TimeSpan(8, 0, 0);
-        var fechamento = new TimeSpan(22, 0, 0);
+        var atual = dataPedido;
 
-        DateTime atual = dataPedido;
+        if (tempoPreparoMinutos <= 0)
+            return AjustarParaProximoDiaUtil(atual);
 
-        if (atual.TimeOfDay >= fechamento)
+        atual = atual.AddMinutes(tempoPreparoMinutos);
+
+        while (EhFinalDeSemana(atual))
         {
-            atual = atual.Date.AddDays(1).Add(abertura);
-        }
-        else if (atual.TimeOfDay < abertura)
-        {
-            atual = atual.Date.Add(abertura);
-        }
-
-        int minutosRestantes = tempoPreparoMinutos;
-
-        while (minutosRestantes > 0)
-        {
-            var fimDoDia = atual.Date.Add(fechamento);
-            var minutosDisponiveisHoje = (int)(fimDoDia - atual).TotalMinutes;
-
-            if (minutosRestantes <= minutosDisponiveisHoje)
-            {
-                atual = atual.AddMinutes(minutosRestantes);
-                minutosRestantes = 0;
-            }
-            else
-            {
-                minutosRestantes -= minutosDisponiveisHoje;
-                atual = atual.Date.AddDays(1).Add(abertura);
-            }
+            atual = ProximoDiaUtil(atual).AddHours(8);
         }
 
         return atual;
@@ -271,6 +269,8 @@ public class PedidoService : IPedidoService
 
     private static DateTime AjustarParaHorarioFuncionamento(DateTime dataHora)
     {
+        dataHora = AjustarParaProximoDiaUtil(dataHora);
+
         var abertura = dataHora.Date.AddHours(8);
         var fechamento = dataHora.Date.AddHours(22);
 
@@ -278,7 +278,7 @@ public class PedidoService : IPedidoService
             return abertura;
 
         if (dataHora > fechamento)
-            return dataHora.Date.AddDays(1).AddHours(8);
+            return ProximoDiaUtil(dataHora.Date.AddDays(1)).AddHours(8);
 
         return dataHora;
     }
@@ -293,6 +293,254 @@ public class PedidoService : IPedidoService
 
         return dataHora.AddMinutes(5 - resto);
     }
+
+    private static bool EhFinalDeSemana(DateTime data)
+    {
+        return data.DayOfWeek == DayOfWeek.Saturday || data.DayOfWeek == DayOfWeek.Sunday;
+    }
+
+    private static DateTime ProximoDiaUtil(DateTime data)
+    {
+        while (EhFinalDeSemana(data))
+        {
+            data = data.AddDays(1);
+        }
+
+        return data.Date;
+    }
+
+    private static DateTime AjustarParaProximoDiaUtil(DateTime dataHora)
+    {
+        if (!EhFinalDeSemana(dataHora))
+            return dataHora;
+
+        return ProximoDiaUtil(dataHora).AddHours(8);
+    }
+
+    //==== logica 2 
+    //private static List<DateTime> GerarHorariosRetirada(int tempoPreparoMinutos, int diasDisponiveis = 30)
+    //{
+    //    var resultado = new List<DateTime>();
+    //    var agora = DateTime.Today.AddHours(22);
+
+    //    var horarioMinimo = CalcularHorarioDisponivel(agora, tempoPreparoMinutos);
+    //    horarioMinimo = ArredondarParaProximoMultiploDe5(horarioMinimo);
+
+    //    var horarioInicial = AjustarParaHorarioFuncionamento(horarioMinimo);
+
+    //    int diasGerados = 0;
+    //    int deslocamento = 0;
+
+    //    while (diasGerados < diasDisponiveis)
+    //    {
+    //        var data = horarioInicial.Date.AddDays(deslocamento);
+    //        deslocamento++;
+
+    //        if (EhFinalDeSemana(data))
+    //            continue;
+
+    //        var abertura = data.AddHours(8);
+    //        var fechamento = data.AddHours(22);
+
+    //        var inicio = diasGerados == 0 ? horarioInicial : abertura;
+
+    //        if (EhFinalDeSemana(inicio))
+    //            continue;
+
+    //        for (var h = inicio; h <= fechamento; h = h.AddMinutes(60))
+    //        {
+    //            if (!EhFinalDeSemana(h))
+    //            {
+    //                resultado.Add(h);
+    //            }
+    //        }
+
+    //        diasGerados++;
+    //    }
+
+    //    return resultado;
+    //}
+
+    //private static DateTime CalcularHorarioDisponivel(DateTime dataPedido, int tempoPreparoMinutos)
+    //{
+    //    var abertura = new TimeSpan(8, 0, 0);
+    //    var fechamento = new TimeSpan(22, 0, 0);
+
+    //    DateTime atual = AjustarParaProximoDiaUtil(dataPedido);
+
+    //    if (atual.TimeOfDay >= fechamento)
+    //    {
+    //        atual = ProximoDiaUtil(atual.Date.AddDays(1)).Add(abertura);
+    //    }
+    //    else if (atual.TimeOfDay < abertura)
+    //    {
+    //        atual = atual.Date.Add(abertura);
+    //    }
+
+    //    int minutosRestantes = tempoPreparoMinutos;
+
+    //    while (minutosRestantes > 0)
+    //    {
+    //        atual = AjustarParaProximoDiaUtil(atual);
+
+    //        var fimDoDia = atual.Date.Add(fechamento);
+    //        var minutosDisponiveisHoje = (int)(fimDoDia - atual).TotalMinutes;
+
+    //        if (minutosRestantes <= minutosDisponiveisHoje)
+    //        {
+    //            atual = atual.AddMinutes(minutosRestantes);
+    //            minutosRestantes = 0;
+    //        }
+    //        else
+    //        {
+    //            minutosRestantes -= minutosDisponiveisHoje;
+    //            atual = ProximoDiaUtil(atual.Date.AddDays(1)).Add(abertura);
+    //        }
+    //    }
+
+    //    return AjustarParaProximoDiaUtil(atual);
+    //}
+
+    //private static DateTime AjustarParaHorarioFuncionamento(DateTime dataHora)
+    //{
+    //    dataHora = AjustarParaProximoDiaUtil(dataHora);
+
+    //    var abertura = dataHora.Date.AddHours(8);
+    //    var fechamento = dataHora.Date.AddHours(22);
+
+    //    if (dataHora < abertura)
+    //        return abertura;
+
+    //    if (dataHora > fechamento)
+    //        return ProximoDiaUtil(dataHora.Date.AddDays(1)).AddHours(8);
+
+    //    return dataHora;
+    //}
+
+    //private static DateTime ArredondarParaProximoMultiploDe5(DateTime dataHora)
+    //{
+    //    var minutos = dataHora.Minute;
+    //    var resto = minutos % 5;
+
+    //    if (resto == 0)
+    //        return dataHora;
+
+    //    return dataHora.AddMinutes(5 - resto);
+    //}
+
+    //private static bool EhFinalDeSemana(DateTime data)
+    //{
+    //    return data.DayOfWeek == DayOfWeek.Saturday || data.DayOfWeek == DayOfWeek.Sunday;
+    //}
+
+    //private static DateTime ProximoDiaUtil(DateTime data)
+    //{
+    //    while (EhFinalDeSemana(data))
+    //    {
+    //        data = data.AddDays(1);
+    //    }
+
+    //    return data.Date;
+    //}
+
+    //private static DateTime AjustarParaProximoDiaUtil(DateTime dataHora)
+    //{
+    //    if (!EhFinalDeSemana(dataHora))
+    //        return dataHora;
+
+    //    return ProximoDiaUtil(dataHora).AddHours(8);
+    //}
+    //-=============================logica 1
+    //private static List<DateTime> GerarHorariosRetirada(int tempoPreparoMinutos, int diasDisponiveis = 30)
+    //{
+    //    var resultado = new List<DateTime>();
+    //    var agora = DateTime.Today.AddHours(22);
+
+    //    var horarioMinimo = CalcularHorarioDisponivel(agora, tempoPreparoMinutos);
+    //    horarioMinimo = ArredondarParaProximoMultiploDe5(horarioMinimo);
+
+    //    var horarioInicial = AjustarParaHorarioFuncionamento(horarioMinimo);
+
+    //    for (int dia = 0; dia < diasDisponiveis; dia++)
+    //    {
+    //        var data = horarioInicial.Date.AddDays(dia);
+
+    //        var abertura = data.AddHours(8);
+    //        var fechamento = data.AddHours(22);
+
+    //        var inicio = dia == 0 ? horarioInicial : abertura;
+
+    //        for (var h = inicio; h <= fechamento; h = h.AddMinutes(60))
+    //        {
+    //            resultado.Add(h);
+    //        }
+    //    }
+
+    //    return resultado;
+    //}
+
+    //private static DateTime CalcularHorarioDisponivel(DateTime dataPedido, int tempoPreparoMinutos)
+    //{
+    //    var abertura = new TimeSpan(8, 0, 0);
+    //    var fechamento = new TimeSpan(22, 0, 0);
+
+    //    DateTime atual = dataPedido;
+
+    //    if (atual.TimeOfDay >= fechamento)
+    //    {
+    //        atual = atual.Date.AddDays(1).Add(abertura);
+    //    }
+    //    else if (atual.TimeOfDay < abertura)
+    //    {
+    //        atual = atual.Date.Add(abertura);
+    //    }
+
+    //    int minutosRestantes = tempoPreparoMinutos;
+
+    //    while (minutosRestantes > 0)
+    //    {
+    //        var fimDoDia = atual.Date.Add(fechamento);
+    //        var minutosDisponiveisHoje = (int)(fimDoDia - atual).TotalMinutes;
+
+    //        if (minutosRestantes <= minutosDisponiveisHoje)
+    //        {
+    //            atual = atual.AddMinutes(minutosRestantes);
+    //            minutosRestantes = 0;
+    //        }
+    //        else
+    //        {
+    //            minutosRestantes -= minutosDisponiveisHoje;
+    //            atual = atual.Date.AddDays(1).Add(abertura);
+    //        }
+    //    }
+
+    //    return atual;
+    //}
+
+    //private static DateTime AjustarParaHorarioFuncionamento(DateTime dataHora)
+    //{
+    //    var abertura = dataHora.Date.AddHours(8);
+    //    var fechamento = dataHora.Date.AddHours(22);
+
+    //    if (dataHora < abertura)
+    //        return abertura;
+
+    //    if (dataHora > fechamento)
+    //        return dataHora.Date.AddDays(1).AddHours(8);
+
+    //    return dataHora;
+    //}
+
+    //private static DateTime ArredondarParaProximoMultiploDe5(DateTime dataHora)
+    //{
+    //    var minutos = dataHora.Minute;
+    //    var resto = minutos % 5;
+
+    //    if (resto == 0)
+    //        return dataHora;
+
+    //    return dataHora.AddMinutes(5 - resto);
+    //}
 
     #endregion
 

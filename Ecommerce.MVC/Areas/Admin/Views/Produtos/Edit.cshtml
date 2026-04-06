@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Editar Produto";
+    ViewData["page"] = "Produto";
 }
 
 <style>
@@ -242,39 +243,73 @@
 
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="Nome" class="form-label"></label>
-                                <input asp-for="Nome" class="form-control" placeholder="Nome do prato ou bebida" />
-                                <span asp-validation-for="Nome" class="text-danger small"></span>
-                            </div>
+    <div class="col-12">
+        <label asp-for="Nome" class="form-label"></label>
+        <input asp-for="Nome" class="form-control" placeholder="Nome do prato ou bebida" />
+        <span asp-validation-for="Nome" class="text-danger small"></span>
+    </div>
 
-                            <div class="col-12">
-                                <label asp-for="Descricao" class="form-label"></label>
-                                <textarea asp-for="Descricao" class="form-control" rows="3" placeholder="Descrição detalhada..."></textarea>
-                            </div>
+    <div class="col-12">
+        <label asp-for="Descricao" class="form-label"></label>
+        <textarea asp-for="Descricao" class="form-control" rows="3" placeholder="Descrição detalhada..."></textarea>
+        <span asp-validation-for="Descricao" class="text-danger small"></span>
+    </div>
 
-                            <div class="col-md-6">
-                                <label asp-for="CategoriaId" class="form-label"></label>
-                                <select asp-for="CategoriaId" asp-items="Model.Categorias" class="form-select">
-                                    <option value="">Selecione...</option>
-                                </select>
-                                <span asp-validation-for="CategoriaId" class="text-danger small"></span>
-                            </div>
+    <div class="col-md-4">
+        <label asp-for="CategoriaId" class="form-label">Categoria do Menu</label>
+        <select asp-for="CategoriaId" asp-items="Model.Categorias" class="form-select">
+            <option value="">Selecione...</option>
+        </select>
+        <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+    </div>
 
-                            <div class="col-md-3">
-                                <label asp-for="Preco" class="form-label"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text input-group-text-clean">R$</span>
-                                    <input asp-for="Preco" class="form-control money" placeholder="0,00" />
-                                </div>
-                                <span asp-validation-for="Preco" class="text-danger small"></span>
-                            </div>
+    <div class="col-md-3">
+        <label asp-for="Preco" class="form-label">Preço de Venda</label>
+        <div class="input-group">
+            <span class="input-group-text input-group-text-clean">R$</span>
+            <input asp-for="Preco" type="text" class="form-control money" placeholder="0,00" />
+        </div>
+        <span asp-validation-for="Preco" class="text-danger small"></span>
+    </div>
 
-                            <div class="col-md-3">
-                                <label asp-for="TempoPreparoMinutos" class="form-label"></label>
-                                <input asp-for="TempoPreparoMinutos" class="form-control" type="number" min="0" />
-                            </div>
-                        </div>
+    <div class="col-md-3">
+        <label asp-for="Ordem" class="form-label">Ordem</label>
+        <input asp-for="Ordem" class="form-control" type="number" min="0" />
+        <span asp-validation-for="Ordem" class="text-danger small"></span>
+    </div>
+
+    <div class="col-12">
+        <label class="form-label">Tempo de preparo</label>
+
+        <div class="row g-2">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input asp-for="TempoPreparoHoras"
+                           class="form-control"
+                           type="number"
+                           min="0"
+                           max="999"
+                           placeholder="Horas" />
+                    <span class="input-group-text">hr</span>
+                </div>
+                <span asp-validation-for="TempoPreparoHoras" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input asp-for="TempoPreparoMinutosRestantes"
+                           class="form-control"
+                           type="number"
+                           min="0"
+                           max="59"
+                           placeholder="Minutos" />
+                    <span class="input-group-text">min</span>
+                </div>
+                <span asp-validation-for="TempoPreparoMinutosRestantes" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+</div>
                     </div>
                 </div>
 
@@ -324,7 +359,7 @@
                                onchange="previewImage(this)" />
 
                         <p class="text-center text-muted x-small mt-2">
-                            Formatos: JPG, PNG, WEBP (Máx 2MB)
+                            Formatos: JPG, PNG (Máx 3MB)
                         </p>
                     </div>
                 </div>
@@ -465,17 +500,35 @@
 
             $('.money').mask('#.##0,00', { reverse: true });
 
-            window.previewImage = function (input) {
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
+             window.previewImage = function (input) {
+                const file = input.files && input.files[0];
+                if (!file) return;
 
-                    reader.onload = function (e) {
-                        $('#imgPreview').attr('src', e.target.result).show();
-                        $('#placeholderIcon').hide();
-                    };
+                const maxSize = 3 * 1024 * 1024; // 3MB
 
-                    reader.readAsDataURL(input.files[0]);
+                if (file.size > maxSize) {
+                    input.value = '';
+
+                    $('#imgPreview').attr('src', '').hide();
+                    $('#placeholderIcon').show();
+
+                    if (typeof uiNotify !== 'undefined' && uiNotify.alert) {
+                        uiNotify.alert.error('A imagem deve ter no máximo 2MB.');
+                    } else {
+                        alert('A imagem deve ter no máximo 2MB.');
+                    }
+
+                    return;
                 }
+
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#imgPreview').attr('src', e.target.result).show();
+                    $('#placeholderIcon').hide();
+                };
+
+                reader.readAsDataURL(file);
             };
 
             function escapeHtml(texto) {
@@ -1080,12 +1133,27 @@
                 }
             });
 
-            $('#formProdutoEdit').submit(function () {
+            $('#formProdutoEdit').submit(function (e) {
+                const inputFile = document.getElementById('imagemForm');
+                const file = inputFile?.files && inputFile.files[0];
+                const maxSize = 3 * 1024 * 1024; // 3MB
+
+                if (file && file.size > maxSize) {
+                    e.preventDefault();
+
+                    if (typeof uiNotify !== 'undefined' && uiNotify.alert) {
+                        uiNotify.alert.error('A imagem deve ter no máximo 2MB.');
+                    } else {
+                        alert('A imagem deve ter no máximo 2MB.');
+                    }
+
+                    return false;
+                }
+
                 console.log('[SUBMIT] submit iniciado');
                 reindexar();
                 syncStateFromDom('submit');
                 $('#feedbackMessages').remove();
-                console.log('[SUBMIT] hidden PersonalizacaoJson antes do post:', inputJson?.value ?? null);
 
                 if ($(this).valid()) {
                     if (typeof window.addLoading === 'function') {

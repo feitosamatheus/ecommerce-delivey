@@ -41,7 +41,7 @@
     }
 
     .form-check-input:checked {
-        background-color: #2c180d; /* Cor temática se desejar */
+        background-color: #2c180d;
         border-color: #2c180d;
     }
 </style>
@@ -51,9 +51,10 @@
         <i class="fas fa-arrow-left"></i> Voltar
     </a>
 </div>
+
 <div class="card card-form-clean">
     <div class="card-body p-4 pb-3">
-        <form method="post">
+        <form method="post" id="form-acompanhamento">
             @Html.AntiForgeryToken()
             <input asp-for="Id" type="hidden" />
 
@@ -72,7 +73,13 @@
                     <label asp-for="Preco" class="form-label">Preço Adicional</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0 text-muted">R$</span>
-                        <input asp-for="Preco" class="form-control border-start-0" type="number" step="0.01" />
+                        <input asp-for="Preco"
+                               id="Preco"
+                               name="Preco"
+                               class="form-control border-start-0"
+                               type="text"
+                               inputmode="decimal"
+                               placeholder="0,00" />
                     </div>
                     <span asp-validation-for="Preco" class="text-danger small"></span>
                 </div>
@@ -123,3 +130,61 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const precoInput = document.getElementById('Preco');
+            const form = document.getElementById('form-acompanhamento');
+
+            function aplicarMascaraMoeda(valor) {
+                valor = valor.replace(/\D/g, '');
+
+                if (!valor) {
+                    return '';
+                }
+
+                valor = (parseInt(valor, 10) / 100).toFixed(2) + '';
+                valor = valor.replace('.', ',');
+                valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+                return valor;
+            }
+
+            function normalizarParaBanco(valor) {
+                if (!valor) return '';
+
+                return valor
+                    .replace(/\./g, '')
+                    .replace(',', '.');
+            }
+
+            if (precoInput) {
+                precoInput.addEventListener('input', function (e) {
+                    const cursorFim = e.target.selectionStart === e.target.value.length;
+                    e.target.value = aplicarMascaraMoeda(e.target.value);
+
+                    if (cursorFim) {
+                        e.target.setSelectionRange(e.target.value.length, e.target.value.length);
+                    }
+                });
+
+                precoInput.addEventListener('blur', function (e) {
+                    if (e.target.value && !e.target.value.includes(',')) {
+                        e.target.value = aplicarMascaraMoeda(e.target.value);
+                    }
+                });
+
+                if (precoInput.value) {
+                    precoInput.value = aplicarMascaraMoeda(precoInput.value);
+                }
+            }
+
+            if (form) {
+                form.addEventListener('submit', function () {
+                    if (precoInput) {
+                        precoInput.value = normalizarParaBanco(precoInput.value);
+                    }
+                });
+            }
+        });
+    </script>

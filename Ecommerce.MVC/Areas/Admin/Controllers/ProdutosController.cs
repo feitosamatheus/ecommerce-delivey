@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace Ecommerce.MVC.Areas.Admin.Controllers;
 
 [Area("Admin")]
-[Authorize]
+[Authorize(Roles = "administrador,gerente")]
 public class ProdutosController : Controller
 {
     private readonly DatabaseContext _db;
@@ -225,21 +225,24 @@ public class ProdutosController : Controller
             }
         }
 
-        if (!ModelState.IsValid)
-        {
-            await PopularCategoriasAsync(model);
-            await PopularCategoriasAcompanhamentoAsync(model);
-            return View(model);
-        }
+        //if (!ModelState.IsValid)
+        //{
+        //    await PopularCategoriasAsync(model);
+        //    await PopularCategoriasAcompanhamentoAsync(model);
+        //    return View(model);
+        //}
+
+        var tempoPreparoTotalMinutos = (model.TempoPreparoHoras * 60) + model.TempoPreparoMinutosRestantes;
 
         var produto = new Produto
         {
             Nome = model.Nome?.Trim(),
             Descricao = string.IsNullOrWhiteSpace(model.Descricao) ? null : model.Descricao.Trim(),
             Preco = precoConvertido,
-            TempoPreparoMinutos = model.TempoPreparoMinutos,
+            TempoPreparoMinutos = tempoPreparoTotalMinutos,
             CategoriaId = model.CategoriaId,
             Ativo = model.Ativo,
+            Ordem = model.Ordem,
             ImagemUrl = imagemUrl
         };
 
@@ -481,12 +484,15 @@ public class ProdutosController : Controller
         //     return View(vm);
         // }
 
+        var tempoPreparoTotalMinutos = (vm.TempoPreparoHoras * 60) + vm.TempoPreparoMinutosRestantes;
+
         produto.Nome = vm.Nome?.Trim() ?? string.Empty;
         produto.Descricao = string.IsNullOrWhiteSpace(vm.Descricao) ? null : vm.Descricao.Trim();
         produto.Preco = precoConvertido;
-        produto.TempoPreparoMinutos = vm.TempoPreparoMinutos;
+        produto.TempoPreparoMinutos = tempoPreparoTotalMinutos;
         produto.CategoriaId = vm.CategoriaId;
         produto.Ativo = vm.Ativo;
+        produto.Ordem = vm.Ordem;
         produto.ImagemUrl = imagemUrl;
 
         // remove todos os vínculos atuais
@@ -624,7 +630,10 @@ public class ProdutoAcompanhamentoJsonPostViewModel
             Preco = produto.Preco.ToString("N2", ptBr),
             ImagemUrl = produto.ImagemUrl,
             TempoPreparoMinutos = produto.TempoPreparoMinutos,
+            TempoPreparoHoras = produto.TempoPreparoMinutos / 60,
+            TempoPreparoMinutosRestantes = produto.TempoPreparoMinutos % 60,
             CategoriaId = produto.CategoriaId,
+            Ordem = produto.Ordem,
             Ativo = produto.Ativo
         };
 
@@ -1058,7 +1067,7 @@ public class ProdutoAcompanhamentoJsonPostViewModel
         if (!extensoesPermitidas.Contains(extensao))
             return (false, null, "Formato de imagem inválido. Use JPG, PNG ou WebP.");
 
-        if (imagemForm.Length > 2 * 1024 * 1024)
+        if (imagemForm.Length > 3 * 1024 * 1024)
             return (false, null, "A imagem deve ter no máximo 2MB.");
 
         var pastaImagens = Path.Combine(_environment.WebRootPath, "img", "produtos");

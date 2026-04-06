@@ -1,6 +1,6 @@
 ﻿@{
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
-    ViewData["Title"] ??= "Admin";
+    ViewData["Title"] ??= "Administração";
     Layout = null;
     var nomeUsuario = User?.Identity?.IsAuthenticated == true ? User.Identity.Name : "Usuário";
 }
@@ -126,7 +126,7 @@
                             </li>
                         }
 
-                        @if (User.IsInRole("administrador"))
+                        @if (User.IsInRole("administrador") || User.IsInRole("gerente"))
                         {
                             <hr class="text-light"/>
                             <li class="nav-item">
@@ -138,7 +138,7 @@
                             </li>
                         }
 
-                        @if (User.IsInRole("administrador"))
+                        @if (User.IsInRole("administrador") || User.IsInRole("gerente"))
                         {
                             <hr class="text-light"/>
                             <li class="nav-item @(controller == "Produtos" || controller == "Categorias" ? "menu-open" : "")">
@@ -168,7 +168,7 @@
                             </li>
                         }
 
-                        @if (User.IsInRole("administrador"))
+                        @if (User.IsInRole("administrador") || User.IsInRole("gerente"))
                         {
                             <li class="nav-item @(controller == "Acompanhamentos" || controller == "AcompanhamentoCategorias" ? "menu-open" : "")">
                                 <a href="#" class="nav-link @(controller == "Acompanhamentos" || controller == "AcompanhamentoCategorias" ? "active" : "")">
@@ -198,7 +198,7 @@
                         }
 
                         @* SEÇÃO DE USUÁRIOS *@
-                        @if (User.IsInRole("administrador"))
+                        @if (User.IsInRole("administrador") || User.IsInRole("gerente"))
                         {
                             <hr class="text-light"/>
                             <li class="nav-item @(controller == "Usuarios" ? "menu-open" : "")">
@@ -241,7 +241,8 @@
                                 </li>
                                 @if (User.IsInRole("administrador") 
                                     || User.IsInRole("cozinhaN1")
-                                    || User.IsInRole("cozinhaN2"))
+                                    || User.IsInRole("cozinhaN2")
+                                    || User.IsInRole("gerente"))
                                 {
                                     <li class="nav-item">
                                         <a href="@Url.Action("EmPreparo", "Cozinha", new { area = "Admin" })"
@@ -272,6 +273,7 @@
 
                         @if (User.IsInRole("administrador") 
                         || User.IsInRole("balcaoN1")
+                        || User.IsInRole("gerente")
                         || User.IsInRole("balcaoN2"))
                         {
                             <li class="nav-item @(controller == "Balcao" ? "menu-open" : "")">

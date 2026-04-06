@@ -70,7 +70,7 @@
                                 @ViewBag.NomeCliente.Split(' ')[0]
                             </span>
 
-                            <i class="fa-solid fa-chevron-down ms-2 seta-menu" style="font-size: 0.7rem; opacity: 0.6;"></i> 
+                            <i class="fa-solid fa-chevron-down ms-2 seta-menu" style="font-size: 0.7rem; opacity: 0.6;margin-left: 10px !important;"></i>
                         </button>
 
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" 
@@ -115,17 +115,37 @@
                             </li>
 
                             @* SEÇÃO DO ADMINISTRADOR *@
-                            @if (ViewBag.Perfil == "administrador")
+                            @{
+                                string? adminAreaUrl = null;
+                                string adminAreaTexto = "Área interna";
+
+                                if (User.IsInRole("administrador") || User.IsInRole("gerente"))
+                                {
+                                    adminAreaUrl = Url.Action("Index", "Pedidos", new { area = "Admin" });
+                                    adminAreaTexto = "Área do Administrador";
+                                }
+                                else if (User.IsInRole("cozinhaN1") || User.IsInRole("cozinhaN2"))
+                                {
+                                    adminAreaUrl = Url.Action("Index", "Cozinha", new { area = "Admin" });
+                                    adminAreaTexto = "Painel da Cozinha";
+                                }
+                                else if (User.IsInRole("balcaoN1") || User.IsInRole("balcaoN2"))
+                                {
+                                    adminAreaUrl = Url.Action("Prontos", "Balcao", new { area = "Admin" });
+                                    // adminAreaTexto = "Painel do Balcão";
+                                }
+                            }
+
+                            @if (!string.IsNullOrEmpty(adminAreaUrl))
                             {
                                 <li><hr class="dropdown-divider my-2 opacity-50"></li>
                                 <li>
-                                    @* Corrigido: Action "Index" no Controller "Pedidos" dentro da Area "Admin" *@
                                     <a class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-hover-sidebar"
-                                           href="@Url.Action("Index", "Pedidos", new { area = "Admin" })">
+                                           href="@adminAreaUrl">
                                         <div class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
                                             <i class="fa-solid fa-shield-halved text-secondary" style="font-size: 0.85rem;"></i>
                                         </div>
-                                        <span class="fw-semibold" style="color: #4b2c20;">Área do Administrador</span>
+                                        <span class="fw-semibold" style="color: #4b2c20;">@adminAreaTexto</span>
                                     </a>
                                 </li>
                             }
@@ -211,7 +231,7 @@
                 {
                     <div class="dropdown d-inline-block">
                         <button type="button"
-                                class="d-flex align-items-center fw-bold shadow-sm btn-lift"
+                                class="d-flex align-items-center fw-bold shadow-sm btn-lift btn-lift-mb"
                                 id="btn-conta-dropdown-mobile"
                                 data-bs-toggle="dropdown" 
                                 aria-expanded="false"
@@ -224,7 +244,7 @@
                                 @ViewBag.NomeCliente.Split(' ')[0]
                             </span>
 
-                            <i class="fa-solid fa-chevron-down ms-2 seta-menu" style="font-size: 0.7rem; opacity: 0.6;"></i> 
+                            <i class="fa-solid fa-chevron-down ms-2 seta-menu-mb" style="font-size: 0.7rem; opacity: 0.6;margin-left: 10px !important;"></i>
                         </button>
 
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2"  id="menu-conta-mobile"
@@ -284,18 +304,37 @@
                                     <span class="fw-semibold">Alterar Senha</span>
                                 </button>
                             </li>
-                            @* SEÇÃO DO ADMINISTRADOR *@
-                            @if (ViewBag.Perfil == "administrador")
+                            @{
+                                string? adminAreaUrl = null;
+                                string adminAreaTexto = "Área interna";
+
+                                if (User.IsInRole("administrador") || User.IsInRole("gerente"))
+                                {
+                                    adminAreaUrl = Url.Action("Index", "Pedidos", new { area = "Admin" });
+                                    adminAreaTexto = "Área do Administrador";
+                                }
+                                else if (User.IsInRole("cozinhaN1") || User.IsInRole("cozinhaN2"))
+                                {
+                                    adminAreaUrl = Url.Action("Index", "Cozinha", new { area = "Admin" });
+                                    adminAreaTexto = "Painel da Cozinha";
+                                }
+                                else if (User.IsInRole("balcaoN1") || User.IsInRole("balcaoN2"))
+                                {
+                                    adminAreaUrl = Url.Action("Prontos", "Balcao", new { area = "Admin" });
+                                    // adminAreaTexto = "Painel do Balcão";
+                                }
+                            }
+
+                            @if (!string.IsNullOrEmpty(adminAreaUrl))
                             {
                                 <li><hr class="dropdown-divider my-2 opacity-50"></li>
                                 <li>
-                                    @* Corrigido: Action "Index" no Controller "Pedidos" dentro da Area "Admin" *@
                                     <a class="dropdown-item py-2 d-flex align-items-center rounded-3 btn-hover-sidebar"
-                                           href="@Url.Action("Index", "Pedidos", new { area = "Admin" })">
+                                           href="@adminAreaUrl">
                                         <div class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
                                             <i class="fa-solid fa-shield-halved text-secondary" style="font-size: 0.85rem;"></i>
                                         </div>
-                                        <span class="fw-semibold" style="color: #4b2c20;">Área do Administrador</span>
+                                        <span class="fw-semibold" style="color: #4b2c20;">@adminAreaTexto</span>
                                     </a>
                                 </li>
                             }

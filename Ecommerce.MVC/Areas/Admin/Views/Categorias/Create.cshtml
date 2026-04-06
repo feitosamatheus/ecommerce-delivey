@@ -1,7 +1,6 @@
 ﻿@model Ecommerce.MVC.Models.Admin.Categorias.CategoriaFormViewModel
 
 @{
-    // Ajuste para lógica de GUID: Verifica se o ID é vazio para definir o título
     ViewData["Title"] = "Nova Categoria";
     ViewData["Description"] = "Preencha as informações abaixo para configurar a categoria.";
 }
@@ -48,35 +47,35 @@
 </style>
 
 <div class="container-fluid px-0">
-    @* Cabeçalho *@
     <div class="w-100 d-flex justify-content-start align-items-center mb-4">
         <a asp-action="Index" class="btn btn-light btn-sm border text-muted btn-action">
             <i class="fas fa-arrow-left"></i> Voltar
         </a>
     </div>
 
-    @* Card do Formulário *@
     <div class="card card-form-clean">
         <div class="card-body p-4 pb-3">
-            @* A Action muda dinamicamente conforme o estado do GUID *@
             <form asp-action="Create" method="post">
                 @Html.AntiForgeryToken()
-                
-                @* Importante: O Id aqui agora é tratado como GUID pelo Binder *@
+
                 <input asp-for="Id" type="hidden" />
 
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 shadow-sm mb-4 small"></div>
 
                 <div class="row g-4">
-                    @* Nome da Categoria *@
-                    <div class="col-md-7">
+                    <div class="col-md-6">
                         <label asp-for="Nome" class="form-label">Nome da Categoria</label>
                         <input asp-for="Nome" class="form-control" placeholder="Ex: Pizzas Artesanais, Bebidas Geladas..." />
                         <span asp-validation-for="Nome" class="text-danger small"></span>
                     </div>
 
-                    @* Tipo de Exibição *@
-                    <div class="col-md-5">
+                    <div class="col-md-3">
+                        <label asp-for="Ordem" class="form-label">Ordem</label>
+                        <input asp-for="Ordem" class="form-control" type="number" min="0" placeholder="Ex: 1" />
+                        <span asp-validation-for="Ordem" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
                         <label asp-for="TipoExibicao" class="form-label">Tipo de Exibição no App</label>
                         <select asp-for="TipoExibicao" asp-items="Model.TiposExibicao" class="form-select">
                             <option value="">Selecione o modo de exibição</option>
@@ -84,7 +83,6 @@
                         <span asp-validation-for="TipoExibicao" class="text-danger small"></span>
                     </div>
 
-                    @* Rodapé de Ações *@
                     <div class="col-12 mt-5 d-flex justify-content-end gap-2 border-top pt-3">
                         <a asp-action="Index" class="btn btn-link text-muted text-decoration-none fw-bold px-4">
                             Cancelar

@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Ecommerce.MVC.Areas.Admin.Controllers;
 
 [Area("Admin")]
-[Authorize(Roles = "administrador")]
+[Authorize(Roles = "administrador,gerente")]
 public class PedidosController : Controller
 {
     private readonly DatabaseContext _db;

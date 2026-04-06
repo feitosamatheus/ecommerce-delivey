@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Ecommerce.MVC.Areas.Admin.Controllers;
 
 [Area("Admin")]
-[Authorize]
+[Authorize(Roles = "administrador,gerente")]
 public class CategoriasController : Controller
 {
     private readonly DatabaseContext _db;
@@ -73,7 +73,8 @@ public class CategoriasController : Controller
         var categoria = new Categoria
         {
             Nome = model.Nome.Trim(),
-            TipoExibicao = model.TipoExibicao
+            TipoExibicao = model.TipoExibicao,
+            Ordem = model.Ordem
         };
 
         _db.Categorias.Add(categoria);
@@ -99,7 +100,8 @@ public class CategoriasController : Controller
         {
             Id = categoria.Id,
             Nome = categoria.Nome,
-            TipoExibicao = categoria.TipoExibicao
+            TipoExibicao = categoria.TipoExibicao,
+            Ordem = categoria.Ordem
         };
 
         PopularTiposExibicao(model);
@@ -129,6 +131,7 @@ public class CategoriasController : Controller
 
         categoria.Nome = model.Nome.Trim();
         categoria.TipoExibicao = model.TipoExibicao;
+        categoria.Ordem = model.Ordem;
 
         await _db.SaveChangesAsync();
 

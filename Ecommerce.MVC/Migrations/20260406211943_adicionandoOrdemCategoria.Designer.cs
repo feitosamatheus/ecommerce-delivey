@@ -3,6 +3,7 @@ using System;
 using Ecommerce.MVC.Config;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ecommerce.MVC.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260406211943_adicionandoOrdemCategoria")]
+    partial class adicionandoOrdemCategoria
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -466,9 +469,6 @@ namespace Ecommerce.MVC.Migrations
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("varchar(150)");
-
-                    b.Property<int>("Ordem")
-                        .HasColumnType("integer");
 
                     b.Property<decimal>("Preco")
                         .HasColumnType("decimal(18,2)");

@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using System.ComponentModel.DataAnnotations;
 
 [Area("Admin")]
-[Authorize(Roles = "administrador,gerente")]
 public class UsuariosController : Controller
 {
     private readonly DatabaseContext _context; // Substitua pelo seu Contexto
 
     public UsuariosController(DatabaseContext context) => _context = context;
 
+    [Authorize(Roles = "administrador,gerente")]
     public async Task<IActionResult> Index(string busca, string role, int pagina = 1)
     {
         ViewData["page"] = "Pessoas";
@@ -63,9 +63,11 @@ public class UsuariosController : Controller
         return View(model);
     }
 
+    [Authorize(Roles = "administrador,gerente")]
     public IActionResult Create() => View(new UsuarioFormViewModel());
 
     [HttpPost]
+    [Authorize(Roles = "administrador,gerente")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(UsuarioFormViewModel model)
     {
@@ -113,6 +115,7 @@ public class UsuariosController : Controller
 
 
     // GET: Admin/Usuarios/Edit/5
+    [Authorize(Roles = "administrador,gerente")]
     public async Task<IActionResult> Edit(Guid id)
     {
         var cliente = await _context.Clientes.FindAsync(id);
@@ -136,6 +139,7 @@ public class UsuariosController : Controller
 
     // POST: Admin/Usuarios/Edit/5
     [HttpPost]
+    [Authorize(Roles = "administrador,gerente")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, UsuarioFormViewModel model)
     {
@@ -192,6 +196,7 @@ public class UsuariosController : Controller
 
     // POST: Admin/Usuarios/Delete/5
     [HttpPost]
+    [Authorize(Roles = "administrador,gerente")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -297,6 +302,7 @@ public class UsuariosController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = "administrador,gerente,cozinhaN1,cozinhaN2,balcaoN1,balcaoN2")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {

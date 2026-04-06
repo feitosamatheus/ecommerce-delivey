@@ -20,6 +20,7 @@ namespace Ecommerce.MVC.Entities
 
     [Required]
     public Guid ProdutoId { get; set; }
+    public Produto Produto { get; set; }
 
     // Snapshot (não depende do preço atual)
     [Required]

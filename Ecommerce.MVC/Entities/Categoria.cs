@@ -14,6 +14,8 @@ public class Categoria
     [Required]
     [Column(TypeName = "varchar(100)")]
     public string Nome { get; set; }
+    
+    public int Ordem { get; set; }
 
     [Required]
     public ETipoExibicao TipoExibicao { get; set; }

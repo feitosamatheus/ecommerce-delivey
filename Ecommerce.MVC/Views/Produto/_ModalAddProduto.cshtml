@@ -182,11 +182,22 @@
                             <span class="product-desc-v5">@Model.Descricao</span>
                         }
 
-                        <div class="price-wrapper-v6 mb-1">
+                        @* <div class="price-wrapper-v6 mb-1">
                             <div class="price-v6">
                                 <span class="currency">R$</span>
                                 <span class="amount">@partesPreco[0]</span>
                                 <span class="decimals">,@partesPreco[1]</span>
+                            </div>
+                            <div class="price-info-tag">
+                                <span class="label">Preço</span>
+                                <span class="badge-unit">Unitário</span>
+                            </div>
+                        </div> *@
+                        <div class="price-wrapper-v6 mb-1">
+                            <div class="price-v6">
+                                <span class="currency">R$</span>
+                                <span class="amount" id="modalPrecoPrincipal">@partesPreco[0]</span>
+                                <span class="decimals" id="modalPrecoCentavos">,@partesPreco[1]</span>
                             </div>
                             <div class="price-info-tag">
                                 <span class="label">Preço</span>
@@ -206,7 +217,10 @@
                                 @if (Model.AcompanhamentoCategorias?.Any() == true)
                                 {
                                     <div class="mt-2">
-                                        @foreach (var pc in Model.AcompanhamentoCategorias.OrderBy(x => x.Ordem).ThenBy(x => x.Categoria.Nome))
+                                        @foreach (var pc in Model.AcompanhamentoCategorias
+                                            .OrderBy(x => x.Ordem == 0 ? 1 : 0)
+                                            .ThenBy(x => x.Ordem == 0 ? int.MaxValue : x.Ordem)
+                                            .ThenBy(x => x.Categoria.Nome))
                                         {
                                             var cat = pc.Categoria;
                                             var requiredLabel = pc.Obrigatorio ? "Obrigatório" : "Opcional";
@@ -236,7 +250,10 @@
                                                      data-max="@pc.MaxSelecionados"
                                                      style="max-height:320px; overflow-y:auto;">
                                                     
-                                                    @foreach (var item in itens)
+                                                    @foreach (var item in itens
+                                                        .OrderBy(x => x.Acompanhamento.Ordem == 0 ? 1 : 0)
+                                                        .ThenBy(x => x.Acompanhamento.Ordem == 0 ? int.MaxValue : x.Acompanhamento.Ordem)
+                                                        .ThenBy(x => x.Acompanhamento.Nome))
                                                     {
                                                         var inputId = $"acomp_{pc.AcompanhamentoCategoriaId:N}_{item.Id:N}";
                                                         var temAdicional = item.Acompanhamento.Preco > 0;

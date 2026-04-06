@@ -1,12 +1,15 @@
 using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Models.Admin.AcompanhamentoCategorias;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.MVC.Areas.Admin.Controllers;
 
 [Area("Admin")]
+[Authorize(Roles = "administrador,gerente")]
+
 public class AcompanhamentoCategoriasController : Controller
 {
     private readonly DatabaseContext _db;

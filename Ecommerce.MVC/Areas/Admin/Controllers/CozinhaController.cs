@@ -1,12 +1,14 @@
 ﻿using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
 using Ecommerce.MVC.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.MVC.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "administrador,cozinhaN1,cozinhaN2,balcaoN1,balcaoN2,gerente")]
     public class CozinhaController : Controller
     {
         private readonly DatabaseContext _db;
