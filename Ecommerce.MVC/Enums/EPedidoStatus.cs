@@ -17,9 +17,11 @@ public enum EPedidoStatus
     // Pedido pronto para retirada ou saiu para entrega
     Pronto = 4,
 
+
     // Pedido entregue ao cliente ou retirado no balcão
     Concluido = 5,
 
     // Pedido cancelado antes da conclusão
     Cancelado = 6
+
 }

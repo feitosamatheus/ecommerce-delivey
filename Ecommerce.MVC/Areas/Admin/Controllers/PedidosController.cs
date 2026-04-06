@@ -176,6 +176,27 @@ public class PedidosController : Controller
         return PartialView("_DetailsModal", pedido);
     }
 
+    //[HttpPost]
+    //public async Task<IActionResult> AtualizarStatus(Guid id, EPedidoStatus status)
+    //{
+    //    var pedido = await _db.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
+
+    //    if (pedido == null)
+    //        return NotFound(new { sucesso = false, mensagem = "Pedido não encontrado." });
+
+    //    pedido.Status = status;
+
+    //    await _db.SaveChangesAsync();
+
+    //    return Json(new
+    //    {
+    //        sucesso = true,
+    //        mensagem = "Status atualizado com sucesso.",
+    //        status = pedido.Status.ToString(),
+    //        id = pedido.Id
+    //    });
+    //}
+
     [HttpPost]
     public async Task<IActionResult> AtualizarStatus(Guid id, EPedidoStatus status)
     {
@@ -186,6 +207,56 @@ public class PedidosController : Controller
 
         pedido.Status = status;
 
+        switch (status)
+        {
+            case EPedidoStatus.Rascunho:
+            case EPedidoStatus.AguardandoPagamento:
+            case EPedidoStatus.Confirmado:
+                // limpa apenas etapas futuras
+                pedido.EmpreparoEmUtc = null;
+                pedido.ProntoEmUtc = null;
+                pedido.ConcluidoEmUtc = null;
+                pedido.EntregueEmUtc = null;
+                break;
+
+            case EPedidoStatus.EmPreparo:
+                // marca a etapa atual se ainda não existir
+                pedido.EmpreparoEmUtc ??= DateTime.UtcNow;
+
+                // limpa apenas etapas à frente
+                pedido.ProntoEmUtc = null;
+                pedido.ConcluidoEmUtc = null;
+                pedido.EntregueEmUtc = null;
+                break;
+
+            case EPedidoStatus.Pronto:
+                // preserva início do preparo; cria se não existir
+                pedido.EmpreparoEmUtc ??= DateTime.UtcNow;
+
+                // marca pronto se ainda não existir
+                pedido.ProntoEmUtc ??= DateTime.UtcNow;
+
+                // limpa apenas etapas à frente
+                pedido.ConcluidoEmUtc = null;
+                pedido.EntregueEmUtc = null;
+                break;
+
+            case EPedidoStatus.Concluido:
+                // garante histórico anterior
+                pedido.EmpreparoEmUtc ??= DateTime.UtcNow;
+                pedido.ProntoEmUtc ??= DateTime.UtcNow;
+
+                // marca conclusão/entrega
+                pedido.ConcluidoEmUtc ??= DateTime.UtcNow;
+                pedido.EntregueEmUtc ??= DateTime.UtcNow;
+                break;
+
+            case EPedidoStatus.Cancelado:
+                // não altera histórico por padrão
+                // se quiser limpar algo no cancelamento, faça aqui
+                break;
+        }
+
         await _db.SaveChangesAsync();
 
         return Json(new
@@ -193,7 +264,11 @@ public class PedidosController : Controller
             sucesso = true,
             mensagem = "Status atualizado com sucesso.",
             status = pedido.Status.ToString(),
-            id = pedido.Id
+            id = pedido.Id,
+            empreparoEmUtc = pedido.EmpreparoEmUtc,
+            prontoEmUtc = pedido.ProntoEmUtc,
+            concluidoEmUtc = pedido.ConcluidoEmUtc,
+            entregueEmUtc = pedido.EntregueEmUtc
         });
     }
 

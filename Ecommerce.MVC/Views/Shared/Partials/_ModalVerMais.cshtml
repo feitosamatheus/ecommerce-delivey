@@ -1,3 +1,60 @@
+@{
+    var termosServicoHtml = @"
+        <p>
+            Ao utilizar nossa plataforma, o cliente declara estar ciente e de acordo com as regras
+            relacionadas ao cadastro, login, pedidos, pagamentos, produção e retirada.
+        </p>
+        <ul>
+            <li class='mb-2'>
+                Os pedidos estão sujeitos à disponibilidade dos produtos e à capacidade operacional da loja.
+            </li>
+            <li class='mb-2'>
+                Os horários informados para preparo, entrega ou retirada são estimativas e podem variar em períodos de maior demanda.
+            </li>
+            <li class='mb-2'>
+                Pedidos que dependam de confirmação de pagamento somente entram em produção após a validação do pagamento.
+            </li>
+            <li class='mb-2'>
+                O cliente é responsável por informar corretamente seus dados cadastrais, endereço, telefone e demais informações necessárias para atendimento.
+            </li>
+            <li class='mb-2'>
+                A loja poderá entrar em contato para confirmar dados do pedido, pagamento ou entrega, quando necessário.
+            </li>
+            <li class='mb-2'>
+                Solicitações de cancelamento, alteração ou reembolso seguirão as regras internas da loja e do meio de pagamento utilizado.
+            </li>
+            <li class='mb-2'>
+                Ao prosseguir com o cadastro ou uso da plataforma, o cliente concorda com o tratamento dos dados necessários para a execução do serviço.
+            </li>
+            <li>
+                O uso indevido da plataforma poderá resultar em bloqueio de acesso, a critério da administração do sistema.
+            </li>
+        </ul>";
+
+    var politicaPrivacidadeHtml = @"
+        <p>
+            Seus dados serão utilizados para autenticação, processamento de pedidos, comunicação sobre compras,
+            suporte ao cliente e melhoria da experiência na plataforma.
+        </p>
+        <ul>
+            <li class='mb-2'>
+                Os dados informados no cadastro devem ser verdadeiros e atualizados.
+            </li>
+            <li class='mb-2'>
+                As informações podem ser utilizadas para envio de notificações relacionadas ao pedido.
+            </li>
+            <li class='mb-2'>
+                O compartilhamento com terceiros ocorre apenas quando necessário para pagamento, entrega ou obrigação legal.
+            </li>
+            <li class='mb-2'>
+                Os dados são tratados conforme princípios de segurança, necessidade e finalidade.
+            </li>
+            <li>
+                O cliente pode solicitar atualização cadastral ou esclarecimentos sobre o uso dos dados pelos canais de atendimento da loja.
+            </li>
+        </ul>";
+}
+
 <style>
     :root {
         --bh-primary: #3c1e0a;
@@ -10,105 +67,107 @@
         --bh-radius: 20px;
     }
 
-    .bc-modal-container { font-family: 'Inter', 'Segoe UI', sans-serif; }
+    .bc-modal-container {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
 
-    /* Modal - Estilo Card Elevado */
-    .bc-modal { 
-        border-radius: var(--bh-radius); 
-        border: none; 
+    .bc-modal {
+        border-radius: var(--bh-radius);
+        border: none;
         overflow: hidden;
         background: #ffffff;
     }
 
-    /* Botão Fechar Minimalista */
     .btn-close-custom {
-        background: #f5f5f5; 
-        border: none; 
-        width: 32px; 
-        height: 32px; 
+        background: #f5f5f5;
+        border: none;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
-        display: flex; 
-        align-items: center; 
+        display: flex;
+        align-items: center;
         justify-content: center;
-        color: var(--bh-text-muted); 
+        color: var(--bh-text-muted);
         transition: 0.3s;
         font-size: 1.2rem;
     }
-    .btn-close-custom:hover { color: var(--bh-primary); }
 
-    /* Tabs Estilo "Pill" */
-    .bc-modal .nav-tabs { 
-        border: none; 
-        background: #f0f0f0; 
-        padding: 4px; 
+        .btn-close-custom:hover {
+            color: var(--bh-primary);
+        }
+
+    .bc-modal .nav-tabs {
+        border: none;
+        background: #f0f0f0;
+        padding: 4px;
         border-radius: 12px;
         display: inline-flex;
         margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 4px;
     }
-    .bc-modal .nav-item { margin: 0; }
-    .bc-modal .nav-link { 
-        border: none !important; 
-        color: var(--bh-text-muted); 
-        font-weight: 600; 
-        padding: 8px 24px; 
-        font-size: 0.85rem; 
+
+    .bc-modal .nav-item {
+        margin: 0;
+    }
+
+    .bc-modal .nav-link {
+        border: none !important;
+        color: var(--bh-text-muted);
+        font-weight: 600;
+        padding: 8px 24px;
+        font-size: 0.85rem;
         border-radius: 8px !important;
         transition: 0.2s ease;
     }
-    .bc-modal .nav-link.active { 
-        color: var(--bh-primary) !important; 
-        background: #fff !important; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
 
-    /* Títulos de Seção */
-    .bc-section-title { 
-        font-size: 0.8rem; 
-        font-weight: 700; 
-        color: var(--bh-primary); 
-        margin-bottom: 12px; 
-        display: flex; 
-        align-items: center; 
+        .bc-modal .nav-link.active {
+            color: var(--bh-primary) !important;
+            background: #fff !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+    .bc-section-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--bh-primary);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
         gap: 6px;
     }
 
-    /* Cards de Ação (Endereço/Pagamento) */
     .bc-card-action {
-        background: #fff; 
-        border: 1px solid var(--bh-border); 
+        background: #fff;
+        border: 1px solid var(--bh-border);
         border-radius: 14px;
-        padding: 16px; 
+        padding: 16px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: block;
         text-decoration: none;
     }
-    .bc-card-action:hover {
-        border-color: var(--bh-primary-light);
-        background-color: #fff;
-        box-shadow: 0 10px 20px rgba(60, 30, 10, 0.05);
-        transform: translateY(-3px);
-    }
 
-    /* Horários */
-    .schedule-box {
-        background: linear-gradient(145deg, #ffffff, #f9f9f9);
-        border: 1px solid var(--bh-border);
-        border-radius: 16px;
-        padding: 20px;
-    }
+        .bc-card-action:hover {
+            border-color: var(--bh-primary-light);
+            background-color: #fff;
+            box-shadow: 0 10px 20px rgba(60, 30, 10, 0.05);
+            transform: translateY(-3px);
+        }
 
-    .bc-link { 
-        color: var(--bh-primary); 
-        font-weight: 700; 
-        text-decoration: none; 
+    .bc-link {
+        color: var(--bh-primary);
+        font-weight: 700;
+        text-decoration: none;
         font-size: 0.85rem;
         padding-bottom: 2px;
         border-bottom: 2px solid transparent;
         transition: 0.2s;
     }
-    .bc-link:hover { border-bottom-color: var(--bh-primary); }
 
-    /* Estilo do Card de Destaque do PIX */
+        .bc-link:hover {
+            border-bottom-color: var(--bh-primary);
+        }
+
     .pix-container {
         background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
         border: 2px solid #32BCAD;
@@ -148,7 +207,6 @@
         box-shadow: 0 4px 12px rgba(50, 188, 173, 0.25);
     }
 
-    /* Estilo dos demais métodos */
     .other-methods-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -177,84 +235,29 @@
         text-align: center;
     }
 
-    /* Container principal com profundidade */
-    .schedule-container {
-        background: #ffffff;
-        border-radius: 18px;
+    .bc-terms-box {
+        background: #fcfcfc;
         border: 1px solid var(--bh-border);
-        overflow: hidden;
+        border-radius: 16px;
+        padding: 20px;
     }
 
-    /* Badge de Status Dinâmico */
-    .status-indicator {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        margin-bottom: 15px;
-    }
-
-    .status-open {
-        background: #e8f5e9;
-        color: #1f7a33;
-        border: 1px solid #c8e6c9;
-    }
-
-    /* Grid de horários estilo Timeline */
-    .time-card {
-        padding: 15px;
-        border-radius: 14px;
-        background: var(--bh-bg-light);
-        border: 1px solid transparent;
-        transition: 0.3s ease;
-        height: 100%;
-    }
-
-        .time-card:hover {
-            background: #fff;
-            border-color: var(--bh-primary-light);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.04);
+        .bc-terms-box p,
+        .bc-terms-box li {
+            color: var(--bh-text-muted);
+            font-size: 0.92rem;
+            line-height: 1.65;
         }
 
-    .day-label {
-        color: var(--bh-text-muted);
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .hour-value {
-        color: var(--bh-primary);
-        font-weight: 800;
-        font-size: 1.1rem;
-        display: block;
-    }
-
-    .day-icon {
-        width: 32px;
-        height: 32px;
-        background: #fff;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 12px;
-        color: var(--bh-primary);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
+        .bc-terms-box ul {
+            padding-left: 1.2rem;
+            margin-bottom: 0;
+        }
 </style>
 
 <div class="modal fade bc-modal-container" id="modalVerMais" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bc-modal shadow-lg">
-            
             <div style="position: absolute; right: 7px; top: 10px; z-index: 10;">
                 <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar" style="font-size: 1.5rem;">×</button>
             </div>
@@ -271,6 +274,12 @@
                         <li class="nav-item">
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pane-pagamento" type="button">Pagamento</button>
                         </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pane-termos" type="button">Termos de Serviço</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pane-privacidade" type="button">Política de Privacidade</button>
+                        </li>
                     </ul>
                 </div>
 
@@ -280,12 +289,12 @@
                             <div class="col-md-7">
                                 <div class="bc-section-title text-uppercase">Nossa História</div>
                                 <p class="text-muted" style="font-size: 0.95rem; line-height: 1.6;">
-                                    Sopas e caldos artesanais, salgados e bolos. Feito pelo chef com ingredientes selecionados. 
+                                    Sopas e caldos artesanais, salgados e bolos. Feito pelo chef com ingredientes selecionados.
                                     Aceitamos encomendas para eventos com um toque de carinho e sabor caseiro.
                                 </p>
                                 <a href="/" class="bc-link">Explorar cardápio <i class="fa-solid fa-arrow-right ms-1"></i></a>
                             </div>
-                            
+
                             <div class="col-md-5">
                                 <div class="bc-section-title text-uppercase">Onde Estamos</div>
                                 <a href="https://www.google.com/maps/search/?api=1&query=Rua+Nilson+Sabino+Pinho,+222+Jardim+Atlantico+Olinda" target="_blank" class="bc-card-action">
@@ -362,6 +371,20 @@
                             <div class="d-flex align-items-center justify-content-center text-muted" style="font-size: 0.75rem;">
                                 <i class="fa-solid fa-shield-halved me-2"></i> Pagamento 100% seguro via plataforma
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade mt-4" id="pane-termos">
+                        <div class="bc-section-title text-uppercase">Termos de Serviço</div>
+                        <div class="bc-terms-box">
+                            @Html.Raw(termosServicoHtml)
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade mt-4" id="pane-privacidade">
+                        <div class="bc-section-title text-uppercase">Política de Privacidade</div>
+                        <div class="bc-terms-box">
+                            @Html.Raw(politicaPrivacidadeHtml)
                         </div>
                     </div>
                 </div>

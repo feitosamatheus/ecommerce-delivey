@@ -8,8 +8,6 @@
 
     var pagamentos = Model.Pagamentos ?? new List<PedidoPagamentoViewModel>();
 
-    // REGRA PEDIDA:
-    // se pedido estiver aguardando pagamento, pega o primeiro pagamento gerado
     var pagamento = Model.Status == EPedidoStatus.AguardandoPagamento
         ? pagamentos.OrderBy(p => p.Sequencia).FirstOrDefault()
         : pagamentos.OrderBy(p => p.Sequencia).FirstOrDefault();
@@ -76,6 +74,35 @@
             badgePagamentoClass = "bg-danger";
         }
     }
+
+    bool pedidoEmPreparo = Model.Status == EPedidoStatus.EmPreparo;
+    bool pedidoPronto = Model.Status == EPedidoStatus.Pronto;
+    bool pedidoConcluido = Model.Status == EPedidoStatus.Concluido;
+
+    string badgePedidoClass = Model.Status switch
+    {
+        EPedidoStatus.Rascunho => "bg-secondary",
+        EPedidoStatus.AguardandoPagamento => "bg-warning text-dark",
+        EPedidoStatus.Confirmado => "bg-info text-dark",
+        EPedidoStatus.EmPreparo => "bg-warning text-dark",
+        EPedidoStatus.Pronto => "bg-success",
+        EPedidoStatus.Concluido => "bg-primary",
+        EPedidoStatus.Cancelado => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    var agora = DateTime.Now;
+    var retiradaLocal = Model.HorarioRetirada.ToLocalTime();
+    var emPreparoEmLocal = Model.EmpreparoEmUtc?.ToLocalTime();
+    var prontoEmLocal = Model.ProntoEmUtc?.ToLocalTime();
+    var concluidoEmLocal = Model.ConcluidoEmUtc?.ToLocalTime();
+
+    bool retiradaAtrasada = pedidoEmPreparo && agora > retiradaLocal;
+
+    string textoRetiradaPrevista = retiradaLocal.ToString("dd/MM/yyyy 'às' HH:mm", pt);
+    string textoEmPreparoEm = emPreparoEmLocal?.ToString("dd/MM/yyyy 'às' HH:mm", pt) ?? "-";
+    string textoProntoEm = prontoEmLocal?.ToString("dd/MM/yyyy 'às' HH:mm", pt) ?? "-";
+    string textoConcluidoEm = concluidoEmLocal?.ToString("dd/MM/yyyy 'às' HH:mm", pt) ?? "-";
 }
 
 <input type="hidden" id="pixPedidoId" value="@Model.Id" />
@@ -96,13 +123,25 @@ else
             <div class="small text-muted">
                 Criado em @Model.CriadoEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
             </div>
+            <div class="small text-muted">
+                Retirada prevista: <strong>@textoRetiradaPrevista</strong>
+            </div>
         </div>
 
-        <div class="text-md-center bg-light p-2 px-3 rounded-2 shadow-sm">
-            <span class="small text-muted d-block">Status do pagamento</span>
-            <span class="badge rounded-pill px-3 @badgePagamentoClass">
-                @(pagamento?.StatusPagamento ?? "Sem pagamento")
-            </span>
+        <div class="d-flex flex-wrap gap-2">
+            <div class="text-md-center bg-light p-2 px-3 rounded-2 shadow-sm">
+                <span class="small text-muted d-block">Status do pedido</span>
+                <span class="badge rounded-pill px-3 @badgePedidoClass">
+                    @Model.Status
+                </span>
+            </div>
+
+            <div class="text-md-center bg-light p-2 px-3 rounded-2 shadow-sm">
+                <span class="small text-muted d-block">Status do pagamento</span>
+                <span class="badge rounded-pill px-3 @badgePagamentoClass">
+                    @(pagamento?.StatusPagamento ?? "Sem pagamento")
+                </span>
+            </div>
         </div>
     </div>
 
@@ -135,6 +174,11 @@ else
             </div>
         }
 
+        <div class="d-flex justify-content-between small text-muted mt-2">
+            <span>Horário previsto para retirada</span>
+            <span class="fw-semibold">@textoRetiradaPrevista</span>
+        </div>
+
         <hr class="my-3 opacity-25" />
         <div class="d-flex justify-content-between">
             <span class="fw-semibold">Total do pedido</span>
@@ -142,7 +186,176 @@ else
         </div>
     </div>
 
-    @if (pagamentoConfirmado)
+    @if (pedidoEmPreparo)
+    {
+        <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden">
+            <div class="card-body p-0">
+                <div class="p-4 text-center" style="background: linear-gradient(135deg, #fd7e14 0%, #ffb347 100%); color: white;">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-fire-burner fa-4x animate__animated animate__pulse animate__infinite"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Pedido em preparo</h4>
+                    <p class="mb-0 opacity-75">
+                        Estamos preparando o seu pedido neste momento.
+                    </p>
+                </div>
+
+                <div class="p-4 bg-white">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-8">
+                            <h6 class="fw-bold mb-2" style="color: #3c1e0a;">Acompanhamento do pedido</h6>
+
+                            <ul class="list-unstyled small text-muted mb-3">
+                                <li class="mb-2">
+                                    <i class="fa-solid fa-utensils me-2 text-warning"></i>
+                                    Seu pedido já foi enviado para a cozinha.
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa-solid fa-fire-burner me-2 text-warning"></i>
+                                    Início do preparo: <strong>@textoEmPreparoEm</strong>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa-regular fa-clock me-2 text-warning"></i>
+                                    Retirada prevista: <strong>@textoRetiradaPrevista</strong>
+                                </li>
+                            </ul>
+
+                            @if (retiradaAtrasada)
+                            {
+                                <div class="alert alert-danger border-0 rounded-4 mb-0">
+                                    <div class="fw-bold mb-1">
+                                        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                                        Pedimos desculpas pelo atraso
+                                    </div>
+                                    <div class="small mb-0">
+                                        Seu pedido ainda está em preparo e já passou do horário previsto para retirada.
+                                        Estamos finalizando o quanto antes.
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning border-0 rounded-4 mb-0">
+                                    <div class="fw-bold mb-1">
+                                        <i class="fa-regular fa-clock me-1"></i>
+                                        Previsão de retirada
+                                    </div>
+                                    <div class="small mb-0">
+                                        Seu pedido deve ficar disponível em <strong>@textoRetiradaPrevista</strong>.
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <div class="h-100 rounded-4 p-3" style="background:#f8f9fa; border:1px dashed #dee2e6;">
+                                <div class="small text-muted mb-1">Restante na retirada</div>
+                                <div class="fs-4 fw-bold text-dark mb-3">@valorRetiradaExibicao.ToString("C", pt)</div>
+
+                                <div class="small text-muted mb-1">Status atual</div>
+                                <div class="fw-semibold mb-3">Em preparo</div>
+
+                                <div class="small text-muted mb-1">Retirada prevista</div>
+                                <div class="fw-semibold">@textoRetiradaPrevista</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (pedidoPronto)
+    {
+        <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden">
+            <div class="card-body p-0">
+                <div class="p-4 text-center" style="background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: white;">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-bag-shopping fa-4x animate__animated animate__bounceIn"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Pedido pronto!</h4>
+                    <p class="mb-0 opacity-75">
+                        Seu pedido já está disponível para retirada ou entrega.
+                    </p>
+                </div>
+
+                <div class="p-4 bg-white">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-8">
+                            <h6 class="fw-bold mb-2" style="color: #3c1e0a;">Próximo passo</h6>
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li class="mb-2">
+                                    <i class="fa-solid fa-store me-2 text-success"></i>
+                                    Você já pode retirar o seu pedido.
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa-regular fa-clock me-2 text-success"></i>
+                                    Ficou pronto em: <strong>@textoProntoEm</strong>
+                                </li>
+                                <li>
+                                    <i class="fa-solid fa-wallet me-2 text-success"></i>
+                                    <strong>Se houver valor pendente, o pagamento poderá ser finalizado na retirada.</strong>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <div class="h-100 rounded-4 p-3" style="background:#f8f9fa; border:1px dashed #dee2e6;">
+                                <div class="small text-muted mb-1">Ficou pronto em</div>
+                                <div class="fw-semibold mb-3">@textoProntoEm</div>
+
+                                <div class="small text-muted mb-1">Retirada prevista</div>
+                                <div class="fw-semibold mb-3">@textoRetiradaPrevista</div>
+
+                                <div class="small text-muted mb-1">Restante na retirada</div>
+                                <div class="fs-4 fw-bold text-dark">@valorRetiradaExibicao.ToString("C", pt)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (pedidoConcluido)
+    {
+        <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden">
+            <div class="card-body p-0">
+                <div class="p-4 text-center" style="background: linear-gradient(135deg, #0d6efd 0%, #6ea8fe 100%); color: white;">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-circle-check fa-4x animate__animated animate__bounceIn"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Pedido concluído</h4>
+                    <p class="mb-0 opacity-75">
+                        Seu pedido foi finalizado com sucesso.
+                    </p>
+                </div>
+
+                <div class="p-4 bg-white">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-8">
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li class="mb-2">
+                                    <i class="fa-regular fa-circle-check me-2 text-primary"></i>
+                                    Pedido concluído em: <strong>@textoConcluidoEm</strong>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa-regular fa-clock me-2 text-primary"></i>
+                                    Retirada prevista: <strong>@textoRetiradaPrevista</strong>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <div class="h-100 rounded-4 p-3" style="background:#f8f9fa; border:1px dashed #dee2e6;">
+                                <div class="small text-muted mb-1">Concluído em</div>
+                                <div class="fw-semibold">@textoConcluidoEm</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (pagamentoConfirmado)
     {
         <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden">
             <div class="card-body p-0">
@@ -173,8 +386,8 @@ else
                                     Já recebemos seu pedido e o enviamos para a cozinha.
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fa-solid fa-fire-burner me-2 text-success"></i>
-                                    Iniciaremos o preparo em instantes para que você receba tudo fresquinho.
+                                    <i class="fa-regular fa-clock me-2 text-success"></i>
+                                    Retirada prevista: <strong>@textoRetiradaPrevista</strong>
                                 </li>
                                 <li>
                                     <i class="fa-solid fa-store me-2 text-success"></i>
@@ -290,9 +503,13 @@ else
                             <span class="text-muted small">Valor</span>
                             <span class="small fw-bold">@valorEmExibicao.ToString("C", pt)</span>
                         </div>
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted small">Retirada</span>
                             <span class="small fw-bold">@valorRetiradaExibicao.ToString("C", pt)</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Previsão retirada</span>
+                            <span class="small fw-bold">@textoRetiradaPrevista</span>
                         </div>
                     </div>
 
@@ -310,8 +527,6 @@ else
                             clique no botão acima para consultar novamente.
                         </div>
                     </div>
-
-                    <div id="pixStatusBox" class="d-none mt-3"></div>
 
                     <div id="pixStatusBox" class="d-none mt-3"></div>
                 </div>
@@ -349,6 +564,10 @@ else
                     <div class="d-flex justify-content-between small text-muted mt-2">
                         <span>Retirada</span>
                         <span>@valorRetiradaExibicao.ToString("C", pt)</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mt-2">
+                        <span>Previsão retirada</span>
+                        <span>@textoRetiradaPrevista</span>
                     </div>
 
                     @if (!string.IsNullOrWhiteSpace(pagamento?.Gateway))

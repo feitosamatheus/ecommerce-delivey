@@ -138,7 +138,7 @@ public class PedidoController : Controller
         {
             // Se não houver filtro de código nem de status, 
             // mostramos o padrão: O que não foi finalizado/cancelado
-            query = query.Where(p => p.Status != EPedidoStatus.Concluido && p.Status != EPedidoStatus.Cancelado);
+            query = query.Where(p => p.Status != EPedidoStatus.Cancelado);
         }
 
         // 3. Paginação e Projeção
@@ -183,7 +183,6 @@ public class PedidoController : Controller
             .Where(p => p.ClienteId == clienteId
                         && p.Codigo == codigo
                         && p.Status != EPedidoStatus.Rascunho
-                        && p.Status != EPedidoStatus.Concluido
                         && p.Status != EPedidoStatus.Cancelado)
             .Select(p => new
             {
@@ -193,6 +192,9 @@ public class PedidoController : Controller
                 p.Status,
                 p.MetodoEntrega,
                 p.HorarioRetirada,
+                p.EmpreparoEmUtc,
+                p.ProntoEmUtc,
+                p.ConcluidoEmUtc,
                 p.Observacao,
                 p.Subtotal,
                 p.Total,
@@ -249,6 +251,9 @@ public class PedidoController : Controller
             Step = MapStatusToStep(pedidoEntity.Status),
             MetodoEntrega = pedidoEntity.MetodoEntrega,
             HorarioRetirada = pedidoEntity.HorarioRetirada,
+            EmpreparoEmUtc = pedidoEntity.EmpreparoEmUtc,
+            ProntoEmUtc = pedidoEntity.ProntoEmUtc,
+            ConcluidoEmUtc = pedidoEntity.ConcluidoEmUtc,
             Observacao = pedidoEntity.Observacao,
             Subtotal = pedidoEntity.Subtotal,
             Total = pedidoEntity.Total,

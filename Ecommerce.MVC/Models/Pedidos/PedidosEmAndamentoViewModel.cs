@@ -14,6 +14,9 @@ public class PedidosEmAndamentoViewModel
     public decimal Total { get; set; }
     public int Step { get; set; }
     public DateTime HorarioRetirada { get; set; }
+    public DateTime? EmpreparoEmUtc { get; set; }
+    public DateTime? ProntoEmUtc { get; set; }
+    public DateTime? ConcluidoEmUtc { get; set; }
     public string Observacao { get; set; }
     public string ClienteNome { get; set; }
     public string ClienteTelefone { get; set; }
