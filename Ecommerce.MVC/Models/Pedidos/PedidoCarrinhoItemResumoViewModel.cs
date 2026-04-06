@@ -9,6 +9,7 @@ public class PedidoCarrinhoItemResumoViewModel
 {
     public Guid ProdutoId { get; set; }
     public string ProdutoNome { get; set; }
+    public string Observacao { get; set; }
     public int Quantidade { get; set; }
 
     public decimal PrecoBase { get; set; }

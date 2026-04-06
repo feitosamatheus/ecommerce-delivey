@@ -155,6 +155,7 @@ public class PedidoService : IPedidoService
             {
                 ProdutoId = item.ProdutoId,
                 ProdutoNome = item.ProdutoNomeSnapshot,
+                Observacao = item.Observacao,
                 Quantidade = item.Quantidade,
                 PrecoBase = item.PrecoBaseSnapshot,
                 PrecoAcompanhamentos = somaAcomp,
@@ -252,7 +253,7 @@ public class PedidoService : IPedidoService
 
     private static DateTime CalcularHorarioDisponivel(DateTime dataPedido, int tempoPreparoMinutos)
     {
-        var atual = dataPedido;
+        var atual = AjustarInicioPreparo(dataPedido);
 
         if (tempoPreparoMinutos <= 0)
             return AjustarParaProximoDiaUtil(atual);
@@ -265,6 +266,19 @@ public class PedidoService : IPedidoService
         }
 
         return atual;
+    }
+
+    private static DateTime AjustarInicioPreparo(DateTime dataPedido)
+    {
+        // se for fim de semana, já joga para próximo dia útil às 08h
+        if (EhFinalDeSemana(dataPedido))
+            return ProximoDiaUtil(dataPedido).AddHours(8);
+
+        // regra: após 18h, começa no próximo dia útil às 08h
+        if (dataPedido.Hour >= 18)
+            return ProximoDiaUtil(dataPedido.Date.AddDays(1)).AddHours(8);
+
+        return dataPedido;
     }
 
     private static DateTime AjustarParaHorarioFuncionamento(DateTime dataHora)

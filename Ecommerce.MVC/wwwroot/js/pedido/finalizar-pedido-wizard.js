@@ -946,6 +946,13 @@
                     try {
                         const resCartao = await carregarCartaoPedido(pedidoId);
 
+                        $("#cartaoStatusBox").html(`
+                            <div class="alert alert-success border-0 rounded-4 mb-0">
+                                <i class="fa-solid fa-circle-check me-1"></i>
+                                Cobrança gerada com sucesso! Clique em <strong>"Abrir Checkout Seguro"</strong> para realizar o pagamento.
+                            </div>
+                        `);
+
                         if (!resCartao?.payment?.invoiceUrl) {
                             throw new Error("A URL de pagamento não foi retornada.");
                         }

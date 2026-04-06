@@ -22,7 +22,12 @@
 
     .swal2-container {
         z-index: 20000 !important;
-}
+    }
+
+    .bc-cart__item-observacao {
+        line-height: 1.35;
+        font-style: italic;
+    }
 </style>
 <div class="modal fade" id="modalFinalizarPedido" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -155,8 +160,8 @@
                         <input type="hidden" id="inputHorarioFinal" name="horarioRetirada" required />
                     </div>
 
-                    <h6 class="fw-bold mb-2" style="font-size: 0.9rem; color: var(--bh-primary);">Observações</h6>
-                    <textarea id="obsPedido" class="form-control border shadow-sm rounded-4 mb-4" rows="2" placeholder="Ex: Sem cebola..."></textarea>
+                    @* <h6 class="fw-bold mb-2" style="font-size: 0.9rem; color: var(--bh-primary);">Observações</h6>
+                    <textarea id="obsPedido" class="form-control border shadow-sm rounded-4 mb-4" rows="2" placeholder="Ex: Sem cebola..."></textarea> *@
                 </section>
 
                 <!-- STEP 2 -->
@@ -171,13 +176,13 @@
                                 <strong id="resumoDataHora" style="color: var(--bh-primary)">-</strong>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
+                        @* <div class="d-flex align-items-center mb-2">
                             <i class="fa-regular fa-comment-dots me-2" style="color: var(--bh-primary)"></i>
                             <div>
                                 <small class="text-muted d-block" style="font-size: 0.65rem; text-transform: uppercase;">Observações</small>
                                 <span id="resumoObs" class="small text-muted">Nenhuma observação</span>
                             </div>
-                        </div>
+                        </div> *@
                     </div>
                     <hr />
                     <h6 class="fw-bold mb-3" style="color: var(--bh-primary)">Itens do Pedido</h6>
@@ -192,7 +197,16 @@
                                             <div class="fw-bold bc-cart__item-name">
                                                 @item.Quantidade x @item.ProdutoNome
                                             </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(item.Observacao))
+                                            {
+                                                <div class="small text-muted mt-1">
+                                                    <i class="fa-regular fa-comment-dots me-1 opacity-75"></i>
+                                                    <span>@item.Observacao</span>
+                                                </div>
+                                            }
                                         </div>
+
                                         <div class="fw-bold bc-cart__item-price text-nowrap">
                                             @item.TotalLinha.ToString("C", pt)
                                         </div>
@@ -519,7 +533,7 @@
                                 <div class="d-flex align-items-start">
                                     <i class="fa-solid fa-shield-check me-2 mt-1" style="color: #6f42c1;"></i>
                                     <div style="font-size: 0.8rem; line-height: 1.4;">
-                                        O pagamento poderá ser realizado em até <strong>24 horas</strong>.
+                                        O pagamento poderá ser realizado em até <strong>30 minutos</strong>.
                                         Após a aprovação da transação, o sistema identificará automaticamente a confirmação do pagamento.
                                         Caso prefira, você pode fechar esta tela e acompanhar o status em
                                         <strong>Acompanhar pedidos</strong>.
@@ -568,7 +582,7 @@
 
                                 <button type="button"
                                         id="btnJaPagueiCartao"
-                                        class="btn btn-outline-primary w-100 rounded-4 fw-bold"
+                                        class="btn btn-outline w-100 rounded-4 fw-bold"
                                         style="border-color: #6f42c1; color: #6f42c1;">
                                     <i class="fa-solid fa-rotate-right me-1"></i> Já paguei / Atualizar status
                                 </button>

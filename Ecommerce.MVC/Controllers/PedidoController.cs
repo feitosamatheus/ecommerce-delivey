@@ -213,6 +213,7 @@ public class PedidoController : Controller
                         pg.PixPayload,
                         pg.PixEncodedImage,
                         pg.PixExpirationDate,
+                        pg.PixExpirationDateApplication,
                         pg.GatewayPaymentId,
                         pg.InvoiceUrl,
                         pg.CriadoEmUtc,
@@ -272,8 +273,8 @@ public class PedidoController : Controller
                 Sequencia = pg.Sequencia,
                 PixCopiaCola = pg.PixPayload,
                 PixQrCodeUrl = pg.PixEncodedImage,
-                PixExpiraEm = pg.PixExpirationDate.HasValue
-                    ? pg.PixExpirationDate.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                PixExpiraEm = pg.PixExpirationDateApplication.HasValue
+                    ? pg.PixExpirationDateApplication.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
                     : null,
                 GatewayPaymentId = pg.GatewayPaymentId,
                 PixBeneficiario = "Barriga Cheia Ltda.",

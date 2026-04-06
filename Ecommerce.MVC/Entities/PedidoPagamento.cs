@@ -23,6 +23,7 @@ public class PedidoPagamento
     public string? PixPayload { get; set; }
     public string? PixEncodedImage { get; set; }
     public DateTime? PixExpirationDate { get; set; }
+    public DateTime? PixExpirationDateApplication { get; set; }
     public string? InvoiceUrl { get; set; }
 
     public DateTime CriadoEmUtc { get; set; } = DateTime.UtcNow;

@@ -183,11 +183,11 @@ public class PagamentoController : Controller
                 cliente.IdClientePagamento = customerId;
                 await _context.SaveChangesAsync();
             }
-
+            var expiracaoPixDesejadaUtc = DateTime.UtcNow.AddMinutes(30);
             var pagamentoAsaas = await CriarCobrancaPix(
                 customerId,
                 valorCobranca,
-                DateTime.UtcNow.AddHours(24),
+                expiracaoPixDesejadaUtc,
                 ""
             );
 
@@ -223,6 +223,9 @@ public class PagamentoController : Controller
                 expiracaoPixUtc = dto.UtcDateTime;
             }
 
+            var agoraUtc = DateTime.UtcNow;
+            var expiracaoPixAplicacaoUtc = agoraUtc.AddMinutes(30);
+
             var proximaSequencia = pedido.Pagamentos.Any()
                 ? pedido.Pagamentos.Max(p => p.Sequencia) + 1
                 : 1;
@@ -241,6 +244,8 @@ public class PagamentoController : Controller
                 PixPayload = qrCode.Payload,
                 PixEncodedImage = qrCode.EncodedImage,
                 PixExpirationDate = expiracaoPixUtc,
+                PixExpirationDateApplication = expiracaoPixAplicacaoUtc,
+
                 InvoiceUrl = pagamentoAsaas.InvoiceUrl,
                 CriadoEmUtc = DateTime.UtcNow
             };
@@ -248,7 +253,8 @@ public class PagamentoController : Controller
             _context.PedidoPagamentos.Add(pedidoPagamento);
             await _context.SaveChangesAsync();
 
-            var expiracaoVisualUtc = DateTime.UtcNow.AddHours(24).ToString("o");
+            //var expiracaoVisualUtc = DateTime.UtcNow.AddHours(24).ToString("o");
+            var expiracaoVisualUtc = expiracaoPixDesejadaUtc.ToString("o");
 
             return Json(new
             {
@@ -451,10 +457,12 @@ public class PagamentoController : Controller
                 await _context.SaveChangesAsync();
             }
 
+            var expiracaoCartaoAplicacaoUtc = DateTime.UtcNow.AddMinutes(30);
+
             var pagamentoAsaas = await CriarCobrancaCartao(
                 customerId,
                 valorCobranca,
-                DateTime.UtcNow.AddDays(1),
+                expiracaoCartaoAplicacaoUtc,
                 ""
             );
 
@@ -483,7 +491,8 @@ public class PagamentoController : Controller
                 TipoCobranca = tipoCobranca,
                 Sequencia = proximaSequencia,
                 InvoiceUrl = pagamentoAsaas.InvoiceUrl,
-                CriadoEmUtc = DateTime.UtcNow
+                CriadoEmUtc = DateTime.UtcNow,
+                PixExpirationDateApplication = expiracaoCartaoAplicacaoUtc
             };
 
             _context.PedidoPagamentos.Add(pedidoPagamento);
