@@ -905,7 +905,6 @@
                 if (tipoPagamento === "pix") {
                     $("#pixCopiaCola").val("");
                     $("#pixTxid").text("Gerando...");
-                    $("#pixQrImg").attr("src", "");
                     $("#pixValorFinal").text(formatBRL(valor || 0));
 
                     $("#pixStatusBox").removeClass("d-none").html(`

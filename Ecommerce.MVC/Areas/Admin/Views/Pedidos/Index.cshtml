@@ -237,14 +237,14 @@
                                placeholder="Ex.: BC-2026-000123">
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label for="cliente" class="form-label">Cliente / CPF</label>
                         <input type="text"
-                               class="form-control"
-                               id="cliente"
-                               name="cliente"
-                               value="@Model.Cliente"
-                               placeholder="Digite nome ou CPF do cliente">
+                            class="form-control"
+                            id="cliente"
+                            name="cliente"
+                            value="@Model.Cliente"
+                            placeholder="Digite nome ou CPF do cliente">
                     </div>
                 </div>
 
@@ -289,6 +289,44 @@
 @section Scripts {
     <script>
         $(function () {
+            function aplicarMascaraCpf(valor) {
+                valor = (valor || '').replace(/\D/g, '').slice(0, 11);
+
+                if (valor.length <= 3) {
+                    return valor;
+                }
+                if (valor.length <= 6) {
+                    return valor.replace(/(\d{3})(\d+)/, '$1.$2');
+                }
+                if (valor.length <= 9) {
+                    return valor.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+                }
+
+                return valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2}).*/, '$1.$2.$3-$4');
+            }
+
+            function configurarMascaraCpfCliente() {
+                const input = document.getElementById('cliente');
+                if (!input) return;
+
+                input.addEventListener('input', function () {
+                    const digits = this.value.replace(/\D/g, '');
+
+                    // Só aplica a máscara se estiver digitando números
+                    if (digits.length > 0 && /^[\d.\-]+$/.test(this.value)) {
+                        this.value = aplicarMascaraCpf(this.value);
+                    }
+                });
+
+                // Caso já venha preenchido com CPF ao carregar a tela
+                const digitsInicial = input.value.replace(/\D/g, '');
+                if (digitsInicial.length > 0 && digitsInicial.length <= 11) {
+                    input.value = aplicarMascaraCpf(input.value);
+                }
+            }
+
+            configurarMascaraCpfCliente();
+
             $("#formFiltroPedidos").on("submit", function (e, manterPagina) {
                 e.preventDefault();
 

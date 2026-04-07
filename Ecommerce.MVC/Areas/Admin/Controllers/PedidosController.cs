@@ -77,18 +77,25 @@ public class PedidosController : Controller
 
         if (!string.IsNullOrWhiteSpace(numeroPedido))
         {
-            numeroPedido = numeroPedido.Trim();
-            query = query.Where(p => p.Codigo.Contains(numeroPedido));
+            var termo = numeroPedido.Trim();
+
+            query = query.Where(p =>
+                EF.Functions.ILike(p.Codigo, $"%{termo}%")
+            );
         }
 
         if (!string.IsNullOrWhiteSpace(cliente))
         {
             cliente = cliente.Trim();
 
+            var clienteNormalizado = cliente.ToLower();
             var cpfSomenteNumeros = new string(cliente.Where(char.IsDigit).ToArray());
 
             query = query.Where(p =>
-                (p.Cliente != null && p.Cliente.Nome != null && p.Cliente.Nome.Contains(cliente)) ||
+                (p.Cliente != null &&
+                p.Cliente.Nome != null &&
+                p.Cliente.Nome.ToLower().Contains(clienteNormalizado))
+                ||
                 (!string.IsNullOrEmpty(cpfSomenteNumeros) &&
                 p.Cliente != null &&
                 p.Cliente.CPF != null &&

@@ -429,6 +429,9 @@ public class PedidoController : Controller
     [HttpPost]
     public async Task<IActionResult> Confirmar([FromBody] ConfirmarPedidoRequest req, CancellationToken ct)
     {
+        Console.WriteLine($"Controller recebeu: {req.HorarioRetirada:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"Kind no controller: {req.HorarioRetirada.Kind}");
+
         if (req == null) return BadRequest("Requisição inválida.");
 
         var clienteIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);

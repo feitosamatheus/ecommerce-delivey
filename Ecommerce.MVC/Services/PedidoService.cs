@@ -718,7 +718,7 @@ public class PedidoService : IPedidoService
         if (valorCobranca <= 5m)
             throw new InvalidOperationException("O valor mínimo da cobrança deve ser maior que R$ 5,00.");
 
-        var horarioUtc = DateTime.SpecifyKind(req.HorarioRetirada, DateTimeKind.Utc);
+        var horarioRetirada = DateTime.SpecifyKind(req.HorarioRetirada, DateTimeKind.Unspecified);
 
         if (!Enum.IsDefined(typeof(ETipoCobrancaPedido), req.TipoCobranca))
             throw new ArgumentException("Tipo de cobrança inválido.");
@@ -742,7 +742,7 @@ public class PedidoService : IPedidoService
             Total = total,
             CriadoEmUtc = DateTime.UtcNow,
             Status = Enums.EPedidoStatus.AguardandoPagamento,
-            HorarioRetirada = horarioUtc
+            HorarioRetirada = horarioRetirada
         };
 
         foreach (var ci in carrinho.Itens)
@@ -794,6 +794,11 @@ public class PedidoService : IPedidoService
 
         _db.Set<CarrinhoItem>().RemoveRange(carrinho.Itens);
         _db.Carrinhos.Remove(carrinho);
+
+        Console.WriteLine($"Service recebeu: {req.HorarioRetirada:yyyy-MM-dd HH:mm:ss}");
+        Console.WriteLine($"Kind no service: {req.HorarioRetirada.Kind}");
+        Console.WriteLine($"Vai salvar: {pedido.HorarioRetirada:yyyy-MM-dd HH:mm:ss}");
+        Console.WriteLine($"Kind salvo: {pedido.HorarioRetirada.Kind}");
 
         await _db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);

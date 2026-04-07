@@ -54,5 +54,26 @@ public class DatabaseContext : DbContext
 
         //modelBuilder.Entity<Produto>().HasQueryFilter(p => p.Ativo);
         modelBuilder.Entity<PedidoPagamento>().HasQueryFilter(p => !p.Excluido);
+
+        modelBuilder.Entity<Pedido>(entity =>
+        {
+            entity.Property(p => p.HorarioRetirada)
+                .HasColumnType("timestamp without time zone");
+
+            entity.Property(p => p.CriadoEmUtc)
+                .HasColumnType("timestamp with time zone");
+
+            entity.Property(p => p.EmpreparoEmUtc)
+                .HasColumnType("timestamp with time zone");
+
+            entity.Property(p => p.ProntoEmUtc)
+                .HasColumnType("timestamp with time zone");
+
+            entity.Property(p => p.ConcluidoEmUtc)
+                .HasColumnType("timestamp with time zone");
+
+            entity.Property(p => p.EntregueEmUtc)
+                .HasColumnType("timestamp with time zone");
+        });
     }
 }
