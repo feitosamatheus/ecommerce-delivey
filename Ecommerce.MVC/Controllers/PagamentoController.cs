@@ -168,7 +168,12 @@ public class PagamentoController : Controller
                 customerId = await CriarCliente(new CriarClienteAsaasRequest
                 {
                     Name = cliente.Nome,
-                    CpfCnpj = cliente.CPF
+                    CpfCnpj = cliente.CPF,
+                    Email = cliente.Email,
+
+                    // limpa máscara se necessário
+                    MobilePhone = LimparTelefone(cliente.Telefone),
+                    Phone = LimparTelefone(cliente.Telefone)
                 });
 
                 if (string.IsNullOrWhiteSpace(customerId))
@@ -441,7 +446,12 @@ public class PagamentoController : Controller
                 customerId = await CriarCliente(new CriarClienteAsaasRequest
                 {
                     Name = cliente.Nome,
-                    CpfCnpj = cliente.CPF
+                    CpfCnpj = cliente.CPF,
+                    Email = cliente.Email,
+
+                    // limpa máscara se necessário
+                    MobilePhone = LimparTelefone(cliente.Telefone),
+                    Phone = LimparTelefone(cliente.Telefone)
                 });
 
                 if (string.IsNullOrWhiteSpace(customerId))
@@ -806,11 +816,37 @@ public class PagamentoController : Controller
             return Ok();
 
         var status = MapearStatusAsaas(request.Payment.Status);
+
+        if (pedidoPagamento.Status == status)
+        {
+            return Ok(); // já processado
+        }
+
         pedidoPagamento.Status = status;
 
-        if (status == EStatusPagamento.Received
-            || status == EStatusPagamento.Confirmed
-            || status == EStatusPagamento.ReceivedInCash)
+        var billingType = request.Payment.BillingType?.ToUpper();
+
+        bool pagamentoConfirmado = false;
+
+        // PIX → só quando RECEIVED
+        if (billingType == "PIX" && status == EStatusPagamento.Received)
+        {
+            pagamentoConfirmado = true;
+        }
+
+        // CARTÃO → quando CONFIRMED
+        else if (billingType == "CREDIT_CARD" && status == EStatusPagamento.Confirmed)
+        {
+            pagamentoConfirmado = true;
+        }
+
+        // DINHEIRO (se usar)
+        else if (status == EStatusPagamento.ReceivedInCash)
+        {
+            pagamentoConfirmado = true;
+        }
+
+        if (pagamentoConfirmado)
         {
             pedidoPagamento.PagoEmUtc = DateTime.UtcNow;
 
@@ -979,6 +1015,14 @@ public class PagamentoController : Controller
     {
         public string? Id { get; set; }
         public string? Status { get; set; }
+
+        // 🔥 ADICIONE ISSO
+        public string? BillingType { get; set; }
+
+        // (opcional, mas útil)
+        public decimal? Value { get; set; }
+        public string? ConfirmedDate { get; set; }
+        public string? PaymentDate { get; set; }
     }
     #endregion
 
@@ -991,6 +1035,16 @@ public class PagamentoController : Controller
 
         [JsonPropertyName("cpfCnpj")]
         public string CpfCnpj { get; set; } = string.Empty;
+
+        // 🔥 NOVOS CAMPOS
+        [JsonPropertyName("email")]
+        public string? Email { get; set; }
+
+        [JsonPropertyName("phone")]
+        public string? Phone { get; set; }
+
+        [JsonPropertyName("mobilePhone")]
+        public string? MobilePhone { get; set; }
     }
 
     public class CriarClienteAsaasResponse
@@ -1094,6 +1148,14 @@ public class PagamentoController : Controller
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }
+    }
+
+    private string LimparTelefone(string telefone)
+    {
+        if (string.IsNullOrWhiteSpace(telefone))
+            return string.Empty;
+
+        return new string(telefone.Where(char.IsDigit).ToArray());
     }
 
     public class CriarCobrancaCartaoAsaasResponse
