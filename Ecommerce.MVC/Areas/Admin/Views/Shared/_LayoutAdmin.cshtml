@@ -88,6 +88,16 @@
                     </li>
 
                     <li class="nav-item ms-2">
+    <a href="@Url.Action("Index", "Home", new { area = "" })"
+       class="btn btn-outline-primary btn-sm"
+       target="_blank"
+       title="Ir para o site">
+        <i class="bi bi-globe2 me-1"></i>
+        Ir para o site
+    </a>
+</li>
+
+                    <li class="nav-item ms-2">
                         <form asp-area="Admin"
                             asp-controller="Usuarios"
                             asp-action="Logout"
