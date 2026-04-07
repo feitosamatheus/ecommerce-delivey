@@ -152,6 +152,8 @@ public class AcompanhamentosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(AcompanhamentoFormViewModel model)
     {
+        var precoBruto = Request.Form["Preco"].ToString();
+        
         if (!model.Id.HasValue)
             return NotFound();
 

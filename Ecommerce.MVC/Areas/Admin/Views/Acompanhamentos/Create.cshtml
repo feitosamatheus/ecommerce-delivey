@@ -154,8 +154,9 @@
                 if (!valor) return '';
 
                 return valor
-                    .replace(/\./g, '')
-                    .replace(',', '.');
+                        .toString()
+                        .trim()
+                        .replace(/\./g, '');
             }
 
             if (precoInput) {

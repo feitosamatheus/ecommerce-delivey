@@ -14,7 +14,7 @@ public class AcompanhamentoFormViewModel
     [StringLength(500)]
     public string? Descricao { get; set; }
 
-    [Range(0, 9999.99, ErrorMessage = "Informe um preço válido.")]
+    [Range(typeof(decimal), "0", "9999,99", ErrorMessage = "Informe um preço válido.")]
     public decimal Preco { get; set; }
 
     public bool Ativo { get; set; } = true;

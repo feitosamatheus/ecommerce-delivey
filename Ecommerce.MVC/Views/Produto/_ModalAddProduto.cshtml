@@ -268,7 +268,9 @@
                                                             </div>
                                                             <div class="d-flex align-items-center gap-3">
                                                                 <div class="fw-bold @(temAdicional ? "text-success" : "text-muted")">
-                                                                    @(temAdicional ? $"+ {item.Acompanhamento.Preco.ToString("C", pt)}" : "Incluso")
+                                                                    @* @(temAdicional ? $"+ {item.Acompanhamento.Preco.ToString("C", pt)}" : "Incluso") *@
+                                                                    @(temAdicional ? $"+ {item.Acompanhamento.Preco.ToString("C", pt)}" : "Sem acréscimo")
+
                                                                 </div>
                                                                 <input id="@inputId" type="checkbox" name="@inputName" class="form-check-input acomp-input" 
                                                                        value="@item.Id" data-categoria-id="@pc.AcompanhamentoCategoriaId" data-preco="@item.Acompanhamento.Preco.ToString(CultureInfo.InvariantCulture)">
