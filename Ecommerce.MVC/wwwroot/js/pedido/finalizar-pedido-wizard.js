@@ -736,9 +736,8 @@
             }
 
             setTimeout(() => {
-                const loginUrl = "/Cliente/Login?pagamento=sucesso";
-                console.log("[SignalR] Redirecionando para login.", { loginUrl });
-                window.location.href = loginUrl;
+                const urlDestino = data?.redirectUrl || "/Home?confirmado=true";
+                window.location.href = urlDestino;
             }, 1500);
         });
 
