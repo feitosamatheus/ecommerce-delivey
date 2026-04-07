@@ -553,7 +553,7 @@
         const res = await response.json();
         preencherResumoPagamentoPorCobranca(res);
         preencherStepCartao(res);
-        await iniciarConexaoPagamento(res.payment.id);
+        await iniciarConexaoPagamento(pedidoId);
         
         if (!response.ok || !res.sucesso) {
             throw new Error(res.mensagem || "Não foi possível gerar a cobrança por cartão.");
