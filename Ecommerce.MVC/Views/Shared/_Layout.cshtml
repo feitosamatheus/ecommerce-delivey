@@ -371,6 +371,9 @@
                             <button type="submit" id="btnSalvarNovaSenha" class="btn btn-principal">
                                 Salvar nova senha
                             </button>
+                            <button type="button" id="btnAlterarDepois" class="btn btn-link fw-bold text-muted">
+                                Alterar depois
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -598,12 +601,13 @@
                 const titulo = document.getElementById('tituloModalSenha');
                 const subtitulo = document.getElementById('subtituloModalSenha');
                 const containerFechar = document.getElementById('containerBtnFechar');
+                    const btnAlterarDepois = document.getElementById('btnAlterarDepois');
 
                 if (ePrimeiroAcesso) {
                     titulo.innerText = "Primeiro Acesso";
                     subtitulo.innerText = "Para sua segurança, é necessário definir uma nova senha no seu primeiro acesso.";
                     containerFechar.classList.add('d-none'); // Esconde o "X"
-        
+                    btnAlterarDepois.classList.remove('d-none');
                     // Configura o modal para não fechar clicando fora ou ESC
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
                         backdrop: 'static',
@@ -614,7 +618,7 @@
                     titulo.innerText = "Alterar Senha";
                     subtitulo.innerText = "Preencha os campos abaixo para atualizar sua senha de acesso.";
                     containerFechar.classList.remove('d-none'); // Mostra o "X"
-        
+                    btnAlterarDepois.classList.add('d-none');
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     modal.show();
                 }
@@ -694,6 +698,28 @@
             const html = await response.text();
             modalContent.innerHTML = html;
         }
+
+        $(document).on('click', '#btnAlterarDepois', function () {
+
+            $.ajax({
+                url: '/Cliente/MarcarPrimeiroAcessoComoConcluido',
+                method: 'POST',
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        window.location.href = '/Home';
+                    } else {
+                        alert(response.message || 'Erro ao atualizar status.');
+                    }
+                },
+                error: function () {
+                    alert('Erro ao comunicar com o servidor.');
+                }
+            });
+
+        });
     </script>
 </body>
 </html>

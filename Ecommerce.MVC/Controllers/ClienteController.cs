@@ -29,6 +29,27 @@ public class ClienteController : Controller
         _configuration = configuration;
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarcarPrimeiroAcessoComoConcluido()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var cliente = await _context.Clientes.FindAsync(Guid.Parse(userId));
+
+        if (cliente == null)
+            return NotFound();
+
+        cliente.PrimeiroAcessoRedefinir = false;
+
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true });
+    }
+
     [HttpGet]
     public IActionResult BuscarModalAutenticacaoCliente()
     {
