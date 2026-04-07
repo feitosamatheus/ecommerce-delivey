@@ -9,7 +9,7 @@ namespace Ecommerce.MVC.Entities;
 [Table("Categorias")]
 public class Categoria
 {
-    public Guid Id { get; private set; } = Guid.NewGuid();
+    public Guid Id { get;  set; } = Guid.NewGuid();
 
     [Required]
     [Column(TypeName = "varchar(100)")]

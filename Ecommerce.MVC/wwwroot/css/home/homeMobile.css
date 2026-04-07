@@ -291,8 +291,8 @@
 }
 
 .bc-carousel__btn:hover { background: #663E1A; }
-.carousel-control-prev.bc-carousel__btn { left: -28px; }
-.carousel-control-next.bc-carousel__btn { right: -28px; }
+.carousel-control-prev.bc-carousel__btn { left: -16px; }
+.carousel-control-next.bc-carousel__btn { right: -7px; }
 
 .bc-carousel__indicators {
     margin-bottom: -17px; 

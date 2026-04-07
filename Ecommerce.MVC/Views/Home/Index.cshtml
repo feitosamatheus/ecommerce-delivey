@@ -2,28 +2,117 @@
 @using Ecommerce.MVC.Entities
 @using Ecommerce.MVC.Enums
 @using System.Globalization
-
+@using System.Text.Json
 @{
     ViewData["Title"] = "Início";
 }
 
+@{
+    var categoriasDesktop = Model.Categorias?.ToList() ?? new List<Categoria>();
+    var categoriasMobile = Model.Categorias?.ToList() ?? new List<Categoria>();
+}
+
+@{
+    var categoriasOrdenadasDesktop = categoriasDesktop
+        .OrderBy(c => c.Ordem == 0 ? 1 : 0)
+        .ThenBy(c => c.Ordem == 0 ? int.MaxValue : c.Ordem)
+        .ThenBy(c => c.Nome)
+        .ToList();
+
+    var categoriasOrdenadasMobile = categoriasMobile
+        .OrderBy(c => c.Ordem == 0 ? 1 : 0)
+        .ThenBy(c => c.Ordem == 0 ? int.MaxValue : c.Ordem)
+        .ThenBy(c => c.Nome)
+        .ToList();
+}
+
 @functions {
-    // Se você quiser limitar quantidade por slide do carrossel (mantendo 3 cards por slide)
     private static IEnumerable<List<T>> Chunk<T>(IEnumerable<T> source, int size)
     {
         var chunk = new List<T>(size);
+
         foreach (var item in source)
         {
             chunk.Add(item);
+
             if (chunk.Count == size)
             {
                 yield return chunk;
                 chunk = new List<T>(size);
             }
         }
-        if (chunk.Count > 0) yield return chunk;
+
+        if (chunk.Count > 0)
+            yield return chunk;
     }
 }
+
+@* @{
+    var categoriaMockCarrossel = new Categoria
+    {
+        Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+        Nome = "Categoria Mock Carrossel",
+        Ordem = 1,
+        TipoExibicao = ETipoExibicao.Carrossel,
+        Produtos = new List<Produto>
+        {
+            new Produto
+            {
+                Id = Guid.Parse("22222222-2222-2222-2222-222222222221"),
+                Nome = "Torta de Morango",
+                Descricao = "Recheio leve com cobertura de morangos.",
+                Preco = 34.90m,
+                ImagemUrl = "/img/produtos/torta-morango.jpg",
+                TempoPreparoMinutos = 25,
+                CategoriaId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Ativo = true,
+                Ordem = 1
+            },
+            new Produto
+            {
+                Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                Nome = "Torta de Frango",
+                Descricao = "Torta salgada cremosa com recheio especial.",
+                Preco = 28.90m,
+                ImagemUrl = "/img/produtos/torta-frango.jpg",
+                TempoPreparoMinutos = 20,
+                CategoriaId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Ativo = true,
+                Ordem = 2
+            },
+            new Produto
+            {
+                Id = Guid.Parse("22222222-2222-2222-2222-222222222223"),
+                Nome = "Torta de Bacalhau",
+                Descricao = "Preparada com recheio saboroso e massa leve.",
+                Preco = 39.90m,
+                ImagemUrl = "/img/produtos/torta-bacalhau.jpg",
+                TempoPreparoMinutos = 30,
+                CategoriaId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Ativo = true,
+                Ordem = 3
+            },
+            new Produto
+            {
+                Id = Guid.Parse("22222222-2222-2222-2222-222222222224"),
+                Nome = "Torta de Camarão",
+                Descricao = "Opção refinada e cheia de sabor.",
+                Preco = 42.90m,
+                ImagemUrl = "/img/produtos/torta-camarao.jpg",
+                TempoPreparoMinutos = 35,
+                CategoriaId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Ativo = true,
+                Ordem = 4
+            }
+        }
+    };
+
+    var categoriasDesktop = Model.Categorias?.ToList() ?? new List<Categoria>();
+    categoriasDesktop.Insert(0, categoriaMockCarrossel);
+
+    var categoriasMobile = Model.Categorias?.ToList() ?? new List<Categoria>();
+    categoriasMobile.Insert(0, categoriaMockCarrossel);
+} *@
 
 <style>
     .bc-panel-none:empty {
@@ -39,59 +128,138 @@
     }
 
     .carrinho-loading-wrapper {
-    position: relative;
-    min-height: 180px;
-}
-
-.carrinho-loading-wrapper.is-loading > *:not(.carrinho-loading-overlay) {
-    filter: blur(3px);
-    pointer-events: none;
-    user-select: none;
-}
-
-.carrinho-loading-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 16px;
-    z-index: 20;
-}
-
-.carrinho-loading-overlay.d-none {
-    display: none;
-}
-
-.carrinho-loading-spinner {
-    width: 42px;
-    height: 42px;
-    border: 4px solid rgba(217, 140, 26, 0.18);
-    border-top-color: #D98C1A;
-    border-radius: 50%;
-    animation: carrinho-spin .8s linear infinite;
-}
-
-@@keyframes carrinho-spin {
-    to {
-        transform: rotate(360deg);
+        position: relative;
+        min-height: 180px;
     }
-}
 
+    .carrinho-loading-wrapper.is-loading > *:not(.carrinho-loading-overlay) {
+        filter: blur(3px);
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .carrinho-loading-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        z-index: 20;
+    }
+
+    .carrinho-loading-overlay.d-none {
+        display: none;
+    }
+
+    .carrinho-loading-spinner {
+        width: 42px;
+        height: 42px;
+        border: 4px solid rgba(217, 140, 26, 0.18);
+        border-top-color: #D98C1A;
+        border-radius: 50%;
+        animation: carrinho-spin .8s linear infinite;
+    }
+
+    .bc-panel.d-none,
+    .bc-prod-col.d-none {
+        display: none !important;
+    }
+
+    @@keyframes carrinho-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 </style>
+<style>
+    @@media (max-width: 768px) {
+        .bc-carousel-col {
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+        }
 
+        .bc-product--vertical {
+            padding: 8px !important;
+            border-radius: 10px;
+        }
+
+        .bc-product--vertical .bc-product__thumb {
+            height: 110px !important;
+            min-height: 110px !important;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .bc-product--vertical .bc-product__info {
+            margin-top: 8px !important;
+        }
+
+        .bc-product--vertical .bc-product__title {
+            font-size: 0.85rem !important;
+            line-height: 1.15;
+            min-height: 15px;
+        }
+
+        .bc-product--vertical .bc-product__price {
+            font-size: 0.95rem !important;
+            margin-top: 4px !important;
+        }
+
+        .bc-product--vertical .bc-product__add {
+            width: 30px;
+            height: 30px;
+            right: 8px;
+            bottom: 8px;
+            font-size: 0.8rem;
+        }
+
+        .bc-carousel__btn {
+            width: 34px;
+            height: 34px;
+        }
+
+        .bc-carousel__indicators {
+            margin-bottom: 0;
+        }
+
+        .bc-carousel__indicators button {
+            width: 6px;
+            height: 6px;
+        }
+        .bc-product__desc {
+            line-height: 1.2;
+            min-height: 15px;
+        }
+
+        .carousel-indicators {
+            bottom: -18px !important;
+        }
+
+        @@media (max-width: 768px) {
+            .bc-product__desc {
+                font-size: 0.72rem !important;
+                min-height: 15px;
+                line-height: 1.15;
+            }
+        }
+    }
+
+    .bc-product__desc {
+        text-align: left;
+    }
+</style>
 <div class="my-3 bc-container-home-desktop">
     <div class="row g-2">
         <div class="col-12 col-lg-8 col-xl-8">
 
-            <!-- FILTRO -->
             <div class="bc-filter bc-filter--sticky p-3 box-shadown-custom mb-2">
                 <div class="row g-3 align-items-center">
                     <div class="col-12 col-md px-2">
                         <div class="d-flex gap-3 align-items-center">
 
-                            <!-- SELECT CATEGORIA -->
                             <div class="bc-select" data-name="filtroTipo" id="filtroCategoria">
                                 <button type="button" class="bc-select__trigger">
                                     <span class="bc-select__value">Selecionar uma categoria</span>
@@ -100,7 +268,10 @@
 
                                 <ul class="bc-select__options">
                                     <li data-value="">Todas</li>
-                                    @foreach (var c in Model.Categorias.OrderBy(c => c.Nome))
+                                    @foreach (var c in categoriasDesktop
+                                        .OrderBy(c => c.Ordem == 0 ? 1 : 0)
+                                        .ThenBy(c => c.Ordem == 0 ? int.MaxValue : c.Ordem)
+                                        .ThenBy(c => c.Nome))
                                     {
                                         <li data-value="@c.Id">@c.Nome</li>
                                     }
@@ -108,14 +279,16 @@
 
                                 <select name="filtroTipo" hidden>
                                     <option value="">Todas</option>
-                                    @foreach (var c in Model.Categorias.OrderBy(c => c.Nome))
+                                    @foreach (var c in categoriasDesktop
+                                        .OrderBy(c => c.Ordem == 0 ? 1 : 0)
+                                        .ThenBy(c => c.Ordem == 0 ? int.MaxValue : c.Ordem)
+                                        .ThenBy(c => c.Nome))
                                     {
                                         <option value="@c.Id">@c.Nome</option>
                                     }
                                 </select>
                             </div>
 
-                            <!-- INPUT BUSCA (inicialmente oculto) -->
                             <div class="position-relative d-none bc-filter__search" id="filtroTexto">
                                 <i class="bi bi-search bc-filter__icon"></i>
                                 <input type="text" id="filtroNome" class="form-control bc-filter__input" placeholder="Buscar por nome" />
@@ -124,7 +297,6 @@
                                 </button>
                             </div>
 
-                            <!-- BOTÃO ABRIR BUSCA -->
                             <button class="btn bc-filter__btn" type="button" id="btnPesquisar" aria-label="Buscar" title="Buscar por nome">
                                 <i class="fa-solid fa-keyboard"></i>
                             </button>
@@ -134,7 +306,7 @@
                 </div>
             </div>
 
-            @if (Model.Categorias.Count() <= 0)
+            @if (!categoriasDesktop.Any())
             {
                 <div class="bc-panel p-3 mb-3 text-center">
                     <div class="py-4 col-12">
@@ -147,143 +319,218 @@
             }
             else
             {
-                @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Carrossel))
+                @foreach (var categoria in categoriasOrdenadasDesktop)
                 {
-                    var carouselId = $"carrossel_{categoria.Id:N}";
-                    var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
-                    var slides = Chunk(produtos, 3).ToList(); // 3 itens por slide (como seu layout atual)
+                    var produtos = categoria.Produtos?
+                        .Where(p => p.Ativo)
+                        .OrderBy(p => p.Ordem == 0 ? 1 : 0)
+                        .ThenBy(p => p.Ordem == 0 ? int.MaxValue : p.Ordem)
+                        .ThenBy(p => p.Nome)
+                        .ToList() ?? new List<Produto>();
 
-                    <div class="bc-panel p-3 mb-3" data-categoria-id="@categoria.Id">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <h5 class="mb-0 fw-bold">@categoria.Nome</h5>
-                        </div>
+                    if (!produtos.Any())
+                    {
+                        continue;
+                    }
 
-                        <div id="@carouselId" class="carousel slide mb-2" data-bs-ride="false">
+                    if (categoria.TipoExibicao == ETipoExibicao.Carrossel)
+                    {
+                        var carouselId = $"carrossel_{categoria.Id:N}";
+                        var slides = Chunk(produtos, 3).ToList();
 
-                            @if (slides.Count > 1)
+                        var originalDesktopItems = produtos.Select(p =>
+                        {
+                            var nomeHtml = System.Net.WebUtility.HtmlEncode(p.Nome);
+                            var descricaoHtml = string.IsNullOrWhiteSpace(p.Descricao)
+                                ? ""
+                                : System.Net.WebUtility.HtmlEncode(
+                                    p.Descricao.Length > 40 ? p.Descricao.Substring(0, 40) + "..." : p.Descricao
+                                );
+                            var thumbStyle = string.IsNullOrWhiteSpace(p.ImagemUrl)
+                                ? ""
+                                : "background-image:url('" + p.ImagemUrl + "')";
+
+                            var precoHtml = p.Preco.ToString("C", new CultureInfo("pt-BR"));
+
+                            var html =
+                                "<div class=\"col-12 col-md-4 bc-carousel-col bc-prod-col\" " +
+                                    $"data-produto-id=\"{p.Id}\" " +
+                                    $"data-categoria-id=\"{categoria.Id}\" " +
+                                    $"data-nome=\"{nomeHtml}\">" +
+                                    "<div class=\"bc-product bc-product--vertical bc-product-clickable p-3\" " +
+                                        $"data-produto-id=\"{p.Id}\" " +
+                                        $"data-categoria-id=\"{categoria.Id}\" " +
+                                        $"data-nome=\"{nomeHtml}\">" +
+                                        $"<div class=\"bc-product__thumb\" style=\"{thumbStyle}\"></div>" +
+                                        "<div class=\"bc-product__info mt-3 text-center\">" +
+                                            $"<div class=\"bc-product__title fw-bold\">{nomeHtml}</div>" +
+                                            (string.IsNullOrWhiteSpace(descricaoHtml)
+                                                ? ""
+                                                : $"<div class=\"bc-product__desc text-muted small mt-1\">{descricaoHtml}</div>") +
+                                            $"<div class=\"bc-product__price fw-bold mt-1\">{precoHtml}</div>" +
+                                        "</div>" +
+                                        $"<button type=\"button\" class=\"bc-product__add bc-product-clickable\" aria-label=\"Adicionar ao carrinho\" data-produto-id=\"{p.Id}\">" +
+                                            "<i class=\"fa-solid fa-plus\"></i>" +
+                                        "</button>" +
+                                    "</div>" +
+                                "</div>";
+
+                            return new
                             {
-                                <div class="carousel-indicators bc-carousel__indicators">
+                                produtoId = p.Id,
+                                categoriaId = categoria.Id,
+                                nome = p.Nome,
+                                html
+                            };
+                        }).ToList();
+
+                        <div class="bc-panel p-3 mb-3"
+                            data-categoria-id="@categoria.Id"
+                            data-display-type="carrossel"
+                            data-items-per-slide="3"
+                            data-original-items='@Html.Raw(JsonSerializer.Serialize(originalDesktopItems))'>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h5 class="mb-0 fw-bold">@categoria.Nome</h5>
+                            </div>
+
+                            <div id="@carouselId" class="carousel slide mb-4" data-bs-ride="false">
+                                @if (slides.Count > 1)
+                                {
+                                    <div class="carousel-indicators bc-carousel__indicators">
+                                        @for (int i = 0; i < slides.Count; i++)
+                                        {
+                                            <button type="button"
+                                                    data-bs-target="#@carouselId"
+                                                    data-bs-slide-to="@i"
+                                                    class="@(i == 0 ? "active" : "")"
+                                                    aria-current="@(i == 0 ? "true" : "false")"
+                                                    aria-label="Slide @(i + 1)"></button>
+                                        }
+                                    </div>
+                                }
+
+                                <div class="carousel-inner">
                                     @for (int i = 0; i < slides.Count; i++)
                                     {
-                                        <button type="button"
-                                                data-bs-target="#@carouselId"
-                                                data-bs-slide-to="@i"
-                                                class="@(i == 0 ? "active" : "")"
-                                                aria-current="@(i == 0 ? "true" : "false")"
-                                                aria-label="Slide @(i + 1)"></button>
+                                        var slide = slides[i];
+
+                                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                                            <div class="row g-3">
+                                                @foreach (var p in slide)
+                                                {
+                                                    <div class="col-12 col-md-4 bc-carousel-col bc-prod-col"
+                                                        data-produto-id="@p.Id"
+                                                        data-categoria-id="@categoria.Id"
+                                                        data-nome="@p.Nome">
+                                                        <div class="bc-product bc-product--vertical bc-product-clickable p-3"
+                                                            data-produto-id="@p.Id"
+                                                            data-categoria-id="@categoria.Id"
+                                                            data-nome="@p.Nome">
+                                                            <div class="bc-product__thumb"
+                                                                style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                                            </div>
+
+                                                           <div class="bc-product__info mt-3 text-center">
+                                                                <div class="bc-product__title fw-bold">@p.Nome</div>
+
+                                                                @if (!string.IsNullOrWhiteSpace(p.Descricao))
+                                                                {
+                                                                    <div class="bc-product__desc text-muted small mt-1">
+                                                                        @(p.Descricao.Length > 55 ? p.Descricao.Substring(0, 55) + "..." : p.Descricao)
+                                                                    </div>
+                                                                }
+
+                                                                <div class="bc-product__price fw-bold mt-1">
+                                                                    @p.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                                                </div>
+                                                            </div>
+
+                                                            <button type="button"
+                                                                    class="bc-product__add bc-product-clickable"
+                                                                    aria-label="Adicionar ao carrinho"
+                                                                    data-produto-id="@p.Id">
+                                                                <i class="fa-solid fa-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
                                     }
                                 </div>
-                            }
 
-                            <div class="carousel-inner">
-                                @for (int i = 0; i < slides.Count; i++)
+                                @if (slides.Count > 1)
                                 {
-                                    var slide = slides[i];
-                                    <div class="carousel-item @(i == 0 ? "active" : "")">
-                                        <div class="row g-3">
-                                            @foreach (var p in slide)
-                                            {
-                                                <div class="col-12 col-md-4 bc-carousel-col">
-                                                    <div class="bc-product bc-product--vertical bc-product-clickable bc-prod-col p-3" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
-                                                        <div class="bc-product__thumb"
-                                                            style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) 
-                                                                    ? "" 
-                                                                    : $"background-image:url('{p.ImagemUrl}')")">
+                                    <button class="carousel-control-prev bc-carousel__btn"
+                                            type="button"
+                                            data-bs-target="#@carouselId"
+                                            data-bs-slide="prev">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+
+                                    <button class="carousel-control-next bc-carousel__btn"
+                                            type="button"
+                                            data-bs-target="#@carouselId"
+                                            data-bs-slide="next">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (categoria.TipoExibicao == ETipoExibicao.Bloco)
+                    {
+                        <div class="bc-panel p-3 mb-2"
+                            data-categoria-id="@categoria.Id"
+                            data-display-type="bloco">
+                            <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
+
+                            <div class="row g-3 row-cols-1 row-cols-md-2">
+                                @foreach (var p in produtos)
+                                {
+                                    <div class="col bc-prod-col"
+                                        data-produto-id="@p.Id"
+                                        data-categoria-id="@categoria.Id"
+                                        data-nome="@p.Nome">
+                                        <div class="bc-product bc-product-clickable p-3"
+                                            data-produto-id="@p.Id"
+                                            data-categoria-id="@categoria.Id"
+                                            data-nome="@p.Nome">
+                                            <div class="d-flex gap-3">
+                                                <div class="flex-grow-1 bc-product__info d-flex flex-column justify-content-between">
+                                                    <div>
+                                                        <div class="bc-product__title fw-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.2;">
+                                                            @p.Nome
                                                         </div>
 
-                                                        <div class="bc-product__info mt-3 text-center">
-                                                            <div class="bc-product__title fw-bold">
-                                                                @p.Nome
+                                                        @if (!string.IsNullOrWhiteSpace(p.Descricao))
+                                                        {
+                                                            <div class="text-muted small lh-sm" style="font-size: 0.85rem; color: #6c757d !important;">
+                                                                @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
                                                             </div>
+                                                        }
+                                                    </div>
 
-                                                            <div class="bc-product__price fw-bold mt-1">
-                                                                @p.Preco.ToString("C", new CultureInfo("pt-BR"))
-                                                            </div>
-                                                        </div>
-                                                        <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
-                                                            <i class="fa-solid fa-plus"></i>
-                                                        </button>
+                                                    <div class="mt-2 fw-bold bc-product__price" style="font-size: 1.1rem; color: #D98C1A;">
+                                                        @p.Preco.ToString("C", new CultureInfo("pt-BR"))
                                                     </div>
                                                 </div>
-                                            }
+
+                                                <div class="bc-product__thumb"
+                                                    style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                                </div>
+                                            </div>
+
+                                            <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 }
                             </div>
-
-                            @if (slides.Count > 1)
-                            {
-                                <button class="carousel-control-prev bc-carousel__btn"
-                                        type="button"
-                                        data-bs-target="#@carouselId"
-                                        data-bs-slide="prev">
-                                    <i class="fa-solid fa-chevron-left"></i>
-                                </button>
-
-                                <button class="carousel-control-next bc-carousel__btn"
-                                        type="button"
-                                        data-bs-target="#@carouselId"
-                                        data-bs-slide="next">
-                                    <i class="fa-solid fa-chevron-right"></i>
-                                </button>
-                            }
                         </div>
-                    </div>
+                    }
                 }
-
-                    @foreach (var categoria in Model.Categorias
-                        .Where(c => c.TipoExibicao == ETipoExibicao.Bloco)
-                        .OrderBy(c => c.Ordem == 0 ? 1 : 0)
-                        .ThenBy(c => c.Ordem == 0 ? int.MaxValue : c.Ordem)
-                        .ThenBy(c => c.Nome))
-                    {
-                    var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
-
-                    <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id">
-                        <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
-
-                        <div class="row g-3 row-cols-1 row-cols-md-2">
-                            @foreach (var p in produtos
-                                .OrderBy(x => x.Ordem == 0 ? 1 : 0)
-                                .ThenBy(x => x.Ordem == 0 ? int.MaxValue : x.Ordem)
-                                .ThenBy(x => x.Nome))
-                            {
-                                <div class="col bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
-                                    <div class="bc-product p-3">
-                                        <div class="d-flex gap-3">
-                                            <div class="flex-grow-1 bc-product__info d-flex flex-column justify-content-between">
-                                                <div>
-                                                    <div class="bc-product__title fw-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.2;">
-                                                        @p.Nome
-                                                    </div>
-
-                                                    @if (!string.IsNullOrWhiteSpace(p.Descricao))
-                                                    {
-                                                        <div class="text-muted small lh-sm" style="font-size: 0.85rem; color: #6c757d !important;">
-                                                            @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
-                                                        </div>
-                                                    }
-                                                </div>
-
-                                                <div class="mt-2 fw-bold bc-product__price" style="font-size: 1.1rem; color: #D98C1A;">
-                                                    @p.Preco.ToString("C", new CultureInfo("pt-BR"))
-                                                </div>
-                                            </div>
-
-                                            <div class="bc-product__thumb"
-                                                    style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
-                                            </div>
-                                        </div>
-                                        <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
-                                            <i class="fa-solid fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-                
                 <div id="emptySearchStateDesktop" class="d-none flex-column align-items-center justify-content-center py-1 px-0 w-100">
                     <div class="text-center p-5 bg-white shadow-sm" style="margin: 0 auto; border-radius:5px;">
                         <div class="mb-4 opacity-25">
@@ -293,13 +540,14 @@
                         <p class="text-muted mb-4">
                             Não existem produtos que correspondam à sua busca ou filtro no momento. Tente usar termos diferentes ou limpar os filtros.
                         </p>
-                        <button type="button" class="btn btn-outline-dark rounded-pill px-4 fw-bold" onclick="limparFiltroTexto('Mobile')">
+                        <button type="button" class="btn btn-outline-dark rounded-pill px-4 fw-bold" onclick="limparFiltroTexto()">
                             <i class="fa-solid fa-rotate-left me-2"></i>Limpar Filtros
                         </button>
                     </div>
                 </div>
-            }  
+            }
         </div>
+
         <div class="col-12 col-lg-4 col-xl-4">
             <div id="carrinho-container">
                 @await Component.InvokeAsync("Carrinho")
@@ -309,7 +557,6 @@
 </div>
 
 <div class="mb-2 mt-0 bc-container-home-mb p-2 p-lg-0 pt-0">
-    <!-- FILTRO -->
     <div class="bc-filter bc-filter-mb bc-filter--sticky p-3 mb-2 box-shadown-custom" style="border-radius: 5px;">
         <div class="row g-3 align-items-center">
             <div class="col-12 px-1">
@@ -320,13 +567,28 @@
                             <span class="bc-select__value">Selecionar uma categoria</span>
                             <span class="bc-select__arrow"></span>
                         </button>
+
                         <ul class="bc-select__options">
                             <li data-value="">Todas</li>
-                            @foreach (var c in Model.Categorias.OrderBy(c => c.Nome))
+                            @foreach (var c in categoriasMobile
+                                .OrderBy(c => c.Ordem == 0 ? 1 : 0)
+                                .ThenBy(c => c.Ordem == 0 ? int.MaxValue : c.Ordem)
+                                .ThenBy(c => c.Nome))
                             {
                                 <li data-value="@c.Id">@c.Nome</li>
                             }
                         </ul>
+
+                        <select name="filtroTipo" hidden>
+                            <option value="">Todas</option>
+                            @foreach (var c in categoriasMobile
+                                .OrderBy(c => c.Ordem == 0 ? 1 : 0)
+                                .ThenBy(c => c.Ordem == 0 ? int.MaxValue : c.Ordem)
+                                .ThenBy(c => c.Nome))
+                            {
+                                <option value="@c.Id">@c.Nome</option>
+                            }
+                        </select>
                     </div>
 
                     <div class="position-relative d-none bc-filter__search" id="filtroTextoMobile" style="width: 100%;">
@@ -346,7 +608,7 @@
         </div>
     </div>
 
-    @if (Model.Categorias.Count() <= 0)
+    @if (!categoriasMobile.Any())
     {
         <div class="bc-panel p-3 mb-3 text-center" style="border-radius: 5px;">
             <div class="py-4 col-12">
@@ -359,136 +621,220 @@
     }
     else
     {
-        @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Carrossel))
+        @foreach (var categoria in categoriasOrdenadasMobile)
         {
-            var carouselId = $"carrossel_{categoria.Id:N}";
-            var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
-            var slides = Chunk(produtos, 3).ToList(); // 3 itens por slide (como seu layout atual)
+            var produtos = categoria.Produtos?
+                .Where(p => p.Ativo)
+                .OrderBy(p => p.Ordem == 0 ? 1 : 0)
+                .ThenBy(p => p.Ordem == 0 ? int.MaxValue : p.Ordem)
+                .ThenBy(p => p.Nome)
+                .ToList() ?? new List<Produto>();
 
-            <div class="bc-panel p-3 mb-3" data-categoria-id="@categoria.Id">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h5 class="mb-0 fw-bold">@categoria.Nome</h5>
-                </div>
+            if (!produtos.Any())
+            {
+                continue;
+            }
 
-                <div id="@carouselId" class="carousel slide mb-2" data-bs-ride="false">
+            if (categoria.TipoExibicao == ETipoExibicao.Carrossel)
+            {
+                var carouselId = $"carrossel_mobile_{categoria.Id:N}";
+                var slides = Chunk(produtos, 2).ToList();
 
-                    @if (slides.Count > 1)
+                var originalMobileItems = produtos.Select(p =>
+                {
+                    var nomeHtml = System.Net.WebUtility.HtmlEncode(p.Nome);
+                    var descricaoHtml = string.IsNullOrWhiteSpace(p.Descricao)
+                        ? ""
+                        : System.Net.WebUtility.HtmlEncode(
+                            p.Descricao.Length > 40 ? p.Descricao.Substring(0, 40) + "..." : p.Descricao
+                        );
+                    var thumbStyle = string.IsNullOrWhiteSpace(p.ImagemUrl)
+                        ? ""
+                        : "background-image:url('" + p.ImagemUrl + "')";
+
+                    var precoHtml = p.Preco.ToString("C", new CultureInfo("pt-BR"));
+
+                    var html =
+                        "<div class=\"col-6 bc-carousel-col bc-prod-col\" " +
+                            $"data-produto-id=\"{p.Id}\" " +
+                            $"data-categoria-id=\"{categoria.Id}\" " +
+                            $"data-nome=\"{nomeHtml}\">" +
+                            "<div class=\"bc-product bc-product--vertical bc-product-clickable p-3\" " +
+                                $"data-produto-id=\"{p.Id}\" " +
+                                $"data-categoria-id=\"{categoria.Id}\" " +
+                                $"data-nome=\"{nomeHtml}\">" +
+                                $"<div class=\"bc-product__thumb\" style=\"{thumbStyle}\"></div>" +
+                                "<div class=\"bc-product__info mt-3 text-center\">" +
+                                    $"<div class=\"bc-product__title fw-bold\">{nomeHtml}</div>" +
+                                    (string.IsNullOrWhiteSpace(descricaoHtml)
+                                        ? ""
+                                        : $"<div class=\"bc-product__desc text-muted small mt-1\">{descricaoHtml}</div>") +
+                                    $"<div class=\"bc-product__price fw-bold mt-1\">{precoHtml}</div>" +
+                                "</div>" +
+                                $"<button type=\"button\" class=\"bc-product__add bc-product-clickable\" aria-label=\"Adicionar ao carrinho\" data-produto-id=\"{p.Id}\">" +
+                                    "<i class=\"fa-solid fa-plus\"></i>" +
+                                "</button>" +
+                            "</div>" +
+                        "</div>";
+
+                    return new
                     {
-                        <div class="carousel-indicators bc-carousel__indicators">
+                        produtoId = p.Id,
+                        categoriaId = categoria.Id,
+                        nome = p.Nome,
+                        html
+                    };
+                }).ToList();
+
+                <div class="bc-panel p-3 mb-3"
+                    data-categoria-id="@categoria.Id"
+                    data-display-type="carrossel"
+                    data-items-per-slide="2"
+                    data-original-items='@Html.Raw(JsonSerializer.Serialize(originalMobileItems))'
+                    style="border-radius: 5px;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="mb-0 fw-bold">@categoria.Nome</h5>
+                    </div>
+
+                    <div id="@carouselId" class="carousel slide mb-4" data-bs-ride="false">
+                        @if (slides.Count > 1)
+                        {
+                            <div class="carousel-indicators bc-carousel__indicators">
+                                @for (int i = 0; i < slides.Count; i++)
+                                {
+                                    <button type="button"
+                                            data-bs-target="#@carouselId"
+                                            data-bs-slide-to="@i"
+                                            class="@(i == 0 ? "active" : "")"
+                                            aria-current="@(i == 0 ? "true" : "false")"
+                                            aria-label="Slide @(i + 1)"></button>
+                                }
+                            </div>
+                        }
+
+                        <div class="carousel-inner">
                             @for (int i = 0; i < slides.Count; i++)
                             {
-                                <button type="button"
-                                        data-bs-target="#@carouselId"
-                                        data-bs-slide-to="@i"
-                                        class="@(i == 0 ? "active" : "")"
-                                        aria-current="@(i == 0 ? "true" : "false")"
-                                        aria-label="Slide @(i + 1)"></button>
+                                var slide = slides[i];
+
+                                <div class="carousel-item @(i == 0 ? "active" : "")">
+                                    <div class="row g-3">
+                                        @foreach (var p in slide)
+                                        {
+                                            <div class="col-6 col-md-4 bc-carousel-col bc-prod-col"
+                                                data-produto-id="@p.Id"
+                                                data-categoria-id="@categoria.Id"
+                                                data-nome="@p.Nome">
+                                                <div class="bc-product bc-product--vertical bc-product-clickable p-3"
+                                                    data-produto-id="@p.Id"
+                                                    data-categoria-id="@categoria.Id"
+                                                    data-nome="@p.Nome">
+                                                    <div class="bc-product__thumb"
+                                                        style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                                    </div>
+
+                                                    <div class="bc-product__info mt-3 text-center">
+                                                        <div class="bc-product__title fw-bold">@p.Nome</div>
+
+                                                        @if (!string.IsNullOrWhiteSpace(p.Descricao))
+                                                        {
+                                                            <div class="bc-product__desc text-muted small mt-1">
+                                                                @(p.Descricao.Length > 55 ? p.Descricao.Substring(0, 55) + "..." : p.Descricao)
+                                                            </div>
+                                                        }
+
+                                                        <div class="bc-product__price fw-bold mt-1">
+                                                            @p.Preco.ToString("C", new CultureInfo("pt-BR"))
+                                                        </div>
+                                                    </div>
+
+                                                    <button type="button"
+                                                            class="bc-product__add bc-product-clickable"
+                                                            aria-label="Adicionar ao carrinho"
+                                                            data-produto-id="@p.Id">
+                                                        <i class="fa-solid fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
                             }
                         </div>
-                    }
 
-                    <div class="carousel-inner">
-                        @for (int i = 0; i < slides.Count; i++)
+                        @if (slides.Count > 1)
                         {
-                            var slide = slides[i];
-                            <div class="carousel-item @(i == 0 ? "active" : "")">
-                                <div class="row g-3">
-                                    @foreach (var p in slide)
-                                    {
-                                        <div class="col-12 col-md-4 bc-carousel-col">
-                                            <div class="bc-product bc-product--vertical bc-prod-col p-3" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
-                                                <div class="bc-product__thumb"
-                                                    style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) 
-                                                            ? "" 
-                                                            : $"background-image:url('{p.ImagemUrl}')")">
+                            <button class="carousel-control-prev bc-carousel__btn"
+                                    type="button"
+                                    data-bs-target="#@carouselId"
+                                    data-bs-slide="prev">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+
+                            <button class="carousel-control-next bc-carousel__btn"
+                                    type="button"
+                                    data-bs-target="#@carouselId"
+                                    data-bs-slide="next">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+            else if (categoria.TipoExibicao == ETipoExibicao.Bloco)
+            {
+                <div class="bc-panel p-3 mb-2"
+                    data-categoria-id="@categoria.Id"
+                    data-display-type="bloco"
+                    style="border-radius: 5px;">
+                    <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
+
+                    <div class="row g-3 row-cols-1 row-cols-md-2">
+                        @foreach (var p in produtos)
+                        {
+                            <div class="col bc-prod-col"
+                                data-produto-id="@p.Id"
+                                data-categoria-id="@categoria.Id"
+                                data-nome="@p.Nome">
+                                <div class="bc-product bc-product-clickable p-3"
+                                    data-produto-id="@p.Id"
+                                    data-categoria-id="@categoria.Id"
+                                    data-nome="@p.Nome">
+                                    <div class="d-flex gap-3">
+                                        <div class="flex-grow-1 bc-product__info d-flex flex-column">
+                                            <div class="mb-auto">
+                                                <div class="fw-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.2;">
+                                                    @p.Nome
                                                 </div>
 
-                                                <div class="bc-product__info mt-3 text-center">
-                                                    <div class="bc-product__title fw-bold">
-                                                        @p.Nome
+                                                @if (!string.IsNullOrWhiteSpace(p.Descricao))
+                                                {
+                                                    <div class="text-muted small lh-sm" style="font-size: 0.85rem;">
+                                                        @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
                                                     </div>
+                                                }
+                                            </div>
 
-                                                    <div class="bc-product__price fw-bold mt-1">
-                                                        @p.Preco.ToString("C", new CultureInfo("pt-BR"))
-                                                    </div>
-                                                </div>
-                                                <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
-                                                    <i class="fa-solid fa-plus"></i>
-                                                </button>
+                                            <div class="mt-2 fw-bold bc-product__price" style="font-size: 1.1rem; color: #D98C1A;">
+                                                @p.Preco.ToString("C", new CultureInfo("pt-BR"))
                                             </div>
                                         </div>
-                                    }
+
+                                        <div class="bc-product__thumb"
+                                            style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                        </div>
+                                    </div>
+
+                                    <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
                                 </div>
                             </div>
                         }
                     </div>
-
-                    @if (slides.Count > 1)
-                    {
-                        <button class="carousel-control-prev bc-carousel__btn"
-                                type="button"
-                                data-bs-target="#@carouselId"
-                                data-bs-slide="prev">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
-
-                        <button class="carousel-control-next bc-carousel__btn"
-                                type="button"
-                                data-bs-target="#@carouselId"
-                                data-bs-slide="next">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
-                    }
                 </div>
-            </div>
+            }
         }
-
-        @foreach (var categoria in Model.Categorias.Where(c => c.TipoExibicao == ETipoExibicao.Bloco))
-        {
-            var produtos = categoria.Produtos?.ToList() ?? new List<Produto>();
-
-            <div class="bc-panel p-3 mb-2" data-categoria-id="@categoria.Id" style="border-radius: 5px;">
-                <h5 class="mb-3 fw-bold">@categoria.Nome</h5>
-
-                <div class="row g-3 row-cols-1 row-cols-md-2">
-                    @foreach (var p in produtos)
-                    {
-                    <div class="col bc-prod-col bc-product-clickable" data-produto-id="@p.Id" data-categoria-id="@categoria.Id" data-nome="@p.Nome">
-                        <div class="bc-product p-3">
-                                <div class="d-flex gap-3">
-                                <div class="flex-grow-1 bc-product__info d-flex flex-column">
-                                    <div class="mb-auto">
-                                        <div class="fw-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.2;">
-                                            @p.Nome
-                                        </div>
-
-                                        @if (!string.IsNullOrWhiteSpace(p.Descricao))
-                                        {
-                                            <div class="text-muted small lh-sm" style="font-size: 0.85rem;">
-                                                @(p.Descricao.Length > 60 ? p.Descricao.Substring(0, 60) + "..." : p.Descricao)
-                                            </div>
-                                        }
-                                    </div>
-
-                                    <div class="mt-2 fw-bold bc-product__price" style="font-size: 1.1rem; color: #D98C1A;">
-                                        @p.Preco.ToString("C", new CultureInfo("pt-BR"))
-                                    </div>
-                                </div>
-
-                                    <div class="bc-product__thumb"
-                                            style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
-                                    </div>
-                                </div>
-                                <button type="button" class="bc-product__add bc-product-clickable" aria-label="Adicionar ao carrinho" data-produto-id="@p.Id">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        }
-
         <div id="emptySearchState" class="d-none flex-column align-items-center justify-content-center py-2 px-0 w-100">
             <div class="text-center p-5 bg-white shadow-sm" style="margin: 0 auto; border-radius:5px;">
                 <div class="mb-4 opacity-25">
@@ -498,21 +844,18 @@
                 <p class="text-muted mb-4">
                     Não existem produtos que correspondam à sua busca ou filtro no momento. Tente usar termos diferentes ou limpar os filtros.
                 </p>
-                <button type="button" class="btn btn-outline-dark rounded-pill px-4 fw-bold" onclick="limparFiltroTexto('Mobile')">
+                <button type="button" class="btn btn-outline-dark rounded-pill px-4 fw-bold" onclick="limparFiltroTexto()">
                     <i class="fa-solid fa-rotate-left me-2"></i>Limpar Filtros
                 </button>
             </div>
         </div>
-    }  
+    }
 </div>
 
 <div id="modalHost"></div>
+
 <script>
 (function () {
-
-    // =========================
-    // Helpers gerais
-    // =========================
     const norm = (s) =>
         (s || "")
             .toString()
@@ -520,6 +863,11 @@
             .toLowerCase()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
+
+    const filterState = {
+        categoriaId: "",
+        texto: ""
+    };
 
     function getAllPanels() {
         return Array.from(document.querySelectorAll('.bc-panel[data-categoria-id]'));
@@ -529,123 +877,250 @@
         return Array.from(panelEl.querySelectorAll('.bc-prod-col[data-produto-id][data-nome]'));
     }
 
-    function refreshCarousel(panelEl) {
-        const carousel = panelEl.querySelector(".carousel");
-        if (!carousel) return;
-
-        const slides = Array.from(carousel.querySelectorAll(".carousel-item"));
-
-        slides.forEach((slide) => {
-            const anyVisibleCard = slide.querySelector('.bc-product[data-produto-id][data-nome]:not(.d-none)');
-            slide.classList.toggle("d-none", !anyVisibleCard);
-        });
-
-        const active = carousel.querySelector(".carousel-item.active");
-        if (active && active.classList.contains("d-none")) {
-            active.classList.remove("active");
-            const firstVisible = slides.find((s) => !s.classList.contains("d-none"));
-            if (firstVisible) firstVisible.classList.add("active");
+    function chunkArray(array, size) {
+        const result = [];
+        for (let i = 0; i < array.length; i += size) {
+            result.push(array.slice(i, i + size));
         }
-
-        const visibleSlides = slides.filter((s) => !s.classList.contains("d-none")).length;
-
-        const indicators = carousel.querySelector(".carousel-indicators");
-        const prevBtn = carousel.querySelector(".carousel-control-prev");
-        const nextBtn = carousel.querySelector(".carousel-control-next");
-
-        if (indicators) indicators.classList.toggle("d-none", visibleSlides <= 1);
-        if (prevBtn) prevBtn.classList.toggle("d-none", visibleSlides <= 1);
-        if (nextBtn) nextBtn.classList.toggle("d-none", visibleSlides <= 1);
+        return result;
     }
 
-    // =========================
-    // Estado do filtro
-    // =========================
-    const filterState = {
-        categoriaId: "",
-        texto: ""
-    };
+    function captureOriginalCarousel(panel) {
+        const carousel = panel.querySelector('.carousel');
+        if (!carousel) return;
+
+        if (panel.dataset.originalCaptured === "true") return;
+
+        const originalItems = Array.from(
+            panel.querySelectorAll('.carousel-inner .bc-prod-col[data-produto-id][data-nome]')
+        ).map((item) => {
+            return {
+                produtoId: item.getAttribute('data-produto-id') || "",
+                categoriaId: item.getAttribute('data-categoria-id') || "",
+                nome: item.getAttribute('data-nome') || "",
+                html: item.outerHTML
+            };
+        });
+
+        panel._originalCarouselItems = originalItems;
+        panel.dataset.originalCaptured = "true";
+    }
+
+    function rebuildCarousel(panel, filteredItems) {
+        const carousel = panel.querySelector('.carousel');
+        if (!carousel) return;
+
+        const carouselInner = carousel.querySelector('.carousel-inner');
+        if (!carouselInner) return;
+
+        const indicatorsWrap = carousel.querySelector('.carousel-indicators');
+        const prevBtn = carousel.querySelector('.carousel-control-prev');
+        const nextBtn = carousel.querySelector('.carousel-control-next');
+
+        const itemsPerSlide = parseInt(panel.getAttribute("data-items-per-slide") || "3", 10);
+
+        if (window.bootstrap && bootstrap.Carousel) {
+            const instance = bootstrap.Carousel.getInstance(carousel);
+            if (instance) {
+                instance.dispose();
+            }
+        }
+
+        carouselInner.innerHTML = "";
+
+        if (indicatorsWrap) {
+            indicatorsWrap.innerHTML = "";
+        }
+
+        if (!filteredItems.length) {
+            if (indicatorsWrap) indicatorsWrap.classList.add("d-none");
+            if (prevBtn) prevBtn.classList.add("d-none");
+            if (nextBtn) nextBtn.classList.add("d-none");
+            return;
+        }
+
+        const grouped = chunkArray(filteredItems, itemsPerSlide);
+
+        grouped.forEach((group, slideIndex) => {
+            const slide = document.createElement("div");
+            slide.className = "carousel-item";
+            if (slideIndex === 0) {
+                slide.classList.add("active");
+            }
+
+            const row = document.createElement("div");
+            row.className = "row g-3";
+
+            group.forEach((item) => {
+                const wrapper = document.createElement("div");
+                wrapper.innerHTML = item.html.trim();
+                const node = wrapper.firstElementChild;
+                if (node) {
+                    row.appendChild(node);
+                }
+            });
+
+            slide.appendChild(row);
+            carouselInner.appendChild(slide);
+
+            if (indicatorsWrap) {
+                const indicator = document.createElement("button");
+                indicator.type = "button";
+                indicator.setAttribute("data-bs-target", `#${carousel.id}`);
+                indicator.setAttribute("data-bs-slide-to", slideIndex.toString());
+                indicator.setAttribute("aria-label", `Slide ${slideIndex + 1}`);
+
+                if (slideIndex === 0) {
+                    indicator.classList.add("active");
+                    indicator.setAttribute("aria-current", "true");
+                }
+
+                indicatorsWrap.appendChild(indicator);
+            }
+        });
+
+        const hideControls = grouped.length <= 1;
+
+        if (indicatorsWrap) indicatorsWrap.classList.toggle("d-none", hideControls);
+        if (prevBtn) prevBtn.classList.toggle("d-none", hideControls);
+        if (nextBtn) nextBtn.classList.toggle("d-none", hideControls);
+
+        if (window.bootstrap && bootstrap.Carousel) {
+            new bootstrap.Carousel(carousel, {
+                interval: false,
+                ride: false,
+                wrap: true,
+                touch: true
+            });
+        }
+    }
+    
+    function restoreOriginalCarousel(panel) {
+        captureOriginalCarousel(panel);
+
+        const originalItems = panel._originalCarouselItems || [];
+        rebuildCarousel(panel, originalItems);
+    }
+
+    function updateEmptyStates(totalPanelsVisible) {
+        const emptyDesktop = document.getElementById('emptySearchStateDesktop');
+        const emptyMobile = document.getElementById('emptySearchState');
+
+        if (emptyDesktop) {
+            emptyDesktop.classList.toggle('d-none', totalPanelsVisible > 0);
+            emptyDesktop.classList.toggle('d-flex', totalPanelsVisible === 0);
+        }
+
+        if (emptyMobile) {
+            emptyMobile.classList.toggle('d-none', totalPanelsVisible > 0);
+            emptyMobile.classList.toggle('d-flex', totalPanelsVisible === 0);
+        }
+    }
 
     function applyFilters() {
         const categoriaId = (filterState.categoriaId || "").trim();
         const texto = norm(filterState.texto);
-
-        const emptyState = document.getElementById('emptySearchState');
-        const emptySearchStateDesktop = document.getElementById('emptySearchStateDesktop');
-
         const panels = getAllPanels();
+
         let totalPanelsVisible = 0;
 
         panels.forEach((panel) => {
             const panelCategoriaId = (panel.getAttribute("data-categoria-id") || "").trim();
+            const displayType = (panel.getAttribute("data-display-type") || "").trim();
 
-            const categoriaOk = !categoriaId || panelCategoriaId === categoriaId;
-            if (!categoriaOk) {
+            if (categoriaId && panelCategoriaId !== categoriaId) {
                 panel.classList.add("d-none");
                 return;
             }
 
-            const cols = getAllProductCols(panel);
+            if (displayType === "carrossel") {
+                captureOriginalCarousel(panel);
 
-            if (!texto) {
-                cols.forEach((col) => {
-                    col.classList.remove("d-none");
-                    col.querySelector(".bc-product")?.classList.remove("d-none");
-                });
+                const originalItems = panel._originalCarouselItems || [];
 
-                panel.classList.remove("d-none");
-                totalPanelsVisible++;
-                refreshCarousel(panel);
+                let filteredItems = originalItems;
+
+                if (texto) {
+                    filteredItems = originalItems.filter(item =>
+                        norm(item.nome).includes(texto)
+                    );
+                }
+
+                const panelTemProduto = filteredItems.length > 0;
+                panel.classList.toggle("d-none", !panelTemProduto);
+
+                if (panelTemProduto) {
+                    if (texto) {
+                        rebuildCarousel(panel, filteredItems);
+                    } else {
+                        restoreOriginalCarousel(panel);
+                    }
+                    totalPanelsVisible++;
+                }
+
                 return;
             }
 
-            let anyVisible = false;
+            const cols = getAllProductCols(panel);
+            let produtosVisiveis = 0;
 
             cols.forEach((col) => {
-                const nome = norm(col.getAttribute("data-nome"));
-                const match = nome.includes(texto);
+                const nome = norm(col.getAttribute("data-nome") || "");
+                const match = !texto || nome.includes(texto);
 
                 col.classList.toggle("d-none", !match);
-                col.querySelector(".bc-product")?.classList.toggle("d-none", !match);
 
                 if (match) {
-                    anyVisible = true;
+                    produtosVisiveis++;
                 }
             });
 
-            panel.classList.toggle("d-none", !anyVisible);
+            const panelTemProduto = produtosVisiveis > 0;
+            panel.classList.toggle("d-none", !panelTemProduto);
 
-            if (anyVisible) {
+            if (panelTemProduto) {
                 totalPanelsVisible++;
             }
-
-            refreshCarousel(panel);
         });
 
-        if (emptyState) {
-            if (totalPanelsVisible === 0) {
-                emptyState.classList.remove('d-none');
-                emptyState.classList.add('d-flex');
-            } else {
-                emptyState.classList.add('d-none');
-                emptyState.classList.remove('d-flex');
-            }
-        }
-
-        if (emptySearchStateDesktop) {
-            if (totalPanelsVisible === 0) {
-                emptySearchStateDesktop.classList.remove('d-none');
-                emptySearchStateDesktop.classList.add('d-flex');
-            } else {
-                emptySearchStateDesktop.classList.add('d-none');
-                emptySearchStateDesktop.classList.remove('d-flex');
-            }
-        }
+        updateEmptyStates(totalPanelsVisible);
     }
 
-    // =========================
-    // Filtro desktop/mobile
-    // =========================
+    function syncSearchInputs(value) {
+        const inputDesktop = document.getElementById("filtroNome");
+        const inputMobile = document.getElementById("filtroNomeMobile");
+
+        if (inputDesktop && inputDesktop.value !== value) inputDesktop.value = value;
+        if (inputMobile && inputMobile.value !== value) inputMobile.value = value;
+    }
+
+    function syncCategorySelects(categoriaId, textoOpcao) {
+        const wrappers = [
+            document.getElementById("filtroCategoria"),
+            document.getElementById("filtroCategoriaMobile")
+        ];
+
+        wrappers.forEach((selectWrap) => {
+            if (!selectWrap) return;
+
+            const valueSpan = selectWrap.querySelector(".bc-select__value");
+            const nativeSelect = selectWrap.querySelector("select");
+            const optionsList = Array.from(selectWrap.querySelectorAll(".bc-select__options li"));
+
+            optionsList.forEach((o) => {
+                o.classList.toggle("is-selected", (o.dataset.value || "") === categoriaId);
+            });
+
+            if (valueSpan) {
+                valueSpan.textContent = textoOpcao || "Selecionar uma categoria";
+            }
+
+            if (nativeSelect) {
+                nativeSelect.value = categoriaId;
+            }
+        });
+    }
+
     function setupFilterLogic(suffix = "") {
         const btnPesquisar = document.getElementById("btnPesquisar" + suffix);
         const btnFecharBusca = document.getElementById("btnFecharBusca" + suffix);
@@ -671,16 +1146,11 @@
 
             if (inputBusca) {
                 inputBusca.value = "";
-                filterState.texto = "";
-
-                document.getElementById('emptySearchState')?.classList.add('d-none');
-                document.getElementById('emptySearchState')?.classList.remove('d-flex');
-
-                document.getElementById('emptySearchStateDesktop')?.classList.add('d-none');
-                document.getElementById('emptySearchStateDesktop')?.classList.remove('d-flex');
-
-                applyFilters();
             }
+
+            filterState.texto = "";
+            syncSearchInputs("");
+            applyFilters();
         }
 
         btnPesquisar?.addEventListener("click", () => {
@@ -721,17 +1191,19 @@
                     optionsList.forEach((o) => o.classList.remove("is-selected"));
                     option.classList.add("is-selected");
 
-                    if (valueSpan) {
-                        valueSpan.textContent = option.textContent;
-                    }
-
                     const categoriaId = option.dataset.value || "";
+                    const textoOpcao = option.textContent?.trim() || "Selecionar uma categoria";
+
+                    if (valueSpan) {
+                        valueSpan.textContent = textoOpcao;
+                    }
 
                     if (nativeSelect) {
                         nativeSelect.value = categoriaId;
                     }
 
                     filterState.categoriaId = categoriaId;
+                    syncCategorySelects(categoriaId, textoOpcao);
                     applyFilters();
 
                     selectWrap.classList.remove("is-open");
@@ -741,187 +1213,36 @@
 
         inputBusca?.addEventListener("input", () => {
             filterState.texto = inputBusca.value || "";
+            syncSearchInputs(filterState.texto);
             applyFilters();
         });
     }
 
-    // =========================
-    // Inicialização do modal de produto
-    // =========================
-    // window.iniciarModalAdicionarProduto = function () {
-    //     const modalEl = document.getElementById('modalAddProduto');
-    //     if (!modalEl) return;
+    window.limparFiltroTexto = function () {
+        filterState.texto = "";
+        filterState.categoriaId = "";
 
-    //     const form = modalEl.querySelector('#formAdicionarProdutoCarrinho');
-    //     if (!form) return;
+        syncSearchInputs("");
+        syncCategorySelects("", "Selecionar uma categoria");
 
-    //     const inputPrecoBase = modalEl.querySelector('#modalPrecoBase');
-    //     const inputQtd = modalEl.querySelector('#quantidadeProduto');
-    //     const btnMenos = modalEl.querySelector('#btnDiminuirQtd');
-    //     const btnMais = modalEl.querySelector('#btnAumentarQtd');
-    //     const totalEl = modalEl.querySelector('#valorTotalProduto');
+        const filtroTexto = document.getElementById("filtroTexto");
+        const filtroTextoMobile = document.getElementById("filtroTextoMobile");
+        const filtroCategoria = document.getElementById("filtroCategoria");
+        const filtroCategoriaMobile = document.getElementById("filtroCategoriaMobile");
+        const btnPesquisar = document.getElementById("btnPesquisar");
+        const btnPesquisarMobile = document.getElementById("btnPesquisarMobile");
 
-    //     if (!inputPrecoBase || !inputQtd || !btnMenos || !btnMais || !totalEl) return;
+        filtroTexto?.classList.add("d-none");
+        filtroTextoMobile?.classList.add("d-none");
 
-    //     const precoBase = Number(inputPrecoBase.value || 0);
+        filtroCategoria?.classList.remove("d-none");
+        filtroCategoriaMobile?.classList.remove("d-none");
 
-    //     function moedaBR(valor) {
-    //         return valor.toLocaleString('pt-BR', {
-    //             style: 'currency',
-    //             currency: 'BRL'
-    //         });
-    //     }
+        btnPesquisar?.classList.remove("d-none");
+        btnPesquisarMobile?.classList.remove("d-none");
 
-    //     function obterAdicionalSelecionado() {
-    //         let adicional = 0;
-
-    //         const selecionados = form.querySelectorAll('.acomp-input:checked');
-    //         selecionados.forEach(input => {
-    //             adicional += Number(input.dataset.preco || 0);
-    //         });
-
-    //         return adicional;
-    //     }
-
-    //     function calcularTotal() {
-    //         let qtd = parseInt(inputQtd.value, 10) || 1;
-
-    //         if (qtd < 1) {
-    //             qtd = 1;
-    //             inputQtd.value = 1;
-    //         }
-
-    //         const adicional = obterAdicionalSelecionado();
-    //         const total = (precoBase + adicional) * qtd;
-
-    //         totalEl.textContent = moedaBR(total);
-    //     }
-
-    //     btnMenos.onclick = function () {
-    //         let qtdAtual = parseInt(inputQtd.value, 10) || 1;
-    //         qtdAtual = Math.max(qtdAtual - 1, 1);
-    //         inputQtd.value = qtdAtual;
-    //         calcularTotal();
-    //     };
-
-    //     btnMais.onclick = function () {
-    //         let qtdAtual = parseInt(inputQtd.value, 10) || 1;
-    //         qtdAtual = qtdAtual + 1;
-    //         inputQtd.value = qtdAtual;
-    //         calcularTotal();
-    //     };
-
-    //     inputQtd.oninput = calcularTotal;
-    //     inputQtd.onchange = calcularTotal;
-    //     inputQtd.onblur = calcularTotal;
-
-    //     form.querySelectorAll('.acomp-input').forEach(input => {
-    //         input.onchange = calcularTotal;
-    //     });
-
-    //     calcularTotal();
-    // };
-
-    //     window.iniciarModalAdicionarProduto = function () {
-    //     const modalEl = document.getElementById('modalAddProduto');
-    //     if (!modalEl) return;
-
-    //     const form = modalEl.querySelector('#formAdicionarProdutoCarrinho');
-    //     if (!form) return;
-
-    //     const inputPrecoBase = modalEl.querySelector('#modalPrecoBase');
-    //     const inputQtd = modalEl.querySelector('#quantidadeProduto');
-    //     const btnMenos = modalEl.querySelector('#btnDiminuirQtd');
-    //     const btnMais = modalEl.querySelector('#btnAumentarQtd');
-    //     const totalEl = modalEl.querySelector('#valorTotalProduto');
-
-    //     if (!inputPrecoBase || !inputQtd || !btnMenos || !btnMais || !totalEl) return;
-
-    //     const precoBase = Number(inputPrecoBase.value || 0);
-
-    //     function moedaBR(valor) {
-    //         return valor.toLocaleString('pt-BR', {
-    //             style: 'currency',
-    //             currency: 'BRL'
-    //         });
-    //     }
-
-    //     function obterQuantidade() {
-    //         let qtd = parseInt(inputQtd.value, 10) || 1;
-
-    //         if (qtd < 1) {
-    //             qtd = 1;
-    //             inputQtd.value = 1;
-    //         }
-
-    //         return qtd;
-    //     }
-
-    //     function obterAdicionalSelecionado() {
-    //         let adicional = 0;
-
-    //         form.querySelectorAll('.acomp-input:checked').forEach(function (input) {
-    //             adicional += Number(input.dataset.preco || 0);
-    //         });
-
-    //         return adicional;
-    //     }
-
-    //     function calcularTotal() {
-    //         const qtd = obterQuantidade();
-    //         const adicional = obterAdicionalSelecionado();
-    //         const total = (precoBase + adicional) * qtd;
-
-    //         totalEl.textContent = moedaBR(total);
-    //     }
-
-    //     function controlarSelecaoUnicaPorCategoria(checkboxAtual) {
-    //         if (!checkboxAtual) return;
-
-    //         const categoriaId = checkboxAtual.dataset.categoriaId;
-    //         if (!categoriaId) return;
-
-    //         const containerCategoria = checkboxAtual.closest('[data-acomp-categoria]');
-    //         if (!containerCategoria) return;
-
-    //         const max = parseInt(containerCategoria.dataset.max || '0', 10);
-
-    //         if (max === 1 && checkboxAtual.checked) {
-    //             form.querySelectorAll('.acomp-input[data-categoria-id="' + categoriaId + '"]').forEach(function (item) {
-    //                 if (item !== checkboxAtual) {
-    //                     item.checked = false;
-    //                 }
-    //             });
-    //         }
-    //     }
-
-    //     btnMenos.onclick = function () {
-    //         let qtdAtual = obterQuantidade();
-    //         qtdAtual = Math.max(qtdAtual - 1, 1);
-    //         inputQtd.value = qtdAtual;
-    //         calcularTotal();
-    //     };
-
-    //     btnMais.onclick = function () {
-    //         let qtdAtual = obterQuantidade();
-    //         qtdAtual = qtdAtual + 1;
-    //         inputQtd.value = qtdAtual;
-    //         calcularTotal();
-    //     };
-
-    //     inputQtd.oninput = calcularTotal;
-    //     inputQtd.onchange = calcularTotal;
-    //     inputQtd.onblur = calcularTotal;
-
-    //     form.querySelectorAll('.acomp-input').forEach(function (input) {
-    //         input.onchange = function () {
-    //             controlarSelecaoUnicaPorCategoria(this);
-    //             calcularTotal();
-    //         };
-    //     });
-
-    //     calcularTotal();
-    // };
+        applyFilters();
+    };
 
     window.iniciarModalAdicionarProduto = function () {
         const modalEl = document.getElementById('modalAddProduto');
@@ -935,7 +1256,6 @@
         const btnMenos = modalEl.querySelector('#btnDiminuirQtd');
         const btnMais = modalEl.querySelector('#btnAumentarQtd');
         const totalEl = modalEl.querySelector('#valorTotalProduto');
-
         const precoPrincipalEl = modalEl.querySelector('#modalPrecoPrincipal');
         const precoCentavosEl = modalEl.querySelector('#modalPrecoCentavos');
 
@@ -1001,7 +1321,6 @@
         function calcularTotal() {
             const qtd = obterQuantidade();
             const adicional = obterAdicionalSelecionado();
-
             const precoUnitario = precoBase + adicional;
             const total = precoUnitario * qtd;
 
@@ -1057,9 +1376,6 @@
         calcularTotal();
     };
 
-    // =========================
-    // Modal - carregar produto
-    // =========================
     const host = document.getElementById('modalHost');
 
     async function abrirModalProduto(produtoId) {
@@ -1105,9 +1421,6 @@
         }
     }
 
-    // =========================
-    // Clique nos produtos
-    // =========================
     document.addEventListener('click', (e) => {
         const el = e.target.closest('.bc-product-clickable');
         if (!el) return;
@@ -1118,30 +1431,6 @@
         abrirModalProduto(produtoId);
     });
 
-    // =========================
-    // Limpar filtro
-    // =========================
-    window.limparFiltroTexto = function () {
-        const inputBusca = document.getElementById("filtroNome");
-        const inputBuscaMobile = document.getElementById("filtroNomeMobile");
-
-        if (inputBusca) inputBusca.value = "";
-        if (inputBuscaMobile) inputBuscaMobile.value = "";
-
-        filterState.texto = "";
-
-        document.getElementById('emptySearchState')?.classList.add('d-none');
-        document.getElementById('emptySearchState')?.classList.remove('d-flex');
-
-        document.getElementById('emptySearchStateDesktop')?.classList.add('d-none');
-        document.getElementById('emptySearchStateDesktop')?.classList.remove('d-flex');
-
-        applyFilters();
-    };
-
-    // =========================
-    // Boot
-    // =========================
     document.addEventListener("DOMContentLoaded", () => {
         setupFilterLogic("");
         setupFilterLogic("Mobile");
@@ -1152,27 +1441,21 @@
 
         applyFilters();
     });
-
 })();
-
 </script>
 <script>
-    // Função que monta o payload e envia ao back‑end
     async function adicionarAoCarrinho() {
         const form = document.getElementById('formAdicionarProdutoCarrinho');
         if (!form) return;
 
-        // exibe spinner de carregamento, se a função existir
         if (typeof window.addLoading === 'function') {
             window.addLoading('Processando...');
         }
 
-        // Captura dados do formulário
-        const produtoId  = form.querySelector('input[name="ProdutoId"]').value;
+        const produtoId = form.querySelector('input[name="ProdutoId"]').value;
         const quantidade = parseInt(form.querySelector('input[name="Quantidade"]').value, 10) || 1;
         const observacao = form.querySelector('textarea[name="Observacao"]').value.trim();
 
-        // Monta lista de acompanhamentos selecionados
         const acompanhamentos = [];
         form.querySelectorAll('.acomp-input:checked').forEach(input => {
             acompanhamentos.push({
@@ -1181,7 +1464,6 @@
             });
         });
 
-        // Payload compatível com seu ViewModel
         const payload = {
             produtoId: produtoId,
             quantidade: quantidade,
@@ -1201,32 +1483,12 @@
 
             const result = await response.json();
             const type = result.success ? 'success' : 'danger';
-            @* showToast(type, result.message); *@
+
             updateFeedbackAlert(type, result.message);
 
-            /*if (result.success) {
-                setTimeout(async () => {
-                    try {
-                        if (typeof window.addLoading === 'function') {
-                            window.addLoading('Atualizando carrinho...');
-                        }
-
-                        await recarregarCarrinhoEFooter();
-                    } catch (error) {
-                        console.error(error);
-                    } finally {
-                        if (typeof window.removeLoading === 'function') {
-                            window.removeLoading();
-                        }
-                    }
-
-                    //fecharModalEAbrirOutro('modalAddProduto', 'modalSucessoProduto');
-                }, 800);
-            }*/
             if (result.success) {
                 setTimeout(async () => {
                     try {
-                        debugger
                         mostrarLoadingCarrinho();
                         await recarregarCarrinhoEFooter();
                     } catch (error) {
@@ -1234,8 +1496,6 @@
                     } finally {
                         ocultarLoadingCarrinho();
                     }
-
-                    // fecharModalEAbrirOutro('modalAddProduto', 'modalSucessoProduto');
                 }, 800);
             }
         } catch (error) {
@@ -1243,16 +1503,12 @@
             showToast('danger', 'Ocorreu um problema ao adicionar o produto ao carrinho.');
             updateFeedbackAlert('danger', 'Ocorreu um problema ao adicionar o produto ao carrinho.');
         } finally {
-            // sempre remove o loading (se existir) ao final
             if (typeof window.removeLoading === 'function') {
                 window.removeLoading();
             }
         }
     }
 
-    
-
-    // Delegação de eventos: captura cliques em todo o documento e verifica se foi no botão
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('#btnAdicionarCarrinho');
         if (btn) {
@@ -1263,7 +1519,6 @@
         }
     });
 
-    // Mostra um toast Bootstrap com cor conforme o tipo ('success', 'danger' etc.)
     function showToast(type, message) {
         const toastEl = document.createElement('div');
         toastEl.className = `toast align-items-center text-bg-${type} border-0`;
@@ -1278,19 +1533,18 @@
         `;
 
         const container = document.getElementById('toast-container');
+        if (!container) return;
+
         container.appendChild(toastEl);
 
-        // Inicializa e exibe o toast com autohide e delay personalizados
-        // autohide: true garante que o toast se feche sozinho:contentReference[oaicite:1]{index=1}
-        // delay: 3000 define a duração em milissegundos (3 segundos)
         const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {
             autohide: true,
             delay: 3000
         });
+
         toast.show();
     }
 
-    // Atualiza o bloco fixo de feedback com uma mensagem
     function updateFeedbackAlert(type, message) {
         const feedback = document.getElementById('feedback-alerts');
         if (feedback) {
@@ -1300,16 +1554,16 @@
 
     function clearToasts() {
         const container = document.getElementById('toast-container');
-        if (container) {
-            container.querySelectorAll('.toast').forEach(el => {
-                const t = bootstrap.Toast.getInstance(el);
-                if (t) {
-                    t.hide();        // esconde imediatamente
-                    t.dispose();     // destrói a instância
-                }
-                el.remove();          // remove do DOM
-            });
-        }
+        if (!container) return;
+
+        container.querySelectorAll('.toast').forEach(el => {
+            const t = bootstrap.Toast.getInstance(el);
+            if (t) {
+                t.hide();
+                t.dispose();
+            }
+            el.remove();
+        });
     }
 
     function clearFeedbackAlerts() {
@@ -1385,26 +1639,6 @@
         }
     }
 
-    // document.addEventListener('change', function (e) {
-    //     if (!e.target.classList.contains('acomp-input')) return;
-
-    //     const checkboxAtual = e.target;
-    //     const form = checkboxAtual.closest('#formAdicionarProdutoCarrinho');
-    //     if (!form) return;
-
-    //     const categoriaId = checkboxAtual.dataset.categoriaId;
-
-    //     if (checkboxAtual.checked) {
-    //         form.querySelectorAll('.acomp-input[data-categoria-id="' + categoriaId + '"]').forEach(function (item) {
-    //             if (item !== checkboxAtual) {
-    //                 item.checked = false;
-    //             }
-    //         });
-    //     }
-
-    //     recalcularTotalModal(form);
-    // });
-
     function recalcularTotalModal(form) {
         if (!form) return;
 
@@ -1439,5 +1673,3 @@
         });
     }
 </script>
-
-
