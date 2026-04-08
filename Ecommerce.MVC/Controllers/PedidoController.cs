@@ -184,6 +184,8 @@ public class PedidoController : Controller
                         && p.Codigo == codigo
                         && p.Status != EPedidoStatus.Rascunho
                         && p.Status != EPedidoStatus.Cancelado)
+            .Include(p => p.Pagamentos)  // Incluir Pagamentos
+            .Include(p => p.Itens)
             .Select(p => new
             {
                 p.Id,
@@ -198,6 +200,8 @@ public class PedidoController : Controller
                 p.Observacao,
                 p.Subtotal,
                 p.Total,
+                p.ValorPago,
+                p.PedidoQuitado,
 
                 Pagamentos = p.Pagamentos
                     .OrderBy(pg => pg.Sequencia)
@@ -260,6 +264,8 @@ public class PedidoController : Controller
             Total = pedidoEntity.Total,
             ValorSinal = valorSinal,
             ValorRestanteRetirada = valorRestante,
+            ValorPago = pedidoEntity.ValorPago, // Valor total pago até o momento
+            PedidoQuitado = pedidoEntity.PedidoQuitado,
 
             Pagamentos = pedidoEntity.Pagamentos.Select(pg => new PedidoPagamentoViewModel
             {

@@ -24,6 +24,8 @@ public class PedidosEmAndamentoViewModel
     public decimal Subtotal { get; set; }
     public decimal ValorSinal { get; set; }
     public decimal ValorRestanteRetirada { get; set; }
+    public bool PedidoQuitado { get; set; }
+    public decimal ValorPago { get; set; }
 
     public List<PedidoPagamentoViewModel> Pagamentos { get; set; } = new();
 
