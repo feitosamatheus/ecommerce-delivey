@@ -1672,4 +1672,13 @@
             currency: 'BRL'
         });
     }
+
+    document.addEventListener('backbutton', function (e) {
+        const modal = document.getElementById('modalAddProduto');
+        if (modal) {
+            const bootstrapModal = bootstrap.Modal.getInstance(modal);
+            bootstrapModal.hide(); // Fecha o modal
+            e.preventDefault();
+        }
+    }, false);
 </script>
