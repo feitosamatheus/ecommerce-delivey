@@ -36,4 +36,22 @@ public class ProdutoController : Controller
 
         return PartialView("_ModalAddProduto", produto);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> Detalhes(Guid id)
+    {
+        var produto = await _db.Produtos
+            .AsNoTracking()
+            .Include(p => p.AcompanhamentoCategorias)
+                .ThenInclude(pc => pc.Categoria)
+            .Include(p => p.AcompanhamentoCategorias)
+                .ThenInclude(pc => pc.ProdutoAcompanhamentos)
+                    .ThenInclude(pa => pa.Acompanhamento)
+            .FirstOrDefaultAsync(p => p.Id == id && p.Ativo);
+
+        if (produto == null)
+            return NotFound();
+
+        return View(produto);  
+    }
 }

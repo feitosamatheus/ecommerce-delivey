@@ -1378,179 +1378,66 @@
 
     const host = document.getElementById('modalHost');
 
-    // async function abrirModalProduto(produtoId) {
-    //     if (!host) return;
-
-    //     const old = document.getElementById('modalAddProduto');
-    //     if (old) old.remove();
-
-    //     try {
-    //         addLoading("Carregando...");
-
-    //         const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 'X-Requested-With': 'XMLHttpRequest'
-    //             }
-    //         });
-
-    //         if (!resp.ok) {
-    //             throw new Error(`Erro HTTP ${resp.status}`);
-    //         }
-
-    //         const html = await resp.text();
-    //         host.innerHTML = html;
-
-    //         iniciarModalAdicionarProduto();
-
-    //         const modalEl = document.getElementById('modalAddProduto');
-    //         if (!modalEl) return;
-
-    //         modalEl.addEventListener('hidden.bs.modal', function () {
-    //             modalEl.remove();
-    //         }, { once: true });
-
-    //         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    //         modal.show();
-
-    //     } catch (err) {
-    //         console.error('Erro ao carregar modal:', err);
-    //         alert('Não foi possível carregar o produto. Tente novamente.');
-    //     } finally {
-    //         removeLoading();
-    //     }
-    // }
-
-    // async function abrirModalProduto(produtoId) {
-    //     if (!host) return;
-
-    //     const old = document.getElementById('modalAddProduto');
-    //     if (old) old.remove();
-
-    //     try {
-    //         addLoading("Carregando...");
-
-    //         const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 'X-Requested-With': 'XMLHttpRequest'
-    //             }
-    //         });
-
-    //         if (!resp.ok) {
-    //             throw new Error(`Erro HTTP ${resp.status}`);
-    //         }
-
-    //         const html = await resp.text();
-    //         host.innerHTML = html;
-
-    //         iniciarModalAdicionarProduto();
-
-    //         const modalEl = document.getElementById('modalAddProduto');
-    //         if (!modalEl) return;
-
-    //         modalEl.addEventListener('hidden.bs.modal', function () {
-    //             modalEl.remove();
-    //         }, { once: true });
-
-    //         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    //         modal.show();
-
-    //         // Adiciona um estado fictício no histórico
-    //         history.pushState({ modalAberto: true }, '');
-
-    //         // Captura o evento de "voltar" para fechar o modal em vez de sair da página
-    //         window.addEventListener('popstate', function (event) {
-    //             if ($('#modalAddProduto').hasClass('show')) {
-    //                 fecharModal(); // Se o modal estiver aberto, fecha o modal
-    //             } else {
-    //                 history.back(); // Caso contrário, o comportamento normal de voltar é restaurado
-    //             }
-    //         });
-
-    //     } catch (err) {
-    //         console.error('Erro ao carregar modal:', err);
-    //         alert('Não foi possível carregar o produto. Tente novamente.');
-    //     } finally {
-    //         removeLoading();
-    //     }
-    // }
-
-    // // Função para fechar o modal e limpar o estado do histórico
-    // function fecharModal() {
-    //     const modalEl = document.getElementById('modalAddProduto');
-    //     if (modalEl) {
-    //         const modal = bootstrap.Modal.getInstance(modalEl);
-    //         modal.hide(); // Fecha o modal
-    //         history.back(); // Remove o estado fictício do histórico
-    //     }
-    // }
-
     async function abrirModalProduto(produtoId) {
-    if (!host) return;
+        // Verifica se o dispositivo é mobile
+        const isMobile = window.innerWidth <= 768;  // Pode ajustar conforme a necessidade
 
-    const old = document.getElementById('modalAddProduto');
-    if (old) old.remove();
-
-    try {
-        addLoading("Carregando...");
-
-        const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
-
-        if (!resp.ok) {
-            throw new Error(`Erro HTTP ${resp.status}`);
+        // Se for mobile, redireciona para uma nova página
+        if (isMobile) {
+            window.location.href = `/Produto/Detalhes?id=${encodeURIComponent(produtoId)}`;
+            return;
         }
 
-        const html = await resp.text();
-        host.innerHTML = html;
+        // Se não for mobile, abre o modal normalmente
+        if (!host) return;
 
-        iniciarModalAdicionarProduto();
+        const old = document.getElementById('modalAddProduto');
+        if (old) old.remove();
 
-        const modalEl = document.getElementById('modalAddProduto');
-        if (!modalEl) return;
+        try {
+            addLoading("Carregando...");
 
-        modalEl.addEventListener('hidden.bs.modal', function () {
-            modalEl.remove();
-        }, { once: true });
+            const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
 
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
-
-        // Adiciona um estado fictício no histórico
-        history.pushState({ modalAberto: true }, '');
-
-        // Captura o evento de "voltar" para fechar o modal sem navegar
-        window.addEventListener('popstate', function (event) {
-            if ($('#modalAddProduto').hasClass('show')) {
-                fecharModal(); // Fecha o modal se estiver aberto
-                event.preventDefault(); // Previne a navegação
-            } else {
-                history.back(); // Permite que o comportamento de voltar seja restaurado
+            if (!resp.ok) {
+                throw new Error(`Erro HTTP ${resp.status}`);
             }
-        });
 
-    } catch (err) {
-        console.error('Erro ao carregar modal:', err);
-        alert('Não foi possível carregar o produto. Tente novamente.');
-    } finally {
-        removeLoading();
-    }
-}
+            const html = await resp.text();
+            host.innerHTML = html;
 
-// Função para fechar o modal e limpar o estado do histórico
-function fecharModal() {
-    const modalEl = document.getElementById('modalAddProduto');
-    if (modalEl) {
-        const modal = bootstrap.Modal.getInstance(modalEl);
-        modal.hide(); // Fecha o modal
-        history.back(); // Remove o estado fictício do histórico
+            iniciarModalAdicionarProduto();
+
+            const modalEl = document.getElementById('modalAddProduto');
+            if (!modalEl) return;
+
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                modalEl.remove();
+            }, { once: true });
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+
+            // Fechar o modal ao pressionar o botão "voltar"
+            window.addEventListener('popstate', function (event) {
+                if ($('#modalAddProduto').hasClass('show')) {
+                    const bootstrapModal = bootstrap.Modal.getInstance(modalEl);
+                    bootstrapModal.hide();  // Fecha o modal
+                }
+            });
+
+        } catch (err) {
+            console.error('Erro ao carregar modal:', err);
+            alert('Não foi possível carregar o produto. Tente novamente.');
+        } finally {
+            removeLoading();
+        }
     }
-}
 
     document.addEventListener('click', (e) => {
         const el = e.target.closest('.bc-product-clickable');

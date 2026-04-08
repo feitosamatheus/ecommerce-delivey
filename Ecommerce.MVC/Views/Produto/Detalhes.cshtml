@@ -1,0 +1,627 @@
+﻿@using Ecommerce.MVC.Entities
+@using System.Globalization
+@model Produto
+
+@{
+    var pt = new CultureInfo("pt-BR");
+    var precoBase = Model.Preco;
+    var partesPreco = Model.Preco.ToString("N2", pt).Split(',');
+    var imagem = string.IsNullOrWhiteSpace(Model.ImagemUrl) ? "/img/sem-imagem.png" : Model.ImagemUrl;
+    ViewData["Title"] = $"{Model.Nome}";
+}
+
+<style>
+    /* Estilos para o layout de detalhes */
+    .custom-scroll-container {
+        max-height: none;
+        overflow-y: visible;
+        padding-right: 0;
+    }
+
+    @@media (min-width: 768px) {
+        .custom-scroll-container {
+            max-height: 445px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 8px;
+        }
+        .custom-scroll-container::-webkit-scrollbar { width: 5px; }
+        .custom-scroll-container::-webkit-scrollbar-thumb {
+            background: #3c1e0a50;
+            border-radius: 10px;
+        }
+    }
+
+    /* Tipografia e Estilo */
+    .product-info-column { padding-right: 1.5rem; }
+    .product-name-v5 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #3c1e0a;
+        letter-spacing: -0.8px;
+        line-height: 1.2;
+        margin-bottom: 0.5rem;
+    }
+    .product-desc-v5 {
+        font-size: 0.95rem;
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .img-container-premium {
+        position: relative;
+        overflow: hidden;
+        border-radius: 1rem;
+    }
+
+    .img-zoom-depth {
+        transition: transform 0.8s cubic-bezier(0.15, 1, 0.3, 1), filter 0.5s ease;
+        display: block;
+    }
+
+    .img-container-premium:hover .img-zoom-depth {
+        transform: scale(1.09);
+        filter: brightness(1.05) contrast(1.05);
+    }
+
+    .price-wrapper-v6 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 1;
+        padding: 6px 16px;
+        background: linear-gradient(90deg, #f7f0eb 0%, #ffffff 100%);
+        border-radius: 12px;
+    }
+
+    .price-v6 {
+        display: flex;
+        align-items: baseline;
+        color: #198754;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .price-v6 .currency { font-size: 0.9rem; font-weight: 700; margin-top: 6px; }
+    .price-v6 .amount { font-size: 2.6rem; font-weight: 900; line-height: 1; letter-spacing: -1.5px; }
+    .price-v6 .decimals { font-size: 1.2rem; font-weight: 700; margin-top: 6px; }
+
+    .bc-mb-hero{
+        display:none;
+    }
+
+    .main{
+        padding-bottom:0 !important;
+    }
+
+    html body {
+        padding-bottom: 1rem !important;
+        background: linear-gradient(180deg, #ffffff 0%, #f5f6f8 1200px, #f1f3f6 100%) !important;
+    }
+</style>
+<style>
+    .btn-back-premium {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        background-color: #ffffff;
+        color: #3c1e0a; /* Cor principal do seu tema */
+        padding: 10px 20px;
+        border-radius: 7px; /* Botão pílula */
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .btn-back-premium i {
+        font-size: 0.85rem;
+        margin-right: 8px;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-back-premium:hover {
+        background-color: #ffffff;
+        color: #3c1e0a;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    }
+
+    .btn-back-premium:hover i {
+        transform: translateX(-4px); /* Ícone move levemente para a esquerda */
+    }
+
+</style>
+<style>
+    /* Ajuste para garantir que o link se comporte como o botão no grid */
+    .d-grid .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    /* Efeito de hover para o botão de voltar */
+    .btn-light:hover {
+        background-color: #e9ecef !important;
+        border-color: #ddd !important;
+    }
+
+    /* Container Principal */
+.quantity-selector-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 1.5rem;
+}
+
+.quantity-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 8px;
+    padding: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+
+/* Botões - e + */
+.qty-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #3c1e0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.qty-btn:hover {
+    background-color: #fceee9; /* Cor leve baseada no seu tema */
+    color: #3c1e0a;
+}
+
+.qty-btn i {
+    font-size: 0.8rem;
+}
+
+/* Input de número */
+.qty-input {
+    width: 45px;
+    border: none;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #3c1e0a;
+    background: transparent;
+    outline: none;
+    -moz-appearance: textfield; /* Remove setas no Firefox */
+}
+
+/* Remove setas no Chrome/Safari */
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.container-detalhes-produto {
+    width: 100%;
+}
+
+/* Regra para telas de 1200px ou mais */
+@@media (min-width: 1200px) {
+    .container-detalhes-produto {
+        width: 50% !important;
+    }
+}
+</style>
+<div class="d-flex justify-content-start align-items-center mb-4 mt-4 ms-3 ms-lg-0 pt-lg-3">
+    <a href="javascript:history.back()" class="btn-back-premium">
+        <i class="fas fa-chevron-left"></i> 
+        <span>Voltar</span>
+    </a>
+</div>
+
+<div class="container-fluid mt-3 px-lg-0">
+    <form id="formAdicionarProdutoCarrinho">
+        @* Campo oculto essencial para o script *@
+        <input type="hidden" name="ProdutoId" value="@Model.Id" />
+        @* Campo para o preço base (usado pelo JS para calcular o total) *@
+        <input type="hidden" id="modalPrecoBase" value="@precoBase.ToString(CultureInfo.InvariantCulture)" />
+
+        <div class="d-flex justify-content-center">
+            <div class="container-detalhes-produto mx-auto">
+                <div class="col-xl-12">
+                    <div class="img-container-premium shadow-sm mb-4 d-flex justify-content-center">
+                        <img src="/img/produtos/653760c0-6129-4f93-876f-ec50fe7fd26f.png" class="img-fluid w-100 img-zoom-depth" style="height: 300px; object-fit: cover;" alt="Quiche">
+                    </div>
+                </div>
+
+                <div class="col-xl-12">
+                    <h3 class="product-name-v5">Quiche</h3>
+                    <p class="product-desc-v5">Clássica e versátil, a quiche é feita com recheio cremoso à base de ovos e creme, combinando perfeitamente com diferentes sabores como queijo, alho-poró, lorraine ou ervas.</p>
+
+                    <div class="price-wrapper-v6 mb-1">
+                        <div class="price-v6">
+                            <span class="currency">R$</span>
+                            <span class="amount">220</span>
+                            <span class="decimals">,00</span>
+                        </div>
+                        <div class="price-info-tag">
+                            <span class="label">Preço</span>
+                            <span class="badge-unit">Unitário</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center">
+            <div class="mt-4 col-12 col-xl-6">
+                @if (Model.AcompanhamentoCategorias?.Any() == true)
+                {
+                    @foreach (var pc in Model.AcompanhamentoCategorias
+                        .OrderBy(x => x.Ordem == 0 ? 1 : 0)
+                        .ThenBy(x => x.Ordem == 0 ? int.MaxValue : x.Ordem)
+                        .ThenBy(x => x.Categoria.Nome))
+                    {
+                        var cat = pc.Categoria;
+                        var requiredLabel = pc.Obrigatorio ? "Obrigatório" : "Opcional";
+                        var inputName = $"acomp_{pc.AcompanhamentoCategoriaId:N}";
+                        var itens = (pc.ProdutoAcompanhamentos ?? new List<ProdutoAcompanhamento>())
+                                    .Where(a => a.Ativo).OrderBy(a => a.Ordem).ToList();
+
+                        <div class="card border-0 shadow-sm mb-3" style="border-radius:14px; overflow:hidden;">
+                            <div class="card-body" style="background:#ededed;">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-bold" style="color:#3c1e0a;">@cat.Nome</div>
+                                        <div class="text-muted small">
+                                            @requiredLabel 
+                                            @if (pc.MinSelecionados > 0) { <span>• Mín. @pc.MinSelecionados</span> }
+                                            @if (pc.MaxSelecionados > 0) { <span>• Máx. @pc.MaxSelecionados</span> }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="list-group list-group-flush" 
+                                 data-acomp-categoria 
+                                 data-categoria-id="@pc.AcompanhamentoCategoriaId"
+                                 data-min="@pc.MinSelecionados" 
+                                 data-max="@pc.MaxSelecionados"
+                                 style="max-height:320px; overflow-y:auto;">
+                                @foreach (var item in itens
+                                    .OrderBy(x => x.Acompanhamento.Ordem == 0 ? 1 : 0)
+                                    .ThenBy(x => x.Acompanhamento.Ordem == 0 ? int.MaxValue : x.Acompanhamento.Ordem)
+                                    .ThenBy(x => x.Acompanhamento.Nome))
+                                {
+                                    var inputId = $"acomp_{pc.AcompanhamentoCategoriaId:N}_{item.Id:N}";
+                                    var temAdicional = item.Acompanhamento.Preco > 0;
+
+                                    <label class="list-group-item d-flex justify-content-between align-items-center py-3" style="cursor:pointer;">
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-semibold">@item.Acompanhamento.Nome</span>
+                                            @if (!string.IsNullOrWhiteSpace(item.Acompanhamento.Descricao))
+                                            {
+                                                <span class="text-muted small">@item.Acompanhamento.Descricao</span>
+                                            }
+                                        </div>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="fw-bold @(temAdicional ? "text-success" : "text-muted")">
+                                                @(temAdicional ? $"+ {item.Acompanhamento.Preco.ToString("C", pt)}" : "Sem acréscimo")
+                                            </div>
+                                            @* Importante: Mantive as classes acomp-input para o seu JS funcionar *@
+                                            <input id="@inputId" type="checkbox" name="@inputName" class="form-check-input acomp-input" 
+                                                   value="@item.Id" data-categoria-id="@pc.AcompanhamentoCategoriaId" data-preco="@item.Acompanhamento.Preco.ToString(CultureInfo.InvariantCulture)">
+                                        </div>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+
+                <div class="col-xl-12 mt-4" id="area-compra">
+                    <div id="feedback-alerts"></div> @* Div para mensagens de erro/sucesso *@
+                
+                    <div class="mt-3 p-1">
+                        <label class="form-label fw-semibold" style="color:#3c1e0a;">Observações</label>
+                        <textarea name="Observacao" class="form-control mb-2" rows="3" maxlength="500" placeholder="Ex: tirar cebola, caprichar no molho..."></textarea>
+                    </div>
+
+                    <div class="quantity-selector-wrapper">
+                        <span class="quantity-label mt-1">Quantidade</span>
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn" id="btnDiminuirQtd" aria-label="Diminuir">
+                                <i class="fas fa-minus mt-1"></i>
+                            </button>
+            
+                            <input type="number" name="Quantidade" id="quantidadeProduto" 
+                                   class="qty-input" value="1" min="1" readonly>
+            
+                            <button type="button" class="qty-btn" id="btnAumentarQtd" aria-label="Aumentar">
+                                <i class="fas fa-plus mt-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mb-5">
+                        <button type="button" id="btnAdicionarCarrinho" class="btn text-white fw-bold py-3 shadow" style="background:#3c1e0a; border-radius: 12px; font-size: 1.1rem;">
+                            Adicionar ao carrinho • <span id="valorTotalProduto">@precoBase.ToString("C", pt)</span>
+                        </button>
+
+                        <a href="javascript:history.back()" class="btn btn-light fw-bold py-3 border" style="border-radius: 12px; color: #3c1e0a; background-color: #f8f9fa;">
+                            <i class="fas fa-chevron-left me-2"></i> 
+                            <span>Voltar para o cardápio</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="modal fade modal-barriga-cheia" id="modalSucessoProduto" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered px-4">
+        <div class="modal-content shadow-lg">
+            <div class="modal-body text-center p-4">
+                <div class="circle-check mb-4 animate__animated animate__bounceIn" style="background-color: #d4edda; color: #28a745; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto; font-size: 2rem;">
+                    <i class="fa-solid fa-cart-plus"></i>
+                </div>
+                <h2 class="text-titulo mb-3">Produto Adicionado!</h2>
+                <p class="text-muted px-2">
+                    O item foi adicionado ao seu carrinho com sucesso e já está pronto para o pedido.
+                </p>
+                <div class="d-grid gap-2 mt-4">
+                    <a href="/" class="btn text-white fw-bold btn-principal">
+                        Continuar Comprando
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const precoBase = parseFloat("@Model.Preco.ToString(CultureInfo.InvariantCulture)");
+        const inputQtd = document.getElementById('quantidadeProduto');
+        const btnAumentar = document.getElementById('btnAumentarQtd');
+        const btnDiminuir = document.getElementById('btnDiminuirQtd');
+        const displayTotal = document.getElementById('valorTotalProduto');
+        const acompInputs = document.querySelectorAll('.acomp-input');
+
+        const formatarMoeda = (valor) => {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        };
+
+        function obterAdicionalSelecionado() {
+            let adicional = 0;
+            document.querySelectorAll('.acomp-input:checked').forEach(function (input) {
+                adicional += parseFloat(input.dataset.preco || 0);
+            });
+            return adicional;
+        }
+
+        // NOVA LÓGICA: Controla Seleção Única e Limite Máximo
+        function validarLimitesEControle(checkboxAtual) {
+            const categoriaId = checkboxAtual.dataset.categoriaId;
+            const containerCategoria = checkboxAtual.closest('[data-acomp-categoria]');
+            const max = parseInt(containerCategoria.dataset.max || '0', 10);
+            
+            // 1. Se for seleção única (max 1)
+            if (max === 1 && checkboxAtual.checked) {
+                document.querySelectorAll(`.acomp-input[data-categoria-id="${categoriaId}"]`).forEach(function (item) {
+                    if (item !== checkboxAtual) item.checked = false;
+                });
+            } 
+            // 2. Se for múltiplos itens (ex: max 3)
+            else if (max > 1 && checkboxAtual.checked) {
+                const selecionados = document.querySelectorAll(`.acomp-input[data-categoria-id="${categoriaId}"]:checked`);
+                if (selecionados.length > max) {
+                    checkboxAtual.checked = false; // Desmarca o último clicado
+                    // alert(`Você pode selecionar no máximo ${max} itens nesta categoria.`);
+                }
+            }
+        }
+
+        const calcularTotal = () => {
+            const qtd = parseInt(inputQtd.value) || 1;
+            const adicional = obterAdicionalSelecionado();
+            const precoUnitario = precoBase + adicional;
+            const total = precoUnitario * qtd;
+
+            if (displayTotal) {
+                displayTotal.innerText = formatarMoeda(total);
+            }
+        };
+
+        // Eventos Quantidade
+        if (btnAumentar && btnDiminuir && inputQtd) {
+            btnAumentar.addEventListener('click', () => {
+                inputQtd.value = parseInt(inputQtd.value) + 1;
+                calcularTotal();
+            });
+            btnDiminuir.addEventListener('click', () => {
+                let valorAtual = parseInt(inputQtd.value);
+                if (valorAtual > 1) {
+                    inputQtd.value = valorAtual - 1;
+                    calcularTotal();
+                }
+            });
+            inputQtd.addEventListener('input', calcularTotal);
+        }
+
+        // Eventos Acompanhamentos
+        acompInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                validarLimitesEControle(this);
+                calcularTotal();
+            });
+        });
+
+        calcularTotal();
+
+    });
+</script>
+<script>
+    // Mantemos a função adicionarAoCarrinho idêntica para manter a compatibilidade com seu backend
+    async function adicionarAoCarrinho() {
+        const form = document.getElementById('formAdicionarProdutoCarrinho');
+        if (!form) return;
+
+        if (typeof window.addLoading === 'function') {
+            window.addLoading('Processando...');
+        }
+
+        const produtoId = form.querySelector('input[name="ProdutoId"]').value;
+        const quantidade = parseInt(form.querySelector('input[name="Quantidade"]').value, 10) || 1;
+        const observacao = form.querySelector('textarea[name="Observacao"]').value.trim();
+
+        const acompanhamentos = [];
+        form.querySelectorAll('.acomp-input:checked').forEach(input => {
+            acompanhamentos.push({
+                CategoriaId: input.dataset.categoriaId,
+                AcompanhamentoId: input.value
+            });
+        });
+
+        const payload = {
+            produtoId: produtoId,
+            quantidade: quantidade,
+            observacao: observacao || null,
+            acompanhamentos: acompanhamentos
+        };
+
+        try {
+            const response = await fetch('/Carrinho/Adicionar', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            const type = result.success ? 'success' : 'danger';
+
+            updateFeedbackAlert(type, result.message);
+
+            // if (result.success) {
+            //     // Feedback visual de sucesso
+            //     showToast('success', result.message);
+                
+            //     setTimeout(async () => {
+            //         try {
+            //             if (typeof mostrarLoadingCarrinho === 'function') mostrarLoadingCarrinho();
+            //             await recarregarCarrinhoEFooter();
+                        
+            //             // Opcional: No mobile, após adicionar, pode ser útil voltar para a home
+            //             // window.location.href = '/'; 
+            //         } catch (error) {
+            //             console.error(error);
+            //         } finally {
+            //             if (typeof ocultarLoadingCarrinho === 'function') ocultarLoadingCarrinho();
+            //         }
+            //     }, 800);
+            // }
+            if (result.success) {
+                // 1. Abre o modal de sucesso
+                const modalSucessoEl = document.getElementById('modalSucessoProduto');
+                if (modalSucessoEl) {
+                    const modalSucesso = bootstrap.Modal.getOrCreateInstance(modalSucessoEl);
+                    modalSucesso.show();
+                }
+
+                // 2. Atualiza os dados do carrinho em segundo plano
+                setTimeout(async () => {
+                    try {
+                        if (typeof mostrarLoadingCarrinho === 'function') mostrarLoadingCarrinho();
+                    
+                        // Recarrega o mini-carrinho/footer sem recarregar a página
+                        await recarregarCarrinhoEFooter(); 
+                    
+                    } catch (error) {
+                        console.error("Erro ao atualizar interface do carrinho:", error);
+                    } finally {
+                        if (typeof ocultarLoadingCarrinho === 'function') ocultarLoadingCarrinho();
+                    }
+                }, 500);
+            }
+        } catch (error) {
+            console.error(error);
+            showToast('danger', 'Ocorreu um problema ao adicionar o produto ao carrinho.');
+            updateFeedbackAlert('danger', 'Ocorreu um problema ao adicionar o produto ao carrinho.');
+        } finally {
+            if (typeof window.removeLoading === 'function') {
+                window.removeLoading();
+            }
+        }
+    }
+
+    // Funções de Suporte de UI (Toasts e Alertas)
+    function showToast(type, message) {
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+        toastEl.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>`;
+
+        const container = document.getElementById('toast-container');
+        if (container) {
+            container.appendChild(toastEl);
+            const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: true, delay: 3000 });
+            toast.show();
+        }
+    }
+
+    function updateFeedbackAlert(type, message) {
+        const feedback = document.getElementById('feedback-alerts');
+        if (feedback) {
+            feedback.innerHTML = `<div class="alert alert-${type} border-0 shadow-sm mb-0">${message}</div>`;
+        }
+    }
+
+    function clearToasts() {
+        const container = document.getElementById('toast-container');
+        if (container) {
+            container.querySelectorAll('.toast').forEach(el => el.remove());
+        }
+    }
+
+    function clearFeedbackAlerts() {
+        const feedbackDiv = document.getElementById('feedback-alerts');
+        if (feedbackDiv) feedbackDiv.innerHTML = '';
+    }
+
+    // Listener para o botão de adicionar
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#btnAdicionarCarrinho');
+        if (btn) {
+            e.preventDefault();
+            clearToasts();
+            clearFeedbackAlerts();
+            adicionarAoCarrinho();
+        }
+    });
+</script>
