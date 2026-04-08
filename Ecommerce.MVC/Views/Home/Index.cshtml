@@ -1378,6 +1378,49 @@
 
     const host = document.getElementById('modalHost');
 
+    // async function abrirModalProduto(produtoId) {
+    //     if (!host) return;
+
+    //     const old = document.getElementById('modalAddProduto');
+    //     if (old) old.remove();
+
+    //     try {
+    //         addLoading("Carregando...");
+
+    //         const resp = await fetch(`/Produto/BuscarModalAdicionarProduto?id=${encodeURIComponent(produtoId)}`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 'X-Requested-With': 'XMLHttpRequest'
+    //             }
+    //         });
+
+    //         if (!resp.ok) {
+    //             throw new Error(`Erro HTTP ${resp.status}`);
+    //         }
+
+    //         const html = await resp.text();
+    //         host.innerHTML = html;
+
+    //         iniciarModalAdicionarProduto();
+
+    //         const modalEl = document.getElementById('modalAddProduto');
+    //         if (!modalEl) return;
+
+    //         modalEl.addEventListener('hidden.bs.modal', function () {
+    //             modalEl.remove();
+    //         }, { once: true });
+
+    //         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    //         modal.show();
+
+    //     } catch (err) {
+    //         console.error('Erro ao carregar modal:', err);
+    //         alert('Não foi possível carregar o produto. Tente novamente.');
+    //     } finally {
+    //         removeLoading();
+    //     }
+    // }
+
     async function abrirModalProduto(produtoId) {
         if (!host) return;
 
@@ -1413,11 +1456,33 @@
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
 
+            // Adiciona um estado fictício no histórico
+            history.pushState({ modalAberto: true }, '');
+
+            // Captura o evento de "voltar" para fechar o modal em vez de sair da página
+            window.addEventListener('popstate', function (event) {
+                if ($('#modalAddProduto').hasClass('show')) {
+                    fecharModal(); // Se o modal estiver aberto, fecha o modal
+                } else {
+                    history.back(); // Caso contrário, o comportamento normal de voltar é restaurado
+                }
+            });
+
         } catch (err) {
             console.error('Erro ao carregar modal:', err);
             alert('Não foi possível carregar o produto. Tente novamente.');
         } finally {
             removeLoading();
+        }
+    }
+
+    // Função para fechar o modal e limpar o estado do histórico
+    function fecharModal() {
+        const modalEl = document.getElementById('modalAddProduto');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide(); // Fecha o modal
+            history.back(); // Remove o estado fictício do histórico
         }
     }
 
@@ -1673,12 +1738,5 @@
         });
     }
 
-    document.addEventListener('backbutton', function (e) {
-        const modal = document.getElementById('modalAddProduto');
-        if (modal) {
-            const bootstrapModal = bootstrap.Modal.getInstance(modal);
-            bootstrapModal.hide(); // Fecha o modal
-            e.preventDefault();
-        }
-    }, false);
+    
 </script>
