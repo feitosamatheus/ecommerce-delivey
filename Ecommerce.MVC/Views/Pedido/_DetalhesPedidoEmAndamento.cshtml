@@ -944,6 +944,26 @@ else
         }
     }
 </style>
+<style>
+    /* Customizando a barra de rolagem */
+    #modalDetalhesPedidoBody::-webkit-scrollbar {
+        width: 6px;  /* Controla a largura da barra de rolagem */
+    }
+
+    #modalDetalhesPedidoBody::-webkit-scrollbar-thumb {
+        background-color: #888;  /* Cor do 'thumb' (parte que pode ser arrastada) */
+        border-radius: 10px;  /* Arredondando as bordas do thumb */
+    }
+
+    #modalDetalhesPedidoBody::-webkit-scrollbar-thumb:hover {
+        background-color: #555;  /* Cor do thumb quando o mouse passa sobre ele */
+    }
+
+    #modalDetalhesPedidoBody::-webkit-scrollbar-track {
+        background: #f1f1f1;  /* Cor de fundo da área onde o thumb se move */
+        border-radius: 10px;  /* Arredondando as bordas do track */
+    }
+</style>
 <div class="p-4 py-0"">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>

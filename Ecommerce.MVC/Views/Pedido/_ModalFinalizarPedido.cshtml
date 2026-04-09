@@ -29,6 +29,26 @@
         font-style: italic;
     }
 </style>
+<style>
+    /* Customizando a barra de rolagem */
+    #modalFinalizarPedidoBody::-webkit-scrollbar {
+        width: 6px; /* Controla a largura da barra de rolagem */
+    }
+
+    #modalFinalizarPedidoBody::-webkit-scrollbar-thumb {
+        background-color: #888; /* Cor do 'thumb' (parte que pode ser arrastada) */
+        border-radius: 10px; /* Arredondando as bordas do thumb */
+    }
+
+    #modalFinalizarPedidoBody::-webkit-scrollbar-thumb:hover {
+            background-color: #555; /* Cor do thumb quando o mouse passa sobre ele */
+        }
+
+    #modalFinalizarPedidoBody::-webkit-scrollbar-track {
+        background: #f1f1f1; /* Cor de fundo da área onde o thumb se move */
+        border-radius: 10px; /* Arredondando as bordas do track */
+    }
+</style>
 <div class="modal fade" id="modalFinalizarPedido" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; background: #fcfcfc;">
@@ -41,17 +61,26 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
+            <div class="wizard-progress px-0 pt-0">
+                <div class="d-flex justify-content-between position-relative">
+                    <div class="wizard-line"></div>
+                    <div class="wizard-step-indicator active" data-step="1"><span>1</span><small>RETIRADA</small></div>
+                    <div class="wizard-step-indicator" data-step="2"><span>2</span><small>CONFIRMAÇÃO</small></div>
+                    <div class="wizard-step-indicator" data-step="3"><span>3</span><small>PAGAMENTO</small></div>
+                </div>
+            </div>
+            <style>
+                @@media (max-width: 1199px) {
+                    #modalFinalizarPedidoBody {
+                        max-height: 88vh;
+                        overflow-y: auto;
+                        overflow-x: hidden;
+                    }
+                }
+            </style>
             <div class="modal-body" id="modalFinalizarPedidoBody" style="transform: scale(0.94);">
                 
                 <!-- PROGRESSO -->
-                <div class="wizard-progress px-0 pt-0">
-                    <div class="d-flex justify-content-between position-relative">
-                        <div class="wizard-line"></div>
-                        <div class="wizard-step-indicator active" data-step="1"><span>1</span><small>RETIRADA</small></div>
-                        <div class="wizard-step-indicator" data-step="2"><span>2</span><small>CONFIRMAÇÃO</small></div>
-                        <div class="wizard-step-indicator" data-step="3"><span>3</span><small>PAGAMENTO</small></div>
-                    </div>
-                </div>
 
                 <!-- STEP 1 -->
                 <section class="wizard-step" data-step="1">
@@ -593,15 +622,15 @@
                         </div>
                     </div>
                 </section>
-            </div>
-            <div class="modal-footer border-0 p-4 px-0 pt-0 d-flex gap-2 w-100 flex-column-reverse flex-lg-row"
-                 style="transform: scale(0.9); margin-top: -44px;">
-                <button type="button" class="d-none btn btn-light fw-bold py-3 rounded-4 wizard-btn-next" id="btnWizardPrev" style="background: #e9ecef;">
-                    Voltar
-                </button>
-                <button type="button" class="btn fw-bold py-3 text-white btn-proximo rounded-4 wizard-btn-next" id="btnWizardNext" style="background:#3c1e0a;">
-                    Avançar
-                </button>
+            
+                <div class="d-flex gap-2 flex-column-reverse flex-lg-row justify-content-end" style=" margin-top: 20px;">
+                    <button type="button" class="d-none btn btn-light fw-bold py-3 rounded-4 wizard-btn-next" id="btnWizardPrev" style="background: #e9ecef;">
+                        Voltar
+                    </button>
+                    <button type="button" class="btn fw-bold py-3 text-white btn-proximo rounded-4 wizard-btn-next" id="btnWizardNext" style="background:#3c1e0a;">
+                        Avançar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
