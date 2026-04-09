@@ -323,12 +323,20 @@
     </div>
 </div>
 
+<style>
+    @@media (max-width: 1199px) {
+        #modalDetalhesPedidoBody {
+            max-height: 88vh;
+            overflow-y: auto;
+        }
+    }
+</style>
 <div class="modal fade" id="modalDetalhesPedido" tabindex="-1" aria-labelledby="modalDetalhesPedidoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center mb-4">
+            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center mb-2">
                 <div style="line-height: 4px;">
-                    <h5 class="modal-title fw-bold mb-0" style="color:#3c1e0a;">Detalhes do Pedido</h5>
+                    <h5 class="modal-title fw-bold mb-0" style="color:#3c1e0a;" id="pedidoTitulo">Detalhes do Pedido</h5>
                 </div>
                 <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
                     <i class="fa-solid fa-xmark"></i>
@@ -656,6 +664,8 @@
         $(document).on('click', '.btn-ver-detalhes', function () {
             const btn = $(this);
             const codigo = btn.data('codigo');
+            const modalEl = $('#modalDetalhesPedido'); // O modal em questão
+            const modalBody = modalEl.find('.modal-body');
 
             btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i>');
 
@@ -665,15 +675,39 @@
                 data: { codigo: codigo },
                 success: async function (html) {
                     try {
+                        // Fechar qualquer conexão anterior
                         await encerrarConexaoDetalhes();
 
+                        // Inserir o HTML carregado no modal
                         modalBody.html(html);
 
+                        // Atualizar o título dinamicamente
+                        const pedidoId = $('#modalDetalhesPedidoBody').find('#codigoPedido').val();  // Exemplo, verifique se o valor está sendo retornado corretamente
+                        const statusPedido = $('#modalDetalhesPedidoBody').find('#statusPedido').val();  // Exemplo, ajuste conforme necessário
+
+                        let titulo = 'Detalhes do Pedido #' + pedidoId;
+
+                        // Adicionar lógica para alterar o título conforme o status
+                        if (statusPedido === "AguardandoPagamento") {
+                            titulo = 'Pedido #' + pedidoId ;
+                        } else if (statusPedido === "EmPreparo") {
+                            titulo = 'Pedido #' + pedidoId ;
+                        } else if (statusPedido === "Pronto") {
+                            titulo = 'Pedido #' + pedidoId ;
+                        } else if (statusPedido === "Concluido") {
+                            titulo = 'Pedido #' + pedidoId ;
+                        } else {
+                            titulo = 'Pedido #' + pedidoId;  // Default caso não haja status específico
+                        }
+
+                        // Preencher o título no modal
+                        $('#pedidoTitulo').text(titulo);
+
+                        // Inicializar o modal
                         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                         modal.show();
 
                         const gatewayPaymentId = $('#modalDetalhesPedidoBody').find('#gatewayPaymentId').val();
-
                         console.log("[Modal][Detalhes] GatewayPaymentId encontrado no HTML:", { gatewayPaymentId });
 
                         if (gatewayPaymentId) {
@@ -681,25 +715,25 @@
                         } else {
                             console.warn("[Modal][Detalhes] GatewayPaymentId não encontrado. Modal aberto sem conexão em tempo real.");
                         }
-                    } catch (error) {
-                        console.error("[Modal][Detalhes] Erro ao abrir detalhes com conexão:", error);
-                    }
-                },
-                error: function () {
-                    modalBody.html(`
-                        <div class="p-4 text-center text-danger">
-                            Ocorreu um erro ao carregar os detalhes do pedido.
-                        </div>
-                    `);
-
-                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    modal.show();
-                },
-                complete: function () {
-                    btn.prop('disabled', false).html('<i class="fa-solid fa-receipt fa-sm me-1"></i>Detalhes');
+                } catch (error) {
+                    console.error("[Modal][Detalhes] Erro ao abrir detalhes com conexão:", error);
                 }
-            });
+            },
+            error: function () {
+                modalBody.html(`
+                    <div class="p-4 text-center text-danger">
+                        Ocorreu um erro ao carregar os detalhes do pedido.
+                    </div>
+                `);
+
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            },
+            complete: function () {
+                btn.prop('disabled', false).html('<i class="fa-solid fa-receipt fa-sm me-1"></i>Detalhes');
+            }
         });
+    });
 
         $(document).on("click", "#btnJaPaguei", function () {
             const $btn = $(this);
