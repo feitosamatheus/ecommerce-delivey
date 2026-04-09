@@ -24,10 +24,32 @@ public class CarrinhoMobileViewComponent : ViewComponent
             Entrega = 0
         };
 
+        //foreach (var item in carrinho.Itens)
+        //{
+        //    var acompanhamentos = item.Acompanhamentos ?? new List<CarrinhoItemAcompanhamento>();
+
+        //    var precoAcompanhamentos = acompanhamentos.Sum(a => a.PrecoSnapshot);
+
+        //    vm.Itens.Add(new CarrinhoItemViewModel
+        //    {
+        //        ItemId = item.Id,
+        //        Nome = item.ProdutoNomeSnapshot,
+        //        Quantidade = item.Quantidade,
+        //        Observacao = item.Observacao,
+        //        PrecoUnitario = item.PrecoBaseSnapshot + precoAcompanhamentos,
+        //        Total = (item.PrecoBaseSnapshot + precoAcompanhamentos) * item.Quantidade,
+
+        //        Acompanhamentos = acompanhamentos.Select(a => new CarrinhoItemAcompanhamentoViewModel
+        //        {
+        //            Nome = a.NomeSnapshot,
+        //            Preco = a.PrecoSnapshot
+        //        }).ToList()
+        //    });
+        //}
+
         foreach (var item in carrinho.Itens)
         {
             var acompanhamentos = item.Acompanhamentos ?? new List<CarrinhoItemAcompanhamento>();
-
             var precoAcompanhamentos = acompanhamentos.Sum(a => a.PrecoSnapshot);
 
             vm.Itens.Add(new CarrinhoItemViewModel
@@ -36,7 +58,11 @@ public class CarrinhoMobileViewComponent : ViewComponent
                 Nome = item.ProdutoNomeSnapshot,
                 Quantidade = item.Quantidade,
                 Observacao = item.Observacao,
-                PrecoUnitario = item.PrecoBaseSnapshot + precoAcompanhamentos,
+
+                // Ajuste aqui: PrecoUnitario recebe APENAS o base
+                PrecoUnitario = item.PrecoBaseSnapshot,
+
+                // O Total do item continua sendo (Base + Acc) * Quantidade
                 Total = (item.PrecoBaseSnapshot + precoAcompanhamentos) * item.Quantidade,
 
                 Acompanhamentos = acompanhamentos.Select(a => new CarrinhoItemAcompanhamentoViewModel

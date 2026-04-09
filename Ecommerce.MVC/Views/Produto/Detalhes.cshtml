@@ -33,7 +33,7 @@
     }
 
     /* Tipografia e Estilo */
-    .product-info-column { padding-right: 1.5rem; }
+    /* .product-info-column { padding-right: 1.5rem; } */
     .product-name-v5 {
         font-size: 1.6rem;
         font-weight: 800;
@@ -149,86 +149,86 @@
     }
 
     /* Container Principal */
-.quantity-selector-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #f8f9fa;
-    padding: 8px 12px;
-    border-radius: 12px;
-    border: 1px solid #e9ecef;
-    margin-bottom: 1.5rem;
-}
-
-.quantity-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #6c757d;
-}
-
-.quantity-controls {
-    display: flex;
-    align-items: center;
-    background: white;
-    border-radius: 8px;
-    padding: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-}
-
-/* Botões - e + */
-.qty-btn {
-    width: 36px;
-    height: 36px;
-    border: none;
-    background: transparent;
-    color: #3c1e0a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.qty-btn:hover {
-    background-color: #fceee9; /* Cor leve baseada no seu tema */
-    color: #3c1e0a;
-}
-
-.qty-btn i {
-    font-size: 0.8rem;
-}
-
-/* Input de número */
-.qty-input {
-    width: 45px;
-    border: none;
-    text-align: center;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #3c1e0a;
-    background: transparent;
-    outline: none;
-    -moz-appearance: textfield; /* Remove setas no Firefox */
-}
-
-/* Remove setas no Chrome/Safari */
-.qty-input::-webkit-outer-spin-button,
-.qty-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.container-detalhes-produto {
-    width: 100%;
-}
-
-/* Regra para telas de 1200px ou mais */
-@@media (min-width: 1200px) {
-    .container-detalhes-produto {
-        width: 50% !important;
+    .quantity-selector-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
     }
-}
+
+    .quantity-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        background: white;
+        border-radius: 8px;
+        padding: 2px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+
+    /* Botões - e + */
+    .qty-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        color: #3c1e0a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .qty-btn:hover {
+        background-color: #fceee9; /* Cor leve baseada no seu tema */
+        color: #3c1e0a;
+    }
+
+    .qty-btn i {
+        font-size: 0.8rem;
+    }
+
+    /* Input de número */
+    .qty-input {
+        width: 45px;
+        border: none;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #3c1e0a;
+        background: transparent;
+        outline: none;
+        -moz-appearance: textfield; /* Remove setas no Firefox */
+    }
+
+    /* Remove setas no Chrome/Safari */
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .container-detalhes-produto {
+        width: 100%;
+    }
+
+    /* Regra para telas de 1200px ou mais */
+    @@media (min-width: 1200px) {
+        .container-detalhes-produto {
+            width: 50% !important;
+        }
+    }
 </style>
 
 <div class="container-fluid mt-3 px-lg-0">
@@ -239,34 +239,54 @@
         <input type="hidden" id="modalPrecoBase" value="@precoBase.ToString(CultureInfo.InvariantCulture)" />
 
         <div class="d-flex justify-content-center">
-            <div class="container-detalhes-produto mx-auto">
+           <div class="container-detalhes-produto mx-auto">
                 <div class="d-flex justify-content-start align-items-center mb-4 mt-2 ms-lg-0 pt-lg-3">
-                    <a href="javascript:history.back()" class="btn-back-premium">
+                    <a href="/" class="btn-back-premium btn-voltar-dinamico">
                         <i class="fas fa-chevron-left"></i> 
                         <span>Voltar</span>
                     </a>
                 </div>
+               @*  <div style="line-height: 4px;">
+                    <h5 class="modal-title fw-bold mb-0" style="color:#3c1e0a;">Adicionar ao pedido</h5>
+                    <small class="text-muted">Escolha os complementos ideais</small>
+                </div> *@
+
                 <div class="col-xl-12">
                     <div class="img-container-premium shadow-sm mb-4 d-flex justify-content-center">
-                        <img src="/img/produtos/653760c0-6129-4f93-876f-ec50fe7fd26f.png" class="img-fluid w-100 img-zoom-depth" style="height: 300px; object-fit: cover;" alt="Quiche">
+                        <img src="@imagem" 
+                             class="img-fluid w-100 img-zoom-depth" 
+                             style="height: 300px; object-fit: cover;" 
+                             alt="@Model.Nome">
                     </div>
                 </div>
 
                 <div class="col-xl-12">
-                    <h3 class="product-name-v5">Quiche</h3>
-                    <p class="product-desc-v5">Clássica e versátil, a quiche é feita com recheio cremoso à base de ovos e creme, combinando perfeitamente com diferentes sabores como queijo, alho-poró, lorraine ou ervas.</p>
+                    <h3 class="product-name-v5">@Model.Nome</h3>
+        
+                    @if (!string.IsNullOrWhiteSpace(Model.Descricao))
+                    {
+                        <p class="product-desc-v5">@Model.Descricao</p>
+                    }
 
                     <div class="price-wrapper-v6 mb-1">
                         <div class="price-v6">
                             <span class="currency">R$</span>
-                            <span class="amount">220</span>
-                            <span class="decimals">,00</span>
+                            @* Exibe a parte inteira e decimal separadas conforme sua lógica inicial *@
+                            <span class="amount">@partesPreco[0]</span>
+                            <span class="decimals">,@partesPreco[1]</span>
                         </div>
                         <div class="price-info-tag">
                             <span class="label">Preço</span>
                             <span class="badge-unit">Unitário</span>
                         </div>
                     </div>
+        
+                    @if (Model.TempoPreparoMinutos > 0)
+                    {
+                        <div class="text-muted small mt-2">
+                            <i class="far fa-clock me-1"></i> Pronto em aprox. @Model.TempoPreparoMinutos min
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -365,7 +385,7 @@
                             Adicionar ao carrinho • <span id="valorTotalProduto">@precoBase.ToString("C", pt)</span>
                         </button>
 
-                        <a href="javascript:history.back()" class="btn btn-light fw-bold py-3 border" style="border-radius: 12px; color: #3c1e0a; background-color: #f8f9fa;">
+                        <a href="/" class="btn btn-light fw-bold py-3 border btn-voltar-dinamico" style="border-radius: 12px; color: #3c1e0a; background-color: #f8f9fa;">
                             <i class="fas fa-chevron-left me-2"></i> 
                             <span>Voltar para o cardápio</span>
                         </a>
@@ -398,6 +418,23 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const botoesVoltar = document.querySelectorAll('.btn-voltar-dinamico');
+    
+        botoesVoltar.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault(); 
+            
+                const referrer = document.referrer;
+                const hostname = window.location.hostname;
+
+                if (referrer && referrer.includes(hostname)) {
+                    window.history.back();
+                } else {
+                    window.location.href = '/';
+                }
+            });
+        });
+
         const precoBase = parseFloat("@Model.Preco.ToString(CultureInfo.InvariantCulture)");
         const inputQtd = document.getElementById('quantidadeProduto');
         const btnAumentar = document.getElementById('btnAumentarQtd');

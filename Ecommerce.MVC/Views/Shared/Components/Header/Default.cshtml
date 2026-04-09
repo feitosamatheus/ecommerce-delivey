@@ -167,7 +167,7 @@
                 {
                     <button type="button"
                             class="btn btn-light d-none d-md-flex align-items-center fw-bold shadow-sm btn-lift"
-                            id="btn-abrir-login"
+                            id="btn-abrir-login-desktop"
                             style="color: #4b2c20; border-radius: 50px; padding: 6px 18px; white-space: nowrap; font-size: 0.9rem;"
                             title="Entrar">
 
@@ -355,7 +355,7 @@
                 {
                     <button type="button"
                             class="btn btn-light d-md-flex align-items-center fw-bold shadow-sm btn-lift"
-                            id="btn-abrir-login"
+                            id="btn-abrir-login-mobile"
                             style="color: #4b2c20; border-radius: 50px; padding: 3px 17px; border: 1px solid #eee;"
                             title="Entrar">
 
@@ -413,7 +413,9 @@
             }
         };
         
-        $(document).on('click', '#btn-abrir-login', abrirModalConta);
+        $(document).on('click', '#btn-abrir-login-mobile', abrirModalConta);
+
+        $(document).on('click', '#btn-abrir-login-desktop', abrirModalConta);
 
         $(document).on('click', '#btn-meus-pedidos', abrirModalConta);
 

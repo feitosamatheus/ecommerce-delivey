@@ -37,15 +37,15 @@
         border-top: 2px solid #f0f0f0;
     }
 
-    .cart-mobile .btn-checkout {
-        border-radius: 50px;
+    .btn-checkout-mobile {
+        border-radius: 6px;
         padding: 12px;
-        background: #D98C1A;
+        background: #B26528;
         transition: 0.3s;
     }
 
-        .cart-mobile .btn-checkout:hover {
-            background: #d39130;
+        .btn-checkout-mobile:hover {
+            background: #8E4F1E;
             color: #fff;
         }
 
@@ -90,7 +90,7 @@
         gap: 8px;
         padding: 6px 10px;
         border: 1px solid #ececec;
-        border-radius: 12px;
+        border-radius: 6px;
         background: #fafafa;
     }
 
@@ -142,7 +142,7 @@
         border: 1px solid #f3d1d1;
         background: #fff5f5;
         color: #c0392b;
-        border-radius: 12px;
+        border-radius: 6px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -168,15 +168,22 @@
     }
 </style>
 
-<div class="modal-header border-0 d-flex align-items-center justify-content-between">
-    <div class="text-start d-flex align-items-start">
-        <h5 class="modal-title fw-bolder mb-0" style="color: #3c1e0a; font-weight: bold !important; font-size: 1rem; margin-bottom: 0.5rem !important;">
+
+<div class="modal-header pb-3 d-flex justify-content-between align-items-center mb-1" style="border-bottom: 1px solid #f0f0f0;">
+    @* <div style="line-height: 4px;">
+        <h5 class="modal-title fw-bold mb-0" style="color:#3c1e0a;">Adicionar ao pedido</h5>
+        <small class="text-muted">Escolha os complementos ideais</small>
+    </div> *@
+    <div class="text-start d-flex align-items-center">
+        <h5 class="modal-title fw-bolder mb-0">
             <i class="fa-solid fa-bag-shopping me-2" style="color: #edcd9a;"></i>
             <span style="color: #4A2A15;">Meu Carrinho</span>
-            <span class="badge bg-light text-dark rounded-pill">@Model.Itens.Count</span>
+            <span class="badge bg-light text-dark rounded-pill" style="position: relative; top: -1px;">@Model.Itens.Count</span>
         </h5>
     </div>
-    <button type="button" class="btn-close-custom" title="Fechar" data-bs-dismiss="modal" aria-label="Fechar" style="position: static; font-size: 1.5rem;">&times;</button>
+    <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
 </div>
 
 <div class="modal-body p-0">
@@ -184,11 +191,11 @@
     <div class="cart-mobile">
 
         <div class="col-12">
-            <div class="bc-cart-container p-4 pt-3">
+            <div class="bc-cart-container px-3 pb-4 pt-3">
 
                 @if (Model.EstaVazio)
                 {
-                    <div class="bc-cart__items-wrapper d-flex flex-column align-items-center justify-content-center">
+                    <div class="bc-cart__items-wrapper d-flex flex-column align-items-center justify-content-center py-5">
                         <i class="fa-solid fa-cart-plus mb-3 opacity-25" style="font-size: 3rem;"></i>
                         <div class="text-muted fw-medium">Seu carrinho está vazio</div>
                     </div>
@@ -198,7 +205,9 @@
                     <div class="bc-cart__items-wrapper mb-4">
                         @foreach (var item in Model.Itens)
                         {
-                            <div class="bc-cart__item">
+                            @* <div class="bc-cart__item mb-2" style="    background: #fbfbfb;
+                                padding: 10px;
+                                border-radius: 9px; border:none;">
                                 <div class="d-flex justify-content-between align-items-start gap-2">
                                     <div class="pe-2 flex-grow-1">
                                         <div class="fw-bold bc-cart__item-name">@item.Nome</div>
@@ -246,6 +255,70 @@
                                         <span>@item.Observacao</span>
                                     </div>
                                 }
+                            </div> *@
+
+                            <div class="bc-cart__item mb-2" style="background: #fbfbfb; padding: 12px; border-radius: 9px; border: none;">
+    
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                    <div class="fw-bold bc-cart__item-name text-truncate" style="max-width: 70%;">
+                                        @item.Nome
+                                    </div>
+                                    <div class="small text-muted fw-medium">
+                                        @item.PrecoUnitario.ToString("C", new CultureInfo("pt-BR"))
+                                    </div>
+                                </div>
+
+                                @if (item.Acompanhamentos.Any())
+                                {
+                                    <ul class="list-unstyled bc-cart__acc-list my-2" style="background: #f1f1f1; border-radius: 6px; padding: 8px;">
+                                        @foreach (var a in item.Acompanhamentos)
+                                        {
+                                            <li class="bc-cart__acc-item d-flex justify-content-between small text-muted">
+                                                <span><i class="fa-solid fa-plus small me-1 opacity-50"></i>@a.Nome</span>
+                                                <span>@a.Preco.ToString("C", new CultureInfo("pt-BR"))</span>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(item.Observacao))
+                                {
+                                    <div class="small text-muted mt-1 mb-2 italic">
+                                        <i class="fa-regular fa-comment-dots me-1 opacity-75"></i>
+                                        <span>@item.Observacao</span>
+                                    </div>
+                                }
+
+                                <hr class="my-2" style="opacity: 0.1;">
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center" style="background: #fff; border-radius: 8px; border: 1px solid #ececec; overflow: hidden;">
+                                            <button type="button" class="btn btn-sm px-2 js-minus-qty" style="color: #D98C1A; border: none;">
+                                                <i class="fa-solid fa-minus" style="font-size: 0.75rem;"></i>
+                                            </button>
+                
+                                            <input type="number" value="@item.Quantidade" class="js-qtd-carrinho-mobile" data-item-id="@item.ItemId" readonly
+                                                   style="width: 30px; border: none; text-align: center; font-weight: bold; font-size: 0.85rem; background: transparent;" />
+
+                                            <button type="button" class="btn btn-sm px-2 js-plus-qty" style="color: #D98C1A; border: none;">
+                                                <i class="fa-solid fa-plus" style="font-size: 0.75rem;"></i>
+                                            </button>
+                                        </div>
+
+                                        <button type="button" class="bc-cart__remove-btn js-remover-item-carrinho-mobile" data-item-id="@item.ItemId"
+                                                style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #fff5f5; color: #c0392b;">
+                                            <i class="fa-solid fa-trash-can" style="font-size: 0.8rem;"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="text-end">
+                                        <span class="small text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Total</span>
+                                        <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                            @item.Total.ToString("C", new CultureInfo("pt-BR"))
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         }
                     </div>
@@ -266,19 +339,30 @@
                 {
                     if (User.Identity.IsAuthenticated)
                     {
-                        <button class="btn w-100 btn-checkout shadow-sm js-confirmar-add-produto-mobile" style="background: #D98C1A; color: rgb(255, 255, 255); font-weight: 700;"
+                        <button class="btn w-100 btn-checkout-mobile shadow-sm js-confirmar-add-produto-mobile mb-2" style="background: #B26528; color: rgb(255, 255, 255); font-weight: 700;"
                                 @(Model.EstaVazio ? "disabled" : "")
                                 data-carrinho-id="@Model.CarrinhoId">
                             FINALIZAR PEDIDO
                         </button>
+                        <button type="button" class="btn btn-light w-100 fw-bold" style="color: #3c1e0a; background-color: #f8f9fa; padding:12px; font-weight: 700;"
+                                data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>
+                            <span>Fechar</span>
+                        </button>
+ 
 
                     }
                     else
                     {
                         <button type="button"
-                                class="btn w-100 d-flex align-items-center justify-content-center fw-bold btn-login-cart btn-checkout js-login-carrinho-mobile">
+                                class="btn w-100 d-flex align-items-center justify-content-center mb-2 fw-bold btn-login-cart btn-checkout-mobile js-login-carrinho-mobile">
                             <i class="fa-solid fa-circle-user fs-5 me-2"></i>
                             ENTRAR PARA FINALIZAR
+                        </button>
+                        <button type="button" class="btn btn-light w-100 fw-bold" style="color: #3c1e0a; background-color: #f8f9fa; padding:12px; font-weight: 700;"
+                                data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>
+                            <span>Fechar</span>
                         </button>
                     }
                 }
@@ -292,97 +376,25 @@
 
 
 <script>
-    $(document).on('click', '.js-confirmar-add-produto-mobile', function () {
-        $.ajax({
-            url: '/Pedido/BuscarModalFinalizarPedido',
-            method: 'GET',
-            beforeSend: function () {
-                addLoading("Carregando...");
-            },
-            success: function (html) {
-                const $conteudo = $('#conteudo-dinamico');
-                $conteudo.empty().html(html);
+    // 1. EVENTO UNIFICADO PARA BOTÕES DE + E - (Desktop e Mobile)
+    $(document).on('click', '.js-plus-qty, .js-minus-qty', function () {
+        const $btn = $(this);
+        // Busca o input que seja "irmão" do botão
+        const $input = $btn.siblings('.js-qtd-carrinho-mobile');
+        const isPlus = $btn.hasClass('js-plus-qty');
+        const qtdAtual = parseInt($input.val()) || 1;
 
-                const el = document.getElementById('modalFinalizarPedido');
-                const modal = bootstrap.Modal.getOrCreateInstance(el);
+        // Captura o valor original antes da mudança
+        $input.trigger('focus');
 
-                modal.show();
+        let novaQtd = isPlus ? qtdAtual + 1 : qtdAtual - 1;
+        if (novaQtd < 1) novaQtd = 1;
 
-                if (window.wizardInitFinalizarPedido) {
-                    window.wizardInitFinalizarPedido();
-                }
-            },
-
-            error: function (xhr) {
-                alert(xhr.responseText || 'Erro ao carregar o modal.');
-            },
-
-            complete: function () {
-                removeLoading();
-            }
-        });
+        // Atualiza o valor e dispara o AJAX via blur
+        $input.val(novaQtd).trigger('blur');
     });
 
-    $(document).on('click', '.js-login-carrinho-mobile', function () {
-        const modalCarrinhoEl = document.getElementById('modalCarrinhoMobile');
-
-        function carregarEExibirLogin() {
-            $.ajax({
-                url: '/Cliente/BuscarModalAutenticacaoCliente',
-                method: 'GET',
-                cache: false,
-                beforeSend: function () {
-                    addLoading("Carregando...");
-                },
-                success: function (html) {
-                    $('#conteudo-dinamico').empty();
-                    $('#conteudo-dinamico').html(html);
-
-                    const modalLoginEl    = document.getElementById('modal-cliente-auth');
-                    const modalLogin = bootstrap.Modal.getOrCreateInstance(modalLoginEl);
-                    modalLogin.show();
-                },
-                error: function () {
-                    $body.html('<div class="text-danger p-3">Não foi possível carregar seus dados agora.</div>');
-                },
-                complete: function () {
-                    removeLoading();
-                }
-            });
-        }
-
-        const modalCarrinho = modalCarrinhoEl ? bootstrap.Modal.getInstance(modalCarrinhoEl) : null;
-
-        if (modalCarrinho && modalCarrinhoEl.classList.contains('show')) {
-            modalCarrinhoEl.addEventListener('hidden.bs.modal', carregarEExibirLogin, { once: true });
-            modalCarrinho.hide();
-        } else {
-            carregarEExibirLogin();
-        }
-    });
-
-    let resizeTimeout = null;
-
-    $(window).on('resize', function () {
-        clearTimeout(resizeTimeout);
-
-        resizeTimeout = setTimeout(() => {
-            fecharCarrinhoSeDesktop();
-        }, 150); // debounce leve
-    });
-
-    function fecharCarrinhoSeDesktop() {
-        if (window.innerWidth >= 1200) {
-            const modalEl = document.getElementById('modalCarrinhoMobile');
-            if (!modalEl) return;
-
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-        }
-    }
-
+    // 2. ATUALIZAÇÃO DE QUANTIDADE (AJAX UNIFICADO)
     $(document).on('focus', '.js-qtd-carrinho-mobile', function () {
         $(this).data('valor-original', $(this).val());
     });
@@ -398,66 +410,117 @@
             input.val(1);
         }
 
-        if (String(valorOriginal) === String(quantidade)) {
-            return;
-        }
+        // Evita chamadas desnecessárias se o valor não mudou
+        if (String(valorOriginal) === String(quantidade)) return;
 
-        //addLoading("Atualizando carrinho...");
+        addLoading("Atualizando...");
 
         $.ajax({
             url: '/Carrinho/AtualizarQuantidade',
             type: 'POST',
-            data: {
-                itemId: itemId,
-                quantidade: quantidade
-            },
+            data: { itemId: itemId, quantidade: quantidade },
             success: function (response) {
                 if (response.sucesso) {
                     recarregarCarrinhoEFooter();
-                    removeLoading();
                 } else {
-                    alert(response.mensagem || 'Não foi possível atualizar a quantidade.');
+                    alert(response.mensagem || 'Erro ao atualizar.');
+                    input.val(valorOriginal);
                 }
             },
-            error: function (xhr) {
-                alert(xhr.responseText || 'Erro ao atualizar quantidade.');
-            },
-            complete: function () {
+            error: function () {
+                alert('Erro ao atualizar quantidade.');
+                input.val(valorOriginal);
                 removeLoading();
             }
         });
     });
 
-    $(document).on('click', '.js-remover-item-carrinho-mobile', function () {
+    // 3. REMOVER ITEM (UNIFICADO)
+    $(document).on('click', '.js-remover-item-carrinho-mobile, .js-remover-item-carrinho', function () {
         const botao = $(this);
         const itemId = botao.data('item-id');
 
-        if (!confirm('Deseja remover este item do carrinho?')) {
-            return;
-        }
+        // 1. Exibe o confirm nativo do navegador
+        if (confirm('Deseja remover este item do carrinho?')) {
+        
+            addLoading("Removendo...");
 
-        addLoading("Removendo item...");
-
-        $.ajax({
-            url: '/Carrinho/RemoverItem',
-            type: 'POST',
-            data: {
-                itemId: itemId
-            },
-            success: function (response) {
-                if (response.sucesso) {
-                    //location.reload();
-                     recarregarCarrinhoEFooter();
-                } else {
-                    alert(response.mensagem || 'Não foi possível remover o item.');
+            $.ajax({
+                url: '/Carrinho/RemoverItem',
+                type: 'POST',
+                data: { itemId: itemId },
+                success: function (response) {
+                    if (response.sucesso) {
+                        recarregarCarrinhoEFooter();
+                    } else {
+                        // 2. Exibe o alert nativo em caso de erro retornado pelo servidor
+                        alert(response.mensagem || 'Não foi possível remover o item.');
+                    }
+                },
+                error: function () {
+                    // 3. Exibe o alert nativo em caso de falha na requisição
+                    alert('Erro ao processar a remoção do item.');
+                },
+                complete: function () {
+                    removeLoading();
                 }
+            });
+        }
+    });
+
+    // 4. MODAIS E UTILITÁRIOS (FINALIZAR PEDIDO / LOGIN)
+    $(document).on('click', '.js-confirmar-add-produto-mobile', function () {
+        addLoading("Carregando...");
+        $.ajax({
+            url: '/Pedido/BuscarModalFinalizarPedido',
+            method: 'GET',
+            success: function (html) {
+                $('#conteudo-dinamico').empty().html(html);
+                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFinalizarPedido'));
+                modal.show();
+                if (window.wizardInitFinalizarPedido) window.wizardInitFinalizarPedido();
             },
-            error: function (xhr) {
-                alert(xhr.responseText || 'Erro ao remover item.');
-            },
-            complete: function () {
-                removeLoading();
-            }
+            complete: function () { removeLoading(); }
         });
+    });
+
+    $(document).on('click', '.js-login-carrinho-mobile', function () {
+        const carregarLogin = () => {
+            addLoading("Carregando...");
+            $.ajax({
+                url: '/Cliente/BuscarModalAutenticacaoCliente',
+                method: 'GET',
+                success: function (html) {
+                    $('#conteudo-dinamico').empty().html(html);
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-cliente-auth')).show();
+                },
+                complete: function () { removeLoading(); }
+            });
+        };
+
+        const modalCarrinhoEl = document.getElementById('modalCarrinhoMobile');
+        const modalCarrinho = modalCarrinhoEl ? bootstrap.Modal.getInstance(modalCarrinhoEl) : null;
+
+        if (modalCarrinho && modalCarrinhoEl.classList.contains('show')) {
+            modalCarrinhoEl.addEventListener('hidden.bs.modal', carregarLogin, { once: true });
+            modalCarrinho.hide();
+        } else {
+            carregarLogin();
+        }
+    });
+
+    // 5. RESIZE
+    let resizeTimeout;
+    $(window).on('resize', function () {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (window.innerWidth >= 1200) {
+                const modalEl = document.getElementById('modalCarrinhoMobile');
+                if (modalEl) {
+                    const inst = bootstrap.Modal.getInstance(modalEl);
+                    if (inst) inst.hide();
+                }
+            }
+        }, 150);
     });
 </script>

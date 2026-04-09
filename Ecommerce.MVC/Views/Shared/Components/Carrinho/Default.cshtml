@@ -105,7 +105,8 @@
         letter-spacing: 0.5px;
         transition: all 0.3s ease;
         /*background: #edcd9a;*/
-        background-color:  #D98C1A;;
+        background-color:  #D98C1A;
+
     }
 
     .btn-checkout:hover {
@@ -197,7 +198,7 @@
 </style>
 
 <div class="col-12">
-    <div class="bc-panel p-4 bc-cart-container bc-cart--sticky">
+    <div class="bc-panel p-4 px-3 bc-cart-container bc-cart--sticky">
         <div class="bc-cart__header d-flex align-items-center justify-content-between mb-3">
             <h5 class="mb-0">
                 <i class="fa-solid fa-bag-shopping me-2" style="color: #edcd9a;"></i>
@@ -208,7 +209,7 @@
 
         @if (Model.EstaVazio)
         {
-            <div class="bc-cart__items-wrapper d-flex flex-column align-items-center justify-content-center">
+            <div class="bc-cart__items-wrapper d-flex flex-column align-items-center justify-content-center py-5">
                 <i class="fa-solid fa-cart-plus mb-3 opacity-25" style="font-size: 3rem;"></i>
                 <div class="text-muted fw-medium">Seu carrinho está vazio</div>
             </div>
@@ -218,7 +219,10 @@
             <div class="bc-cart__items-wrapper mb-4">
                 @foreach (CarrinhoItemViewModel item in Model.Itens)
                 {
-                    <div class="bc-cart__item">
+                    @* <div class="bc-cart__item mb-2" style="background: #fbfbfb;
+                        padding: 10px;
+                        border-radius: 9px;
+                        border: none;">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="pe-2">
                                 <div class="fw-bold bc-cart__item-name">@item.Nome</div>
@@ -268,6 +272,70 @@
                                 <span>@item.Observacao</span>
                             </div>
                         }
+                    </div> *@
+
+                    <div class="bc-cart__item mb-2" style="background: #fbfbfb; padding: 12px; border-radius: 9px; border: none;">
+    
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                            <div class="fw-bold bc-cart__item-name text-truncate" style="max-width: 70%;">
+                                @item.Nome
+                            </div>
+                            <div class="small text-muted fw-medium">
+                                @item.PrecoUnitario.ToString("C", new CultureInfo("pt-BR"))
+                            </div>
+                        </div>
+
+                        @if (item.Acompanhamentos.Any())
+                        {
+                            <ul class="list-unstyled bc-cart__acc-list my-2" style="background: #f1f1f1; border-radius: 6px; padding: 8px;">
+                                @foreach (var a in item.Acompanhamentos)
+                                {
+                                    <li class="bc-cart__acc-item d-flex justify-content-between small text-muted">
+                                        <span><i class="fa-solid fa-plus small me-1 opacity-50"></i>@a.Nome</span>
+                                        <span>@a.Preco.ToString("C", new CultureInfo("pt-BR"))</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(item.Observacao))
+                        {
+                            <div class="small text-muted mt-1 mb-2 italic">
+                                <i class="fa-regular fa-comment-dots me-1 opacity-75"></i>
+                                <span>@item.Observacao</span>
+                            </div>
+                        }
+
+                        <hr class="my-2" style="opacity: 0.1;">
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="d-flex align-items-center" style="background: #fff; border-radius: 8px; border: 1px solid #ececec; overflow: hidden;">
+                                    <button type="button" class="btn btn-sm px-2 js-minus-qty-desktop" style="color: #D98C1A; border: none;">
+                                        <i class="fa-solid fa-minus" style="font-size: 0.75rem;"></i>
+                                    </button>
+                
+                                    <input type="number" value="@item.Quantidade" class="js-qtd-carrinho" data-item-id="@item.ItemId" readonly
+                                           style="width: 30px; border: none; text-align: center; font-weight: bold; font-size: 0.85rem; background: transparent;" />
+
+                                    <button type="button" class="btn btn-sm px-2 js-plus-qty-desktop" style="color: #D98C1A; border: none;">
+                                        <i class="fa-solid fa-plus" style="font-size: 0.75rem;"></i>
+                                    </button>
+                                </div>
+
+                                <button type="button" class="bc-cart__remove-btn js-remover-item-carrinho" data-item-id="@item.ItemId"
+                                        style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #fff5f5; color: #c0392b;">
+                                    <i class="fa-solid fa-trash-can" style="font-size: 0.8rem;"></i>
+                                </button>
+                            </div>
+
+                            <div class="text-end">
+                                <span class="small text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Total</span>
+                                <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                    @item.Total.ToString("C", new CultureInfo("pt-BR"))
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 }
             </div>
@@ -311,114 +379,130 @@
 
 <script>
 
-    $(document).on('click', '#btnConfirmarAddProduto', function () {
-        addLoading("Carregando...");
+     // 1. EVENTO UNIFICADO PARA BOTÕES DE + E - (Desktop e Mobile)
+     $(document).on('click', '.js-plus-qty-desktop, .js-minus-qty-desktop', function () {
+         const $btn = $(this);
+         // Busca o input que seja "irmão" do botão
+         const $input = $btn.siblings('.js-qtd-carrinho');
+         const isPlus = $btn.hasClass('js-plus-qty-desktop');
+         const qtdAtual = parseInt($input.val()) || 1;
 
-        $.ajax({
-            url: '/Pedido/BuscarModalFinalizarPedido',
-            method: 'GET',
-            success: function (html) {
-                $('#conteudo-dinamico').empty();
-                $('#conteudo-dinamico').html(html);
+         // Captura o valor original antes da mudança
+         $input.trigger('focus');
 
-                const el = document.getElementById('modalFinalizarPedido');
-                const modal = bootstrap.Modal.getOrCreateInstance(el);
+         let novaQtd = isPlus ? qtdAtual + 1 : qtdAtual - 1;
+         if (novaQtd < 1) novaQtd = 1;
 
-                modal.show();
+         // Atualiza o valor e dispara o AJAX via blur
+         $input.val(novaQtd).trigger('blur');
+     });
 
-                if (window.wizardInitFinalizarPedido)
-                    window.wizardInitFinalizarPedido();
-                removeLoading();
-            },
-            error: function (xhr) {
-                alert(xhr.responseText || 'Erro ao carregar o modal.');
-                removeLoading();
-            }
-        });
-    });
+     // 2. ATUALIZAÇÃO DE QUANTIDADE (AJAX UNIFICADO)
+     $(document).on('focus', '.js-qtd-carrinho', function () {
+         $(this).data('valor-original', $(this).val());
+     });
 
-    $(document).on('focus', '.js-qtd-carrinho', function () {
-        $(this).data('valor-original', $(this).val());
-    });
+     $(document).on('blur', '.js-qtd-carrinho', function () {
+         const input = $(this);
+         const valorOriginal = input.data('valor-original');
+         let quantidade = parseInt(input.val());
+         const itemId = input.data('item-id');
 
-    $(document).on('blur', '.js-qtd-carrinho', function () {
-        const input = $(this);
-        const valorOriginal = input.data('valor-original');
-        let quantidade = parseInt(input.val());
-        const itemId = input.data('item-id');
+         if (!quantidade || quantidade < 1) {
+             quantidade = 1;
+             input.val(1);
+         }
 
-        if (!quantidade || quantidade < 1) {
-            quantidade = 1;
-            input.val(1);
-        }
+         // Evita chamadas desnecessárias se o valor não mudou
+         if (String(valorOriginal) === String(quantidade)) return;
 
-        if (String(valorOriginal) === String(quantidade)) {
-            return;
-        }
+         addLoading("Atualizando...");
 
-        //addLoading("Atualizando carrinho...");
+         $.ajax({
+             url: '/Carrinho/AtualizarQuantidade',
+             type: 'POST',
+             data: { itemId: itemId, quantidade: quantidade },
+             success: function (response) {
+                 if (response.sucesso) {
+                     recarregarCarrinhoEFooter();
+                 } else {
+                     alert(response.mensagem || 'Erro ao atualizar.');
+                     input.val(valorOriginal);
+                 }
+             },
+             error: function () {
+                 alert('Erro ao atualizar quantidade.');
+                 input.val(valorOriginal);
+                 removeLoading();
+             }
+         });
+     });
 
-        $.ajax({
-            url: '/Carrinho/AtualizarQuantidade',
-            type: 'POST',
-            data: {
-                itemId: itemId,
-                quantidade: quantidade
-            },
-            success: function (response) {
-                if (response.sucesso) {
-                    recarregarCarrinhoEFooter();
-                    removeLoading();
-                } else {
-                    alert(response.mensagem || 'Não foi possível atualizar a quantidade.');
-                    removeLoading();
-                }
-            },
-            error: function (xhr) {
-                alert(xhr.responseText || 'Erro ao atualizar quantidade.');
-                removeLoading();
-            }
-        });
-    });
+     // 3. REMOVER ITEM (UNIFICADO)
+     $(document).on('click', '.js-remover-item-carrinho', function () {
+         const botao = $(this);
+         const itemId = botao.data('item-id');
 
-    $(document).on('click', '.js-remover-item-carrinho', function () {
-        const botao = $(this);
-        const itemId = botao.data('item-id');
+         // Usa o Swal se disponível (conforme seu código desktop) ou confirm padrão
+         const confirmar = (typeof Swal !== 'undefined')
+             ? Swal.fire({ title: 'Remover item?', text: 'Deseja remover este item?', icon: 'warning', showCancelButton: true })
+             : Promise.resolve({ isConfirmed: confirm('Deseja remover este item?') });
 
-        Swal.fire({
-            title: 'Remover item?',
-            text: 'Este item será removido do carrinho.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sim, remover',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (!result.isConfirmed) return;
+         confirmar.then((result) => {
+             if (result.isConfirmed || result === true) {
+                 addLoading("Removendo...");
+                 $.ajax({
+                     url: '/Carrinho/RemoverItem',
+                     type: 'POST',
+                     data: { itemId: itemId },
+                     success: function (response) {
+                         if (response.sucesso) recarregarCarrinhoEFooter();
+                         else alert(response.mensagem);
+                     }
+                 });
+             }
+         });
+     });
 
-            addLoading("Removendo item...");
+     // 4. MODAIS E UTILITÁRIOS (FINALIZAR PEDIDO / LOGIN)
+     $(document).on('click', '#btnConfirmarAddProduto', function () {
+         addLoading("Carregando...");
+         $.ajax({
+             url: '/Pedido/BuscarModalFinalizarPedido',
+             method: 'GET',
+             success: function (html) {
+                 $('#conteudo-dinamico').empty().html(html);
+                 const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFinalizarPedido'));
+                 modal.show();
+                 if (window.wizardInitFinalizarPedido) window.wizardInitFinalizarPedido();
+             },
+             complete: function () { removeLoading(); }
+         });
+     });
 
-            $.ajax({
-                url: '/Carrinho/RemoverItem',
-                type: 'POST',
-                data: {
-                    itemId: itemId
-                },
-                success: function (response) {
-                    if (response.sucesso) {
-                        //location.reload();
-                        recarregarCarrinhoEFooter();
-                        removeLoading();
-                    } else {
-                        Swal.fire('Erro', response.mensagem || 'Não foi possível remover o item.', 'error');
-                        removeLoading();
-                    }
-                },
-                error: function (xhr) {
-                    Swal.fire('Erro', xhr.responseText || 'Erro ao remover item.', 'error');
-                    removeLoading();
-                }
-            });
-        });
-    });
+     $(document).on('click', '#btn-abrir-login', function () {
+         const carregarLogin = () => {
+             addLoading("Carregando...");
+             $.ajax({
+                 url: '/Cliente/BuscarModalAutenticacaoCliente',
+                 method: 'GET',
+                 success: function (html) {
+                     $('#conteudo-dinamico').empty().html(html);
+                     bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-cliente-auth')).show();
+                 },
+                 complete: function () { removeLoading(); }
+             });
+         };
+
+         const modalCarrinhoEl = document.getElementById('modalCarrinhoMobile');
+         const modalCarrinho = modalCarrinhoEl ? bootstrap.Modal.getInstance(modalCarrinhoEl) : null;
+
+         if (modalCarrinho && modalCarrinhoEl.classList.contains('show')) {
+             modalCarrinhoEl.addEventListener('hidden.bs.modal', carregarLogin, { once: true });
+             modalCarrinho.hide();
+         } else {
+             carregarLogin();
+         }
+     });
 
 </script>

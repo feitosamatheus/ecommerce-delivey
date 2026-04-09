@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace Ecommerce.MVC.Areas.Admin.Controllers;
 
@@ -95,6 +96,14 @@ public class AcompanhamentosController : Controller
     {
         await PopularCategoriasAsync(model);
 
+        decimal preco = 0;
+
+        if (!string.IsNullOrEmpty(model.Preco))
+        {
+            // Substitui a vírgula por ponto e faz a conversão para decimal
+            preco = decimal.Parse(model.Preco.Replace(',', '.'), CultureInfo.InvariantCulture);
+        }
+
         if (!ModelState.IsValid)
         {
             ViewData["Title"] = "Novo Acompanhamento";
@@ -107,7 +116,7 @@ public class AcompanhamentosController : Controller
             Id = Guid.NewGuid(),
             Nome = model.Nome.Trim(),
             Descricao = string.IsNullOrWhiteSpace(model.Descricao) ? null : model.Descricao.Trim(),
-            Preco = model.Preco,
+            Preco = preco,
             Ativo = model.Ativo,
             Ordem = model.Ordem,
             AcompanhamentoCategoriaId = model.AcompanhamentoCategoriaId!.Value
@@ -130,12 +139,15 @@ public class AcompanhamentosController : Controller
         if (entity == null)
             return NotFound();
 
+        var precoFormatado = entity.Preco.ToString("N2", new CultureInfo("pt-BR")).Replace('.', ',');
+
+
         var model = new AcompanhamentoFormViewModel
         {
             Id = entity.Id,
             Nome = entity.Nome,
             Descricao = entity.Descricao,
-            Preco = entity.Preco,
+            Preco = precoFormatado,
             Ativo = entity.Ativo,
             Ordem = entity.Ordem,
             AcompanhamentoCategoriaId = entity.AcompanhamentoCategoriaId
@@ -157,6 +169,14 @@ public class AcompanhamentosController : Controller
         if (!model.Id.HasValue)
             return NotFound();
 
+        decimal preco = 0;
+
+        if (!string.IsNullOrEmpty(model.Preco))
+        {
+            // Substitui a vírgula por ponto e faz a conversão para decimal
+            preco = decimal.Parse(model.Preco.Replace(',', '.'), CultureInfo.InvariantCulture);
+        }
+
         var entity = await _db.Acompanhamentos.FirstOrDefaultAsync(x => x.Id == model.Id.Value);
 
         if (entity == null)
@@ -173,7 +193,7 @@ public class AcompanhamentosController : Controller
 
         entity.Nome = model.Nome.Trim();
         entity.Descricao = string.IsNullOrWhiteSpace(model.Descricao) ? null : model.Descricao.Trim();
-        entity.Preco = model.Preco;
+        entity.Preco = preco;
         entity.Ativo = model.Ativo;
         entity.Ordem = model.Ordem;
         entity.AcompanhamentoCategoriaId = model.AcompanhamentoCategoriaId!.Value;

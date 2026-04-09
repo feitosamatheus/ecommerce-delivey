@@ -32,7 +32,7 @@
     }
 
     /* 2. Tipografia e Identidade (Barriga Cheia) */
-    .product-info-column { padding-right: 1.5rem; }
+    /* .product-info-column { padding-right: 1.5rem; } */
     
     .product-name-v5 {
         font-size: 1.6rem;
@@ -146,20 +146,105 @@
     }
 
 </style>
+<style>
+    /* Ajuste para garantir que o link se comporte como o botão no grid */
+    .d-grid .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
 
+    /* Efeito de hover para o botão de voltar */
+    .btn-light:hover {
+        background-color: #e9ecef !important;
+        border-color: #ddd !important;
+    }
+
+    /* Container Principal */
+    .quantity-selector-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+
+    .quantity-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        background: white;
+        border-radius: 8px;
+        padding: 2px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+
+    /* Botões - e + */
+    .qty-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        color: #3c1e0a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .qty-btn:hover {
+        background-color: #fceee9; /* Cor leve baseada no seu tema */
+        color: #3c1e0a;
+    }
+
+    .qty-btn i {
+        font-size: 0.8rem;
+    }
+
+    /* Input de número */
+    .qty-input {
+        width: 45px;
+        border: none;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #3c1e0a;
+        background: transparent;
+        outline: none;
+        -moz-appearance: textfield; /* Remove setas no Firefox */
+    }
+
+    /* Remove setas no Chrome/Safari */
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+</style>
 <div class="modal fade" id="modalAddProduto" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius:18px; overflow:hidden;">
-            
-            <div class="modal-header border-0 pb-0 d-flex justify-content-between">
-                <h5 class="modal-title fw-bold" style="color:#3c1e0a;">Adicionar ao pedido</h5>
-                @* <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button> *@
-                <button type="button" 
-                            class="btn-close-custom d-flex align-items-end justify-content-center" 
-                            data-bs-dismiss="modal" 
-                            aria-label="Fechar">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+
+            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-start mb-4">
+                <div style="line-height: 4px;">
+                    <h5 class="modal-title fw-bold mb-0" style="color:#3c1e0a;">Adicionar ao pedido</h5>
+                    <small class="text-muted">Escolha os complementos ideais</small>
+                </div>
+                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
             <div class="modal-body pt-2">
@@ -293,12 +378,19 @@
                             </div>
 
                             <div class="mt-2">
-                                <div class="d-flex align-items-center justify-content-between border rounded-3 p-2 mb-3">
-                                    <span class="small text-muted ps-2">Quantidade</span>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnDiminuirQtd">-</button>
-                                        <input type="number" name="Quantidade" id="quantidadeProduto" class="form-control text-center border-0 fw-bold" value="1" min="1" style="width:50px;">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnAumentarQtd">+</button>
+                                <div class="quantity-selector-wrapper">
+                                    <span class="quantity-label mt-1">Quantidade</span>
+                                    <div class="quantity-controls">
+                                        <button type="button" class="qty-btn" id="btnDiminuirQtd" aria-label="Diminuir">
+                                            <i class="fas fa-minus mt-1"></i>
+                                        </button>
+            
+                                        <input type="number" name="Quantidade" id="quantidadeProduto" 
+                                               class="qty-input" value="1" min="1" readonly>
+            
+                                        <button type="button" class="qty-btn" id="btnAumentarQtd" aria-label="Aumentar">
+                                            <i class="fas fa-plus mt-1"></i>
+                                        </button>
                                     </div>
                                 </div>
 

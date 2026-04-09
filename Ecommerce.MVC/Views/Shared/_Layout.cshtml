@@ -84,7 +84,8 @@
         .modal-barriga-cheia .btn-principal {
             background-color: #B26528; /* Marrom alaranjado do botão */
             color: white;
-            border-radius: 1.5rem;
+            /* border-radius: 1.5rem; */
+            border-radius: 12px;
             padding: 12px;
             font-weight: bold;
             border: none;
@@ -112,28 +113,7 @@
             z-index: 10000 !important;
         }
 
-        .btn-close-custom {
-            background: transparent;
-            border: none;
-            color: #a1a1a1; /* Cor neutra inicial */
-            font-size: 1.25rem;
-            padding: 0.5rem;
-            line-height: 1;
-            transition: all 0.2s ease-in-out;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%; /* Faz o fundo ficar circular no hover */
-            width: 32px;
-            height: 32px;
-        }
-
-        .btn-close-custom:hover {
-            color: #4A321F; /* Cor principal do seu tema */
-            background-color: rgba(0, 0, 0, 0.05); /* Fundo sutil ao passar o mouse */
-            transform: rotate(90deg); /* Efeito visual moderno */
-        }
+        
 
         /* Ajuste de posicionamento no topo do modal */
         .modal-header-custom {
@@ -168,6 +148,31 @@
             outline: none;
             box-shadow: none;
         }
+        
+        /*BOTAO CCLOSE CUSTOM */
+        .btn-close-custom {
+            background: transparent;
+            border: none;
+            color: #a1a1a1; 
+            font-size: 1.25rem;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%; 
+            width: 32px;
+            height: 32px;
+        }
+
+        .btn-close-custom:hover {
+            color: #4A321F; 
+            /* background-color: rgba(0, 0, 0, 0.05); */ 
+            transform: rotate(90deg); 
+        }
+
     </style>
 
     <div class="modal fade modal-barriga-cheia" id="modalSucessoPedido" tabindex="-1" aria-hidden="true">
@@ -299,7 +304,7 @@
             <div class="modal-content shadow-lg">
                 <div class="modal-body p-4">
                     <div class="d-flex justify-content-end" id="containerBtnFechar">
-                        <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
+                                                                        <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar" style="position: relative; top: -7px; left: 7px;">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -374,6 +379,15 @@
                             <button type="button" id="btnAlterarDepois" class="btn btn-link fw-bold text-muted">
                                 Alterar depois
                             </button>
+                               @*                                              <button type="button" id="btnCancelarAlterarSenha" data-bs-dismiss="modal" class="btn btn-link fw-bold text-muted">
+                                Cancelar
+                            </button> *@
+
+                            <button type="button" id="btnCancelarAlterarSenha" class="btn btn-light w-100 fw-bold" style="color: #3c1e0a; background-color: #f8f9fa; padding:12px; font-weight: 700;"
+                                data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>
+                            <span>Fechar</span>
+                        </button>
                         </div>
                     </form>
                 </div>
@@ -601,13 +615,16 @@
                 const titulo = document.getElementById('tituloModalSenha');
                 const subtitulo = document.getElementById('subtituloModalSenha');
                 const containerFechar = document.getElementById('containerBtnFechar');
-                    const btnAlterarDepois = document.getElementById('btnAlterarDepois');
+                const btnAlterarDepois = document.getElementById('btnAlterarDepois');
+                const btnCancelar = document.getElementById('btnCancelarAlterarSenha');
+
 
                 if (ePrimeiroAcesso) {
                     titulo.innerText = "Primeiro Acesso";
                     subtitulo.innerText = "Para sua segurança, é necessário definir uma nova senha no seu primeiro acesso.";
                     containerFechar.classList.add('d-none'); // Esconde o "X"
                     btnAlterarDepois.classList.remove('d-none');
+                    btnCancelarAlterarSenha.classList.add('d-none');
                     // Configura o modal para não fechar clicando fora ou ESC
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
                         backdrop: 'static',
@@ -619,6 +636,7 @@
                     subtitulo.innerText = "Preencha os campos abaixo para atualizar sua senha de acesso.";
                     containerFechar.classList.remove('d-none'); // Mostra o "X"
                     btnAlterarDepois.classList.add('d-none');
+                                                        btnCancelarAlterarSenha.classList.remove('d-none');
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     modal.show();
                 }
@@ -630,6 +648,8 @@
                 recarregarFooterAjax(),
                 recarregarCarrinhoMobileAjax()
             ]);
+
+            removeLoading()
         }
 
         async function recarregarCarrinhoAjax() {

@@ -78,23 +78,7 @@
         background: #ffffff;
     }
 
-    .btn-close-custom {
-        background: #f5f5f5;
-        border: none;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--bh-text-muted);
-        transition: 0.3s;
-        font-size: 1.2rem;
-    }
-
-        .btn-close-custom:hover {
-            color: var(--bh-primary);
-        }
+    
 
     .bc-modal .nav-tabs {
         border: none;
@@ -258,12 +242,18 @@
 <div class="modal fade bc-modal-container" id="modalVerMais" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bc-modal shadow-lg">
-            <div style="position: absolute; right: 7px; top: 10px; z-index: 10;">
-                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar" style="font-size: 1.5rem;">×</button>
+            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-start mb-4">
+                <div style="line-height: 0;">
+                    <h5 class="modal-title fw-bold mb-1" style="color:#3c1e0a;">Prazer em atender você</h5>
+                    <small class="text-muted">Saiba mais sobre nosso trabalho</small>
+                </div>
+                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
-            <div class="modal-body p-4 p-md-5">
-                <div class="text-center px-4">
+            <div class="modal-body px-4">
+                <div class="text-center">
                     <ul class="nav nav-tabs" id="bcTabs" role="tablist" style="width: 100%; justify-content: center;">
                         <li class="nav-item">
                             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pane-sobre" type="button">Sobre</button>
@@ -283,7 +273,7 @@
                     </ul>
                 </div>
 
-                <div class="tab-content mt-2">
+                <div class="tab-content mt-2  mb-4">
                     <div class="tab-pane fade show active" id="pane-sobre">
                         <div class="row g-4 mt-2">
                             <div class="col-md-7">
@@ -389,9 +379,9 @@
                     </div>
                 </div>
 
-                <div class="bc-footnote text-center mt-5 pt-3 border-top">
+               @*  <div class="bc-footnote text-center mt-5 pt-3 border-top">
                     * Os preços apresentados no cardápio são definidos pela própria loja.
-                </div>
+                </div> *@
             </div>
         </div>
     </div>

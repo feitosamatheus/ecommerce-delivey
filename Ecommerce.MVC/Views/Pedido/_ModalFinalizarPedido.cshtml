@@ -32,11 +32,20 @@
 <div class="modal fade" id="modalFinalizarPedido" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; background: #fcfcfc;">
-            <div class="modal-header border-0 pb-0">
+            @* <div class="modal-header border-0 pb-0">
                 <div style="position: absolute; right: 15px; top: 25px; z-index: 10;">
                     <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">×</button>
                 </div>
                 <div style="width: 24px;"></div>
+            </div> *@
+            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-start mb-4">
+                <div style="line-height: 4px;">
+                    <h5 class="modal-title fw-bold mb-0" style="color:#3c1e0a;">Finalizar seu Pedido</h5>
+                    <small class="text-muted">Confirme seus dados e a forma de entrega</small>
+                </div>
+                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
             <div class="modal-body" id="modalFinalizarPedidoBody" style="transform: scale(0.94);">
                 

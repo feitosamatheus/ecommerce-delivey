@@ -34,7 +34,7 @@ public class CarrinhoViewComponent : ViewComponent
                 Nome = item.ProdutoNomeSnapshot,
                 Quantidade = item.Quantidade,
                 Observacao = item.Observacao,
-                PrecoUnitario = item.PrecoBaseSnapshot + precoAcompanhamentos,
+                PrecoUnitario = item.PrecoBaseSnapshot ,
                 Total = (item.PrecoBaseSnapshot + precoAcompanhamentos) * item.Quantidade,
 
                 Acompanhamentos = acompanhamentos.Select(a => new CarrinhoItemAcompanhamentoViewModel
