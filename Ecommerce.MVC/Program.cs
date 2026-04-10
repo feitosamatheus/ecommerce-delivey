@@ -71,6 +71,7 @@ builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<ICarrinhoService, CarrinhoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IPedidoExportService, PedidoExportService>();
+builder.Services.AddScoped<IFileStorage, CloudflareR2Storage>();
 
 builder.Services.AddRateLimiter(options =>
 {

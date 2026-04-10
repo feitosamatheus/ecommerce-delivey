@@ -11,13 +11,12 @@
 }
 
 .bc-hero__banner {
-  height: 300px;
-  margin: 16px;
-  border-radius: 20px;
-
-  background-image: url(../../img/banner.png);
-  background-size: cover;
-  background-position: center;
+    height: 300px;
+    margin: 16px;
+    border-radius: 20px;
+    background-image: url(https://cdn.gastroflow.cloud/banner.png);
+    background-size: cover;
+    background-position: center;
 }
 
 .bc-hero__header {

@@ -16,6 +16,7 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageReference Include="QRCoder" Version="1.7.0" />-->
+	  <PackageReference Include="AWSSDK.S3" Version="3.7.300" />
 	  <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 	  <PackageReference Include="ClosedXML" Version="0.105.0" />
 

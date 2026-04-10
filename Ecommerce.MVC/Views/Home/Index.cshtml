@@ -348,7 +348,7 @@
                                 );
                             var thumbStyle = string.IsNullOrWhiteSpace(p.ImagemUrl)
                                 ? ""
-                                : "background-image:url('" + p.ImagemUrl + "')";
+                                : "background-image:url('https://cdn.gastroflow.cloud/" + p.ImagemUrl + "')";
 
                             var precoHtml = p.Preco.ToString("C", new CultureInfo("pt-BR"));
 
@@ -427,7 +427,7 @@
                                                             data-categoria-id="@categoria.Id"
                                                             data-nome="@p.Nome">
                                                             <div class="bc-product__thumb"
-                                                                style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                                                style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('https://cdn.gastroflow.cloud/{p.ImagemUrl}')")">
                                                             </div>
 
                                                            <div class="bc-product__info mt-3 text-center">
@@ -517,7 +517,7 @@
                                                 </div>
 
                                                 <div class="bc-product__thumb"
-                                                    style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                                    style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('https://cdn.gastroflow.cloud/{p.ImagemUrl}')")">
                                                 </div>
                                             </div>
 
@@ -650,7 +650,7 @@
                         );
                     var thumbStyle = string.IsNullOrWhiteSpace(p.ImagemUrl)
                         ? ""
-                        : "background-image:url('" + p.ImagemUrl + "')";
+                        : "background-image:url('https://cdn.gastroflow.cloud/" + p.ImagemUrl + "')";
 
                     var precoHtml = p.Preco.ToString("C", new CultureInfo("pt-BR"));
 
@@ -730,7 +730,7 @@
                                                     data-categoria-id="@categoria.Id"
                                                     data-nome="@p.Nome">
                                                     <div class="bc-product__thumb"
-                                                        style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                                        style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('https://cdn.gastroflow.cloud/{p.ImagemUrl}')")">
                                                     </div>
 
                                                     <div class="bc-product__info mt-3 text-center">
@@ -821,7 +821,7 @@
                                         </div>
 
                                         <div class="bc-product__thumb"
-                                            style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('{p.ImagemUrl}')")">
+                                            style="@(string.IsNullOrWhiteSpace(p.ImagemUrl) ? "" : $"background-image:url('https://cdn.gastroflow.cloud/{p.ImagemUrl}')")">
                                         </div>
                                     </div>
 

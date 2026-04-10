@@ -144,7 +144,7 @@
                         {
                             <tr>
                                 <td class="ps-4">
-                                    <img src="@(string.IsNullOrEmpty(p.ImagemUrl) ? "/img/no-image.png" : p.ImagemUrl)"
+                                    <img src="@(string.IsNullOrEmpty(p.ImagemUrl) ? "/img/placeholder-produto.png" : "https://cdn.gastroflow.cloud/" + p.ImagemUrl)"
                                          class="img-product-thumb" alt="@p.Nome" />
                                 </td>
                                 <td>
@@ -226,7 +226,7 @@
                 {
                     <div class="mobile-order-item p-3 border-bottom">
                         <div class="d-flex align-items-center gap-3">
-                            <img src="@(string.IsNullOrEmpty(p.ImagemUrl) ? "/img/no-image.png" : p.ImagemUrl)"
+                            <img src="@(string.IsNullOrEmpty(p.ImagemUrl) ? "/img/placeholder-produto.png" : "https://cdn.gastroflow.cloud/" + p.ImagemUrl)"
                                  class="img-product-thumb" alt="@p.Nome" />
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between">

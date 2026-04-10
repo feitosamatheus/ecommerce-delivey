@@ -1,5 +1,6 @@
 using Ecommerce.MVC.Config;
 using Ecommerce.MVC.Entities;
+using Ecommerce.MVC.Interfaces;
 using Ecommerce.MVC.Models.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,11 +23,13 @@ public class ProdutosController : Controller
 {
     private readonly DatabaseContext _db;
     private readonly IWebHostEnvironment _environment;
+    private readonly IFileStorage _storage;
 
-    public ProdutosController(DatabaseContext db, IWebHostEnvironment environment)
+    public ProdutosController(DatabaseContext db, IWebHostEnvironment environment, IFileStorage storage)
     {
         _db = db;
         _environment = environment;
+        _storage = storage;
     }
 
     // public async Task<IActionResult> Index(string? busca, Guid? categoriaId, int pagina = 1, int tamanhoPagina = 5)
@@ -209,29 +212,7 @@ public class ProdutosController : Controller
             ModelState.AddModelError(nameof(model.Preco), "Informe um preço válido.");
         }
 
-        string imagemUrl = "/img/placeholder-produto.png";
-
-        if (imagemForm != null && imagemForm.Length > 0)
-        {
-            var resultadoImagem = await TentarSalvarImagemAsync(imagemForm);
-
-            if (!resultadoImagem.Sucesso)
-            {
-                ModelState.AddModelError("imagemForm", resultadoImagem.Erro!);
-            }
-            else if (!string.IsNullOrWhiteSpace(resultadoImagem.Caminho))
-            {
-                imagemUrl = resultadoImagem.Caminho;
-            }
-        }
-
-        //if (!ModelState.IsValid)
-        //{
-        //    await PopularCategoriasAsync(model);
-        //    await PopularCategoriasAcompanhamentoAsync(model);
-        //    return View(model);
-        //}
-
+        string imagemUrl = await UploadImagem(imagemForm);
         var tempoPreparoTotalMinutos = (model.TempoPreparoHoras * 60) + model.TempoPreparoMinutosRestantes;
 
         var produto = new Produto
@@ -450,39 +431,7 @@ public class ProdutosController : Controller
         if (produto == null)
             return NotFound();
 
-        string imagemUrl = produto.ImagemUrl ?? "/img/placeholder-produto.png";
-
-        if (imagemForm != null && imagemForm.Length > 0)
-        {
-            var resultadoImagem = await TentarSalvarImagemAsync(imagemForm);
-
-            if (!resultadoImagem.Sucesso)
-            {
-                ModelState.AddModelError("imagemForm", resultadoImagem.Erro!);
-            }
-            else if (!string.IsNullOrWhiteSpace(resultadoImagem.Caminho))
-            {
-                imagemUrl = resultadoImagem.Caminho;
-            }
-        }
-
-        // if (!ModelState.IsValid)
-        // {
-        //     foreach (var item in ModelState)
-        //     {
-        //         var key = item.Key;
-        //         var errors = item.Value.Errors;
-
-        //         foreach (var error in errors)
-        //         {
-        //             Console.WriteLine($"KEY: {key}");
-        //             Console.WriteLine($"ERROR: {error.ErrorMessage}");
-        //             Console.WriteLine($"EXCEPTION: {error.Exception}");
-        //         }
-        //     }
-        //     await PopularListasAsync(vm);
-        //     return View(vm);
-        // }
+        string imagemUrl = await UploadImagem(imagemForm);
 
         var tempoPreparoTotalMinutos = (vm.TempoPreparoHoras * 60) + vm.TempoPreparoMinutosRestantes;
 
@@ -495,7 +444,6 @@ public class ProdutosController : Controller
         produto.Ordem = vm.Ordem;
         produto.ImagemUrl = imagemUrl;
 
-        // remove todos os vínculos atuais
         var acompanhamentosExistentes = await _db.ProdutoAcompanhamentos
             .Where(x => x.ProdutoId == produto.Id)
             .ToListAsync();
@@ -516,7 +464,6 @@ public class ProdutosController : Controller
 
         await _db.SaveChangesAsync();
 
-        // recria com base na lista final
         var gruposValidos = vm.CategoriasAcompanhamentoSelecionadas
             .Where(x => x.AcompanhamentoCategoriaId != Guid.Empty)
             .ToList();
@@ -569,6 +516,20 @@ public class ProdutosController : Controller
         TempData["Success"] = "Produto atualizado com sucesso.";
         return View(vm);
     }
+
+
+    private async Task<string> UploadImagem(IFormFile imagemForm)
+    {
+        string imagemUrl = "/img/placeholder-produto.png";
+
+        if (imagemForm != null && imagemForm.Length > 0)
+        {
+            imagemUrl = await _storage.UploadAsync(imagemForm);
+        }
+
+        return imagemUrl;
+    }
+
 
     private static Guid TryParseGuid(string? valor)
     {
