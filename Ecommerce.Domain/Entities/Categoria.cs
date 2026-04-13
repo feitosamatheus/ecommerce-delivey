@@ -1,0 +1,25 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Ecommerce.Infrastructure.Enums;
+
+namespace Ecommerce.Infrastructure.Entities;
+
+[Table("Categorias")]
+public class Categoria
+{
+    public Guid Id { get;  set; } = Guid.NewGuid();
+
+    [Required]
+    [Column(TypeName = "varchar(100)")]
+    public string Nome { get; set; }
+    
+    public int Ordem { get; set; }
+
+    [Required]
+    public ETipoExibicao TipoExibicao { get; set; }
+
+    public ICollection<Produto> Produtos { get; set; } = new List<Produto>();
+}
+

@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="Ecommerce.Domain/Ecommerce.Domain.csproj" Id="475c608c-e7c3-4fd7-9dd6-f596a7ab379a" />
+  <Project Path="Ecommerce.infrastructure/Ecommerce.infrastructure.csproj" Id="487d2d47-3159-4e39-be82-5d192b990459" />
   <Project Path="Ecommerce.MVC/Ecommerce.MVC.csproj" />
 </Solution>

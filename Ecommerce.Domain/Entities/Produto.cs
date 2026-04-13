@@ -1,0 +1,44 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Ecommerce.Infrastructure.Entities;
+
+[Table("Produtos")]
+public class Produto
+{
+    public Guid Id { get;  set; } = Guid.NewGuid();
+
+    [Required]
+    [Column(TypeName = "varchar(150)")]
+    public string Nome { get; set; }
+
+    [Column(TypeName = "varchar(500)")]
+    public string Descricao { get; set; }
+
+    [Required]
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal Preco { get; set; }
+
+    [Column(TypeName = "varchar(255)")]
+    public string ImagemUrl { get; set; }
+
+    [Required]
+    public int TempoPreparoMinutos { get; set; } = 0;
+
+    [Required]
+    public Guid CategoriaId { get; set; }
+
+    [ForeignKey("CategoriaId")]
+    public Categoria Categoria { get; set; }
+
+    public bool Ativo { get; set; } = true;
+
+    public int Ordem { get; set; }
+
+    public DateTime DataCriacaoUtc { get; set; } = DateTime.UtcNow;
+
+    public ICollection<ProdutoAcompanhamentoCategoria> AcompanhamentoCategorias { get; set; } = new List<ProdutoAcompanhamentoCategoria>();
+    public ICollection<CarrinhoItem> CarrinhoItems { get; set; } = new List<CarrinhoItem>();
+}
