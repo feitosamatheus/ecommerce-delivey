@@ -131,7 +131,7 @@
                         {
                             <li class="nav-item">
                                 <a href="@Url.Action("EmConstrucao", "Dashboard", new { area = "Admin" })"
-                                    class="nav-link @(controller == "Home" ? "active" : "")">
+                                    class="nav-link @(controller == "Dashboard" && ViewContext.RouteData.Values["action"]?.ToString() == "EmConstrucao" ? "active" : "")">
                                     <i class="nav-icon bi bi-house-door"></i>
                                     <p>Dashboard</p>
                                 </a>
@@ -174,6 +174,13 @@
                                             class="nav-link @(controller == "Categorias" ? "active" : "")">
                                             <i class="nav-icon bi bi-tags"></i>
                                             <p>Categorias</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item d-none">
+                                        <a href="@Url.Action("ProdutosVendidos", "Dashboard", new { area = "Admin" })"
+                                            class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ProdutosVendidos" && ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                                            <i class="nav-icon bi bi-graph-up"></i>
+                                            <p>Produtos Vendidos</p>
                                         </a>
                                     </li>
                                 </ul>

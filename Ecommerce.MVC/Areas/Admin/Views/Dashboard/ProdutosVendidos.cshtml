@@ -1,0 +1,250 @@
+@model DashboardProdutosVendidosViewModel
+@using System.Globalization
+@{
+    var pt = new CultureInfo("pt-BR");
+}
+
+<style>
+    .card-table-clean {
+        border: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+        border-radius: 0.75rem !important;
+        overflow: hidden;
+    }
+
+    .table-clean thead th {
+        background-color: #f8fafc !important;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.025em;
+        font-weight: 700;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem 0.75rem !important;
+    }
+
+    .table-clean tbody td {
+        padding: 1rem 0.75rem !important;
+        vertical-align: middle;
+        color: #475569;
+    }
+
+    .badge-status {
+        font-weight: 600;
+        padding: 0.35em 0.65em;
+        border-radius: 0.375rem;
+    }
+
+    .pagination-clean .page-link {
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        margin: 0 2px;
+        border-radius: 0.5rem !important;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .pagination-clean .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #fff;
+        color: #fff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-order-item {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .mobile-order-item:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<div class="app-content">
+    <div class="container-fluid">
+        <!-- Cards de Resumo -->
+        <div class="row mb-4 mt-3">
+            <div class="col-lg-3 mb-2">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <p class="text-muted mb-2">Total de Unidades</p>
+                                <h3 class="mb-0">@Model.TotalProdutosVendidos</h3>
+                            </div>
+                            <div class="text-primary" style="font-size: 2.5rem;">
+                                <i class="bi bi-shop"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 mb-2">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <p class="text-muted mb-2">Total de Pedidos</p>
+                                <h3 class="mb-0">@Model.TotalPedidos</h3>
+                            </div>
+                            <div class="text-success" style="font-size: 2.5rem;">
+                                <i class="bi bi-receipt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 mb-2">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <p class="text-muted mb-2">Receita Total</p>
+                                <h3 class="mb-0">R$ @Model.TotalReceita.ToString("N2")</h3>
+                            </div>
+                            <div class="text-warning" style="font-size: 2.5rem;">
+                                <i class="bi bi-cash-coin"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Produtos Vendidos -->
+        <div class="card card-table-clean">
+            <div class="card-header p-0">
+                <div class="row g-0 align-items-center h-100">
+                    <div class="col-6 d-flex align-items-center ps-3 py-3">
+                        <h3 class="card-title fs-6 fw-bold mb-0">
+                            <i class="bi bi-list me-2 text-primary"></i> Detalhamento
+                        </h3>
+                    </div>
+                    <div class="col-6 d-flex justify-content-end pe-3 py-3">
+                        <a href="@Url.Action("ProdutosVendidos", "Dashboard")" class="btn btn-sm btn-info">
+                            <i class="bi bi-arrow-clockwise"></i> Atualizar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <!-- Layout Desktop: Tabela -->
+                <div class="table-responsive d-none d-md-block">
+                    <table class="table table-hover table-clean align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th class="text-center">Quantidade</th>
+                                <th class="text-center">Preço Unit.</th>
+                                <th class="text-center">Total Vendido</th>
+                                <th class="text-center">Nº Pedidos</th>
+                                <th class="text-center">Última Venda</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Produtos.Any())
+                            {
+                                @foreach (var produto in Model.Produtos)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@produto.NomeProduto</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info">@produto.QuantidadeTotal</span>
+                                        </td>
+                                        <td class="text-center">
+                                            R$ @produto.PrecoUnitario.ToString("N2")
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="text-success">R$ @produto.TotalVendido.ToString("N2")</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary">@produto.NumeroPedidos</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <small>@produto.UltimaVenda.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="@Url.Action("DetalhesProduto", "Dashboard", new { nomeProduto = produto.NomeProduto })"
+                                               class="btn btn-sm btn-outline-primary" title="Ver detalhes dos pedidos">
+                                                <i class="bi bi-eye"></i> Ver Detalhes
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox me-2"></i>
+                                        Nenhum produto vendido ainda
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Layout Mobile: Cards -->
+                <div class="d-md-none">
+                    @if (Model.Produtos.Any())
+                    {
+                        @foreach (var produto in Model.Produtos)
+                        {
+                            <div>    <a href="@Url.Action("DetalhesProduto", "Dashboard", new { nomeProduto = produto.NomeProduto })"
+                                       class="btn btn-sm btn-outline-primary ms-2" title="Ver detalhes dos pedidos">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                 class="mobile-order-item p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold text-dark mb-1">@produto.NomeProduto</div>
+                                        <small class="text-muted d-block"><i class="bi bi-cart-check me-1"></i> @produto.NumeroPedidos pedido(s)</small>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mt-2 pt-2 border-top">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Preço Unit.</small>
+                                        <strong class="text-dark">R$ @produto.PrecoUnitario.ToString("N2")</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Receita</small>
+                                        <strong class="text-success">R$ @produto.TotalVendido.ToString("N2")</strong>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mt-2">
+                                    <div class="col-12">
+                                        <small class="text-muted d-block">Última venda</small>
+                                        <small class="text-dark">@produto.UltimaVenda.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox bi-3x text-light mb-3 d-block"></i>
+                            <p class="text-muted mb-0">Nenhum produto vendido ainda.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Você pode adicionar scripts aqui se necessário
+    </script>
+}

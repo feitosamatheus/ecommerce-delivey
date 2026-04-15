@@ -1,0 +1,304 @@
+@model DetalhesProdutoViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = $"Detalhes - {Model.NomeProduto}";
+    var pt = new CultureInfo("pt-BR");
+}
+
+<style>
+    .card-table-clean {
+        border: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+        border-radius: 0.75rem !important;
+        overflow: hidden;
+    }
+
+    .table-clean thead th {
+        background-color: #f8fafc !important;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.025em;
+        font-weight: 700;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem 0.75rem !important;
+    }
+
+    .table-clean tbody td {
+        padding: 1rem 0.75rem !important;
+        vertical-align: middle;
+        color: #475569;
+    }
+
+    .badge-status {
+        font-weight: 600;
+        padding: 0.35em 0.65em;
+        border-radius: 0.375rem;
+    }
+
+    .mobile-order-item {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .mobile-order-item:last-child {
+        border-bottom: none;
+    }
+</style>
+
+@* <div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">
+                    <i class="bi bi-eye"></i> Detalhes do Produto
+                </h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("ProdutosVendidos", "Dashboard")">Produtos Vendidos</a>
+                    </li>
+                    <li class="breadcrumb-item active">@Model.NomeProduto</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div> *@
+
+<div class="app-content">
+    <div class="container-fluid">
+        <!-- Informações do Produto -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">
+                            <i class="bi bi-box-seam me-2 text-primary"></i>
+                            @Model.NomeProduto
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="text-muted small mb-1">Quantidade Total</div>
+                                    <div class="h4 mb-0 text-primary">@Model.QuantidadeTotal</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="text-muted small mb-1">Preço Unitário</div>
+                                    <div class="h4 mb-0">R$ @Model.PrecoUnitario.ToString("N2")</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="text-muted small mb-1">Receita Total</div>
+                                    <div class="h4 mb-0 text-success">R$ @Model.TotalVendido.ToString("N2")</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="text-muted small mb-1">Nº de Pedidos</div>
+                                    <div class="h4 mb-0 text-info">@Model.NumeroPedidos</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <div class="text-muted small mb-1">Última Venda</div>
+                                    <div class="h5 mb-0">@Model.UltimaVenda.ToString("dd/MM/yyyy HH:mm")</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Pedidos -->
+        <div class="card card-table-clean">
+            <div class="card-header p-0">
+                <div class="row g-0 align-items-center h-100">
+                    <div class="col-6 d-flex align-items-center ps-3 py-3">
+                        <h3 class="card-title fs-6 fw-bold mb-0">
+                            <i class="bi bi-receipt me-2 text-primary"></i> Pedidos (@Model.Pedidos.Count)
+                        </h3>
+                    </div>
+                    <div class="col-6 d-flex justify-content-end pe-3 py-3">
+                        <a href="@Url.Action("ProdutosVendidos", "Dashboard")" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <!-- Layout Desktop: Tabela -->
+                <div class="table-responsive d-none d-md-block">
+                    <table class="table table-hover table-clean align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Código do Pedido</th>
+                                <th>Cliente</th>
+                                <th class="text-center">Data</th>
+                                <th class="text-center">Qtd</th>
+                                <th class="text-center">Preço Unit.</th>
+                                <th class="text-center">Total</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Entrega</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Pedidos.Any())
+                            {
+                                @foreach (var pedido in Model.Pedidos)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong class="text-primary">@pedido.CodigoPedido</strong>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-person me-1 text-muted"></i>
+                                            @pedido.NomeCliente
+                                        </td>
+                                        <td class="text-center">
+                                            <small>@pedido.DataPedido.ToString("dd/MM/yyyy")</small><br>
+                                            <small class="text-muted">@pedido.DataPedido.ToString("HH:mm")</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info">@pedido.QuantidadeProduto</span>
+                                        </td>
+                                        <td class="text-center">
+                                            R$ @pedido.PrecoUnitario.ToString("N2")
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="text-success">R$ @pedido.TotalProduto.ToString("N2")</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            @switch (pedido.StatusPedido)
+                                            {
+                                                case "Confirmado":
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle badge-status">Confirmado</span>
+                                                    break;
+                                                case "EmPreparo":
+                                                    <span class="badge bg-info-subtle text-info border border-info-subtle badge-status">Em Preparo</span>
+                                                    break;
+                                                case "Pronto":
+                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle badge-status">Pronto</span>
+                                                    break;
+                                                case "Concluido":
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle badge-status">Concluído</span>
+                                                    break;
+                                                case "Cancelado":
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle badge-status">Cancelado</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle badge-status">@pedido.StatusPedido</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <small class="text-muted">@pedido.MetodoEntrega</small>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox me-2"></i>
+                                        Nenhum pedido encontrado
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Layout Mobile: Cards -->
+                <div class="d-md-none">
+                    @if (Model.Pedidos.Any())
+                    {
+                        @foreach (var pedido in Model.Pedidos)
+                        {
+                            <div class="mobile-order-item p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold text-primary mb-1">@pedido.CodigoPedido</div>
+                                        <small class="text-muted d-block">
+                                            <i class="bi bi-person me-1"></i> @pedido.NomeCliente
+                                        </small>
+                                    </div>
+                                    @switch (pedido.StatusPedido)
+                                    {
+                                        case "Confirmado":
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Confirmado</span>
+                                            break;
+                                        case "EmPreparo":
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle">Em Preparo</span>
+                                            break;
+                                        case "Pronto":
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Pronto</span>
+                                            break;
+                                        case "Concluido":
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">Concluído</span>
+                                            break;
+                                        case "Cancelado":
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Cancelado</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">@pedido.StatusPedido</span>
+                                            break;
+                                    }
+                                </div>
+
+                                <div class="row g-2 mt-2 pt-2 border-top">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Data</small>
+                                        <small class="text-dark">@pedido.DataPedido.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Quantidade</small>
+                                        <span class="badge bg-info">@pedido.QuantidadeProduto</span>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mt-2">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Preço Unit.</small>
+                                        <strong class="text-dark">R$ @pedido.PrecoUnitario.ToString("N2")</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Total</small>
+                                        <strong class="text-success">R$ @pedido.TotalProduto.ToString("N2")</strong>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mt-2">
+                                    <div class="col-12">
+                                        <small class="text-muted d-block">Entrega</small>
+                                        <small class="text-dark">@pedido.MetodoEntrega</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox bi-3x text-light mb-3 d-block"></i>
+                            <p class="text-muted mb-0">Nenhum pedido encontrado.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Você pode adicionar scripts aqui se necessário
+    </script>
+}
