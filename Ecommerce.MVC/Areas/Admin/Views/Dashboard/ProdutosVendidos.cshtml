@@ -53,11 +53,72 @@
     }
 
     .mobile-order-item {
-        border-bottom: 1px solid #e2e8f0;
+        border: 1px solid #edf2f7;
+        border-radius: 0.6rem;
+        padding: 0.8rem;
+        margin: 0.5rem 0;
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     }
 
     .mobile-order-item:last-child {
-        border-bottom: none;
+        margin-bottom: 0.25rem;
+    }
+
+    /* hover removed for mobile cards */
+
+    /* Mobile improvements */
+    .mobile-order-item .product-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        font-size: 0.98rem;
+    }
+
+    .mobile-order-item .meta-line {
+        font-size: 0.82rem;
+        color: #64748b;
+    }
+
+    /* compact qty badge near title */
+    .mobile-order-item .badge-qty {
+        display: inline-block;
+        min-width: 27px;
+        height: 27px;
+        line-height: 26px;
+        text-align: center;
+        font-weight: 700;
+        background: #0d6efd;
+        color: #fff;
+        border-radius: 999px;
+        font-size: 0.82rem;
+    }
+
+    /* icon-only action button */
+    .mobile-order-item .actions-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-order-item .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .mobile-order-item .price-row .small-label { font-size: 0.78rem; color: #94a3b8; }
+    .mobile-order-item .price-row .value { font-weight: 700; }
+
+    @@media (max-width: 575.98px) {
+        .card-header .card-title { font-size: 0.95rem; }
+        .mobile-order-item { padding: 0.6rem; }
+        .mobile-order-item .product-name { font-size: 0.95rem; }
     }
 </style>
 
@@ -198,26 +259,40 @@
                     {
                         @foreach (var produto in Model.Produtos)
                         {
-                            <div>    <a href="@Url.Action("DetalhesProduto", "Dashboard", new { nomeProduto = produto.NomeProduto })"
-                                       class="btn btn-sm btn-outline-primary ms-2" title="Ver detalhes dos pedidos">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                 class="mobile-order-item p-3">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div class="flex-grow-1">
-                                        <div class="fw-bold text-dark mb-1">@produto.NomeProduto</div>
-                                        <small class="text-muted d-block"><i class="bi bi-cart-check me-1"></i> @produto.NumeroPedidos pedido(s)</small>
+                            <div class="mobile-order-item p-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1 me-2">
+                                        <div class="d-flex align-items-top justify-content-between">
+                                            <div class="me-2">
+                                                <div class="fw-bold text-dark mb-1 product-name">@produto.NomeProduto</div>
+                                                <div class="meta-line"><i class="bi bi-cart-check me-1"></i> @produto.NumeroPedidos pedido(s)</div>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge-qty">@produto.QuantidadeTotal</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-column align-items-end ms-2" style="position: relative;top: -6px;">
+                                        <a href="@Url.Action("DetalhesProduto", "Dashboard", new { nomeProduto = produto.NomeProduto })"
+                                           class="btn btn-outline-primary actions-btn mb-0" title="Ver detalhes dos pedidos">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
                                     </div>
                                 </div>
 
-                                <div class="row g-2 mt-2 pt-2 border-top">
-                                    <div class="col-6">
-                                        <small class="text-muted d-block">Preço Unit.</small>
-                                        <strong class="text-dark">R$ @produto.PrecoUnitario.ToString("N2")</strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted d-block">Receita</small>
-                                        <strong class="text-success">R$ @produto.TotalVendido.ToString("N2")</strong>
+                                <div class="row g-2 mt-3 pt-2 border-top">
+                                    <div class="col-12">
+                                        <div class="price-row">
+                                            <div>
+                                                <div class="small-label">Preço Unit.</div>
+                                                <div class="value">R$ @produto.PrecoUnitario.ToString("N2")</div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="small-label">Receita</div>
+                                                <div class="value text-success">R$ @produto.TotalVendido.ToString("N2")</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 

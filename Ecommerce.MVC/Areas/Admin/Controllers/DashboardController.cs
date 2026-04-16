@@ -26,7 +26,7 @@ public class DashboardController : Controller
     public async Task<IActionResult> ProdutosVendidos()
     {
         ViewData["Title"] = "Produtos Vendidos";
-        ViewData["page"] = "Dashboard";
+        ViewData["page"] = "Produtos";
 
         var produtosVendidos = await _context.PedidoItens
             .Include(pi => pi.Pedido)
